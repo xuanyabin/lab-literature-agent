@@ -1,7 +1,8 @@
 """每日文献情报流水线入口（Phase 1.5：三段式 Daily Literature Intelligence Report）。
 
-流程：PubMed 获取 → 去重（含数据库跨天去重）→ AI 摘要分析 → 新闻摘要 → 中文翻译
-      → 每日价值总结 → HTML 邮件；论文、分析结果与新闻摘要入库 SQLite。
+流程：PubMed 获取（严格/宽松降级检索）→ 规则粗筛打分 → 去重（含数据库跨天去重）
+      → AI 摘要分析 → 新闻摘要 → 中文翻译 → 每日价值总结 → HTML 邮件；
+      论文、分析结果与新闻摘要入库 SQLite。
 
 用法：
     python main.py                      # 完整流程并发送邮件
@@ -25,6 +26,7 @@ from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import LLMClient
 from processing.paper_news_generator import generate_summary
 from processing.translator import translate_paper
+from recommendation.scorer import load_scoring_config, rank_papers
 from sources.pubmed import fetch_recent
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -70,12 +72,16 @@ def main() -> int:
         log.info("今日无新论文，流程结束")
         return 0
 
+    scored = rank_papers(papers, user, load_scoring_config())
+    if scored:
+        log.info("规则粗筛：候选分数区间 %d–%d", scored[-1][0], scored[0][0])
+
     conn = connect()
     seen = get_seen_keys(conn)
-    fresh = [p for p in papers if dedup_key(p) not in seen]
-    if len(fresh) < len(papers):
-        log.info("跨天去重：%d 篇已在历史邮件中出现过，跳过", len(papers) - len(fresh))
-    papers = fresh[: args.limit]
+    fresh = [(s, p) for s, p in scored if dedup_key(p) not in seen]
+    if len(fresh) < len(scored):
+        log.info("跨天去重：%d 篇已在历史邮件中出现过，跳过", len(scored) - len(fresh))
+    papers = [p for _, p in fresh[: args.limit]]
     if not papers:
         log.info("今日检索结果均为历史已发论文，流程结束")
         return 0

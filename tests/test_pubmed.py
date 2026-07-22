@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from sources.paper import Paper
-from sources.pubmed import build_query, dedupe, parse_efetch_xml
+from sources.pubmed import build_queries, dedupe, parse_efetch_xml
 
 FIXTURE = Path(__file__).parent / "fixtures" / "pubmed_efetch.xml"
 
@@ -55,18 +55,33 @@ def test_dedupe_by_normalized_title_when_no_doi():
     assert dedupe([a, b]) == [a]
 
 
-def test_build_query_or_joins_all_terms():
+def test_build_queries_strict_combines_species_and_others():
     user = {
         "research_interest": ["insect evolution"],
         "keywords": [],
         "methods": ["single-cell RNA sequencing"],
-        "species": ["Apis"],
+        "species": ["Apis", "Bombus"],
+        "exclude": [],
     }
-    assert build_query(user) == (
-        '"insect evolution" OR "single-cell RNA sequencing" OR "Apis"'
-    )
+    strict, relaxed = build_queries(user)
+    assert strict == '("Apis" OR "Bombus") AND ("insect evolution" OR "single-cell RNA sequencing")'
+    assert relaxed == '"Apis" OR "Bombus" OR "insect evolution" OR "single-cell RNA sequencing"'
 
 
-def test_build_query_empty_terms_raises():
+def test_build_queries_appends_not_for_exclude():
+    user = {"research_interest": ["single cell"], "species": ["Apis"],
+            "exclude": ["cancer", "tumor"]}
+    strict, relaxed = build_queries(user)
+    assert strict.endswith('NOT ("cancer" OR "tumor")')
+    assert relaxed.endswith('NOT ("cancer" OR "tumor")')
+
+
+def test_build_queries_without_species_falls_back_to_flat_or():
+    user = {"research_interest": ["insect evolution"], "methods": ["scRNA-seq"]}
+    strict, relaxed = build_queries(user)
+    assert strict == relaxed == '"insect evolution" OR "scRNA-seq"'
+
+
+def test_build_queries_empty_terms_raises():
     with pytest.raises(ValueError):
-        build_query({"research_interest": [], "keywords": []})
+        build_queries({"research_interest": [], "keywords": []})

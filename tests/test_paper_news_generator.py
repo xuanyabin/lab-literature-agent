@@ -1,4 +1,4 @@
-from processing.news_generator import generate_summary
+from processing.paper_news_generator import generate_summary
 from sources.paper import Paper
 
 
@@ -13,7 +13,7 @@ class FakeLLM:
 
 
 def _paper():
-    return Paper(title="T", abstract="A", authors="", journal="",
+    return Paper(title="T", abstract="A", authors="", journal="Cell",
                  date="", doi="", url="")
 
 
@@ -22,7 +22,7 @@ def test_prompt_carries_analysis_fields():
     analysis = {"field": "昆虫演化", "problem": "P", "solution": "S", "finding": "F"}
     generate_summary(_paper(), analysis, llm)
     prompt = llm.prompts[0]
-    for token in ("昆虫演化", "P", "S", "F", "T", "A"):
+    for token in ("昆虫演化", "P", "S", "F", "T", "A", "Cell"):
         assert token in prompt
 
 

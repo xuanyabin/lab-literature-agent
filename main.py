@@ -1,11 +1,11 @@
-"""每日文献情报流水线入口（Phase 1：单用户 MVP）。
+"""每日文献情报流水线入口（Phase 1.5：三段式 Daily Literature Intelligence Report）。
 
-流程：PubMed 获取 → 去重 → AI 摘要分析 → 科研新闻生成 → HTML 邮件。
+流程：PubMed 获取 → 去重 → AI 摘要分析 → 新闻摘要 → 中文翻译 → 每日价值总结 → HTML 邮件。
 
 用法：
     python main.py                      # 完整流程并发送邮件
     python main.py --dry-run            # 不发邮件，HTML 写入 logs/
-    python main.py --days 3 --limit 15  # 回溯 3 天，最多 15 篇
+    python main.py --days 3 --limit 15  # 回溯 3 天，最多 15 篇（默认篇数见 config/email.yaml）
 """
 
 import argparse
@@ -16,15 +16,20 @@ from pathlib import Path
 
 import yaml
 
-from mailer.digest_builder import build_digest_html
+from mailer.digest_builder import build_digest_html, load_email_config
 from mailer.sender import send_email
 from processing.analyzer import analyze_paper
+from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import LLMClient
-from processing.news_generator import generate_summary
+from processing.paper_news_generator import generate_summary
+from processing.translator import translate_paper
 from sources.pubmed import fetch_recent
 
 BASE_DIR = Path(__file__).resolve().parent
 LOG_DIR = BASE_DIR / "logs"
+
+# 推荐等级占位值：个性化评分在 Phase 4 接入前，所有论文统一为 Reference
+PLACEHOLDER_CATEGORY = "Reference"
 
 
 def load_user(path: Path) -> dict:
@@ -32,11 +37,14 @@ def load_user(path: Path) -> dict:
 
 
 def main() -> int:
+    email_cfg = load_email_config()
+
     parser = argparse.ArgumentParser(description="每日文献情报流水线")
     parser.add_argument("--user", default=str(BASE_DIR / "config" / "users" / "user001.yaml"),
                         help="用户配置 yaml 路径")
     parser.add_argument("--days", type=int, default=1, help="回溯天数（默认 1）")
-    parser.add_argument("--limit", type=int, default=15, help="最多推荐篇数（默认 15）")
+    parser.add_argument("--limit", type=int, default=email_cfg["daily_paper_number"],
+                        help="最多推荐篇数（默认取 config/email.yaml 的 daily_paper_number）")
     parser.add_argument("--dry-run", action="store_true", help="不发送邮件，HTML 写入 logs/")
     args = parser.parse_args()
 
@@ -68,17 +76,28 @@ def main() -> int:
         log.info("[%d/%d] %s", i, len(papers), paper.title[:60])
         analysis = analyze_paper(paper, llm)
         news = generate_summary(paper, analysis, llm)
-        items.append({"paper": paper, "analysis": analysis, "news": news})
+        translation = translate_paper(paper, llm) if email_cfg["show_translation"] else {}
+        items.append({
+            "paper": paper,
+            "analysis": analysis,
+            "news": news,
+            "title_zh": translation.get("title_zh", ""),
+            "abstract_zh": translation.get("abstract_zh", ""),
+            "category": PLACEHOLDER_CATEGORY,
+        })
+
+    log.info("生成今日价值总结")
+    daily_summary = generate_daily_summary(items, llm)
 
     today = date.today().isoformat()
-    html = build_digest_html(user["name"], today, items)
+    html = build_digest_html(user["name"], today, items, daily_summary, email_cfg)
 
     if args.dry_run:
         out = LOG_DIR / f"digest_{today}.html"
         out.write_text(html, encoding="utf-8")
         log.info("dry-run：邮件 HTML 已写入 %s", out)
     else:
-        send_email(user["email"], f"每日文献情报 · {today}", html)
+        send_email(user["email"], f"Daily Literature Intelligence Report · {today}", html)
         log.info("邮件已发送至 %s", user["email"])
     return 0
 

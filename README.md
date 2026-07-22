@@ -41,6 +41,7 @@ cp .env.example .env   # 填入 OPENAI_API_KEY 与 SMTP 配置
 - 切换模型：仅修改 `config/model.yaml`
 - 调整 Prompt：仅修改 `prompts/*.txt`
 - 调整推荐权重：仅修改 `config/scoring.yaml`
+- 调整期刊分层：仅修改 `config/journals.yaml`
 - API Key / SMTP 密码：仅存放于 `.env`（已 gitignore），禁止写入代码
 
 ## 开发阶段

@@ -1,6 +1,7 @@
 """每日文献情报流水线入口（Phase 1.5：三段式 Daily Literature Intelligence Report）。
 
-流程：PubMed 获取（严格/宽松降级检索）→ 规则粗筛打分 → 去重（含数据库跨天去重）
+流程：PubMed 获取（严格/宽松降级检索）→ 规则粗筛打分并按配额定级
+      （Must Read / Important / Reference）→ 去重（含数据库跨天去重）
       → AI 摘要分析 → 新闻摘要 → 中文翻译 → 每日价值总结 → HTML 邮件；
       论文、分析结果与新闻摘要入库 SQLite。
 
@@ -26,14 +27,11 @@ from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import LLMClient
 from processing.paper_news_generator import generate_summary
 from processing.translator import translate_paper
-from recommendation.scorer import load_scoring_config, rank_papers
+from recommendation.scorer import assign_categories, load_scoring_config, rank_papers
 from sources.pubmed import fetch_recent
 
 BASE_DIR = Path(__file__).resolve().parent
 LOG_DIR = BASE_DIR / "logs"
-
-# 推荐等级占位值：个性化评分在 Phase 4 接入前，所有论文统一为 Reference
-PLACEHOLDER_CATEGORY = "Reference"
 
 
 def load_user(path: Path) -> dict:
@@ -72,7 +70,8 @@ def main() -> int:
         log.info("今日无新论文，流程结束")
         return 0
 
-    scored = rank_papers(papers, user, load_scoring_config())
+    scoring_cfg = load_scoring_config()
+    scored = rank_papers(papers, user, scoring_cfg)
     if scored:
         log.info("规则粗筛：候选分数区间 %d–%d", scored[-1][0], scored[0][0])
 
@@ -81,17 +80,20 @@ def main() -> int:
     fresh = [(s, p) for s, p in scored if dedup_key(p) not in seen]
     if len(fresh) < len(scored):
         log.info("跨天去重：%d 篇已在历史邮件中出现过，跳过", len(scored) - len(fresh))
-    papers = [p for _, p in fresh[: args.limit]]
-    if not papers:
+    selected = assign_categories(fresh[: args.limit], scoring_cfg["tiers"])
+    if not selected:
         log.info("今日检索结果均为历史已发论文，流程结束")
         return 0
-    log.info("进入 AI 处理：%d 篇", len(papers))
+    n_must = sum(1 for _, c, _ in selected if c == "Must Read")
+    n_important = sum(1 for _, c, _ in selected if c == "Important")
+    log.info("进入 AI 处理：%d 篇（Must Read %d / Important %d / Reference %d）",
+             len(selected), n_must, n_important, len(selected) - n_must - n_important)
 
     persist = not args.dry_run  # dry-run 不写库，避免把未发送的论文标记为已发
     llm = LLMClient()
     items = []
-    for i, paper in enumerate(papers, 1):
-        log.info("[%d/%d] %s", i, len(papers), paper.title[:60])
+    for i, (score, category, paper) in enumerate(selected, 1):
+        log.info("[%d/%d] (%d 分, %s) %s", i, len(selected), score, category, paper.title[:60])
         analysis = analyze_paper(paper, llm)
         news = generate_summary(paper, analysis, llm)
         if persist:
@@ -105,7 +107,7 @@ def main() -> int:
             "news": news,
             "title_zh": translation.get("title_zh", ""),
             "abstract_zh": translation.get("abstract_zh", ""),
-            "category": PLACEHOLDER_CATEGORY,
+            "category": category,
         })
     conn.close()
 

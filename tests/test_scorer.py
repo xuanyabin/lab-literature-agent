@@ -155,3 +155,12 @@ def test_assign_categories_short_list_fills_in_order():
     ranked = [(9, _paper("a")), (8, _paper("b"))]
     out = assign_categories(ranked, {"must_read": 3, "important": 5})
     assert [c for _, c, _ in out] == ["Must Read", "Must Read"]
+
+
+def test_lab_topics_score_like_any_weighted_field():
+    # lab_topics 由 main.apply_lab_profile 注入 user dict，scorer 通用遍历 weights 即可命中
+    cfg = {**CONFIG, "weights": {**CONFIG["weights"], "lab_topics": 1}}
+    user = {**USER, "lab_topics": ["genomics"]}
+    p = _paper("Unrelated title", abstract="A genomics study")
+    assert score_paper(p, user, cfg) == 1
+    assert score_paper(p, USER, cfg) == 0  # 未注入 lab_topics 的用户不受影响

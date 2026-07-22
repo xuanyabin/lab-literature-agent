@@ -1,8 +1,9 @@
-"""SQLite 持久化层（Phase 2）。
+"""SQLite 持久化层（Phase 3）。
 
 数据库文件：项目根目录 literature_agent.db（已被 .gitignore 排除）。
-Phase 2 范围：papers / paper_analysis / paper_news_summary 三张表；
-users、scores、feedback 等表在后续 Phase 加入。
+papers / paper_analysis / paper_news_summary 为全局共享表（同一篇论文
+只存一份）；recommendations 记录"哪篇论文发给了哪个用户"，跨天去重
+按用户隔离（A 收过的论文不影响 B）；feedback 等表在后续 Phase 加入。
 """
 
 import json
@@ -43,6 +44,15 @@ CREATE TABLE IF NOT EXISTS paper_news_summary (
     summary TEXT,
     created_time TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS recommendations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    paper_id INTEGER NOT NULL REFERENCES papers(id),
+    sent_date TEXT NOT NULL,
+    category TEXT,
+    score INTEGER,
+    UNIQUE(user_email, paper_id)
+);
 """
 
 
@@ -60,9 +70,14 @@ def dedup_key(paper: Paper) -> str:
     return "title:" + " ".join(paper.title.lower().split())
 
 
-def get_seen_keys(conn: sqlite3.Connection) -> set[str]:
-    """所有已入库论文的 dedup_key，用于跨天去重（昨天发过的今天不再发）。"""
-    rows = conn.execute("SELECT dedup_key FROM papers").fetchall()
+def get_seen_keys(conn: sqlite3.Connection, user_email: str) -> set[str]:
+    """该用户已收到过的论文 dedup_key，用于跨天去重（用户之间互不影响）。"""
+    rows = conn.execute(
+        """SELECT p.dedup_key FROM recommendations r
+           JOIN papers p ON p.id = r.paper_id
+           WHERE r.user_email = ?""",
+        (user_email,),
+    ).fetchall()
     return {row["dedup_key"] for row in rows}
 
 
@@ -107,5 +122,17 @@ def save_news_summary(conn: sqlite3.Connection, paper_id: int, summary: str) -> 
         """INSERT OR REPLACE INTO paper_news_summary (paper_id, summary, created_time)
            VALUES (?, ?, ?)""",
         (paper_id, summary, datetime.now(timezone.utc).isoformat()),
+    )
+    conn.commit()
+
+
+def save_recommendation(conn: sqlite3.Connection, user_email: str, paper_id: int,
+                        category: str, score: int, sent_date: str) -> None:
+    """记录"论文已发给某用户"（幂等：同一用户同一论文只记一次）。"""
+    conn.execute(
+        """INSERT OR IGNORE INTO recommendations
+           (user_email, paper_id, sent_date, category, score)
+           VALUES (?, ?, ?, ?, ?)""",
+        (user_email, paper_id, sent_date, category, score),
     )
     conn.commit()

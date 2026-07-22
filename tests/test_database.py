@@ -1,7 +1,8 @@
 import pytest
 
 from database.db import (
-    connect, dedup_key, get_seen_keys, save_analysis, save_news_summary, save_paper,
+    connect, dedup_key, get_seen_keys, save_analysis, save_news_summary,
+    save_paper, save_recommendation,
 )
 from sources.paper import Paper
 
@@ -34,9 +35,29 @@ def test_save_paper_dedupes_and_keeps_id(conn):
 
 
 def test_get_seen_keys(conn):
-    save_paper(conn, _paper(doi="10.1/a"))
-    save_paper(conn, _paper(doi="", title="No DOI Paper"))
-    assert get_seen_keys(conn) == {"doi:10.1/a", "title:no doi paper"}
+    pid1 = save_paper(conn, _paper(doi="10.1/a"))
+    pid2 = save_paper(conn, _paper(doi="", title="No DOI Paper"))
+    save_recommendation(conn, "a@x.com", pid1, "Must Read", 9, "2026-07-22")
+    save_recommendation(conn, "a@x.com", pid2, "Reference", 0, "2026-07-22")
+    assert get_seen_keys(conn, "a@x.com") == {"doi:10.1/a", "title:no doi paper"}
+    # 未推荐过的论文（仅入库）不算已见
+    save_paper(conn, _paper(doi="10.1/unsent"))
+    assert "doi:10.1/unsent" not in get_seen_keys(conn, "a@x.com")
+
+
+def test_seen_keys_are_isolated_between_users(conn):
+    pid = save_paper(conn, _paper())
+    save_recommendation(conn, "a@x.com", pid, "Must Read", 9, "2026-07-22")
+    assert get_seen_keys(conn, "a@x.com") == {"doi:10.1/x"}
+    assert get_seen_keys(conn, "b@x.com") == set()  # A 收过不影响 B
+
+
+def test_save_recommendation_is_idempotent(conn):
+    pid = save_paper(conn, _paper())
+    save_recommendation(conn, "a@x.com", pid, "Must Read", 9, "2026-07-22")
+    save_recommendation(conn, "a@x.com", pid, "Must Read", 9, "2026-07-22")
+    count = conn.execute("SELECT COUNT(*) AS c FROM recommendations").fetchone()["c"]
+    assert count == 1
 
 
 def test_save_analysis_roundtrip(conn):

@@ -1,13 +1,16 @@
-"""每日文献情报流水线入口（Phase 1.5：三段式 Daily Literature Intelligence Report）。
+"""每日文献情报流水线入口（Phase 3：多用户推荐）。
 
-流程：PubMed 获取（严格/宽松降级检索）→ 规则粗筛打分并按配额定级
-      （Must Read / Important / Reference）→ 去重（含数据库跨天去重）
-      → AI 摘要分析 → 新闻摘要 → 中文翻译 → 每日价值总结 → HTML 邮件；
-      论文、分析结果与新闻摘要入库 SQLite。
+流程：遍历 config/users/ 下所有 active 用户，逐人执行——PubMed 获取
+      （严格/宽松降级检索）→ 规则粗筛打分并按配额定级
+      （Must Read / Important / Reference；实验室公共方向词叠加个人词表）
+      → 按用户跨天去重 → AI 摘要分析 → 新闻摘要 → 中文翻译
+      → 每日价值总结 → HTML 邮件；论文与分析结果入库 SQLite，
+      推荐记录写入 recommendations 表（用户之间去重互不影响）。
 
 用法：
-    python main.py                      # 完整流程并发送邮件
+    python main.py                      # 对所有 active 用户执行完整流程并发送邮件
     python main.py --dry-run            # 不发邮件，HTML 写入 logs/
+    python main.py --user user001       # 只对指定用户执行（调试用）
     python main.py --days 3 --limit 15  # 回溯 3 天，最多 15 篇（默认篇数见 config/email.yaml）
 """
 
@@ -19,7 +22,10 @@ from pathlib import Path
 
 import yaml
 
-from database.db import connect, dedup_key, get_seen_keys, save_analysis, save_news_summary, save_paper
+from database.db import (
+    connect, dedup_key, get_seen_keys, save_analysis, save_news_summary,
+    save_paper, save_recommendation,
+)
 from mailer.digest_builder import build_digest_html, load_email_config
 from mailer.sender import send_email
 from processing.analyzer import analyze_paper
@@ -32,18 +38,115 @@ from sources.pubmed import fetch_recent
 
 BASE_DIR = Path(__file__).resolve().parent
 LOG_DIR = BASE_DIR / "logs"
+USERS_DIR = BASE_DIR / "config" / "users"
+LAB_CONFIG = BASE_DIR / "config" / "lab.yaml"
 
 
 def load_user(path: Path) -> dict:
     return yaml.safe_load(path.read_text(encoding="utf-8"))
 
 
+def load_users(users_dir: Path = USERS_DIR) -> list[tuple[str, dict]]:
+    """读取 users_dir 下所有 active 用户，返回 [(slug, user)]（按文件名排序）。"""
+    users = []
+    for path in sorted(users_dir.glob("*.yaml")):
+        user = load_user(path)
+        if user.get("active", True):
+            users.append((path.stem, user))
+    return users
+
+
+def load_lab_profile(path: Path = LAB_CONFIG) -> dict:
+    """读取实验室公共方向配置（config/lab.yaml），文件缺失时返回空配置。"""
+    p = Path(path)
+    if not p.exists():
+        return {}
+    return yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+
+
+def apply_lab_profile(user: dict, lab: dict) -> dict:
+    """把实验室公共方向并入用户配置副本：lab_topics 参与打分，别名表合并（个人优先）。"""
+    merged = dict(user)
+    merged["lab_topics"] = list(lab.get("topics") or [])
+    merged["aliases"] = {**(lab.get("aliases") or {}), **(user.get("aliases") or {})}
+    return merged
+
+
+def run_for_user(slug: str, user: dict, args: argparse.Namespace,
+                 email_cfg: dict, log: logging.Logger) -> None:
+    """单用户完整流水线：检索 → 打分定级 → 去重 → AI 处理 → 生成并投递邮件。"""
+    log.info("用户：%s <%s>", user["name"], user["email"])
+
+    papers = fetch_recent(user, days=args.days)
+    log.info("PubMed 获取 %d 篇（去重后）", len(papers))
+    if not papers:
+        log.info("今日无新论文，流程结束")
+        return
+
+    scoring_cfg = load_scoring_config()
+    scored = rank_papers(papers, user, scoring_cfg)
+    if scored:
+        log.info("规则粗筛：候选分数区间 %d–%d", scored[-1][0], scored[0][0])
+
+    conn = connect()
+    seen = get_seen_keys(conn, user["email"])
+    fresh = [(s, p) for s, p in scored if dedup_key(p) not in seen]
+    if len(fresh) < len(scored):
+        log.info("跨天去重：%d 篇已在历史邮件中出现过，跳过", len(scored) - len(fresh))
+    selected = assign_categories(fresh[: args.limit], scoring_cfg["tiers"])
+    if not selected:
+        log.info("今日检索结果均为历史已发论文，流程结束")
+        conn.close()
+        return
+    n_must = sum(1 for _, c, _ in selected if c == "Must Read")
+    n_important = sum(1 for _, c, _ in selected if c == "Important")
+    log.info("进入 AI 处理：%d 篇（Must Read %d / Important %d / Reference %d）",
+             len(selected), n_must, n_important, len(selected) - n_must - n_important)
+
+    persist = not args.dry_run  # dry-run 不写库，避免把未发送的论文标记为已发
+    today = date.today().isoformat()
+    llm = LLMClient()
+    items = []
+    for i, (score, category, paper) in enumerate(selected, 1):
+        log.info("[%d/%d] (%d 分, %s) %s", i, len(selected), score, category, paper.title[:60])
+        analysis = analyze_paper(paper, llm)
+        news = generate_summary(paper, analysis, llm)
+        if persist:
+            paper_id = save_paper(conn, paper)
+            save_analysis(conn, paper_id, analysis)
+            save_news_summary(conn, paper_id, news)
+            save_recommendation(conn, user["email"], paper_id, category, score, today)
+        translation = translate_paper(paper, llm) if email_cfg["show_translation"] else {}
+        items.append({
+            "paper": paper,
+            "analysis": analysis,
+            "news": news,
+            "title_zh": translation.get("title_zh", ""),
+            "abstract_zh": translation.get("abstract_zh", ""),
+            "category": category,
+        })
+    conn.close()
+
+    log.info("生成今日价值总结")
+    daily_summary = generate_daily_summary(items, llm)
+
+    html = build_digest_html(user["name"], today, items, daily_summary, email_cfg)
+
+    if args.dry_run:
+        out = LOG_DIR / f"digest_{today}_{slug}.html"
+        out.write_text(html, encoding="utf-8")
+        log.info("dry-run：邮件 HTML 已写入 %s", out)
+    else:
+        send_email(user["email"], f"Daily Literature Intelligence Report · {today}", html)
+        log.info("邮件已发送至 %s", user["email"])
+
+
 def main() -> int:
     email_cfg = load_email_config()
 
     parser = argparse.ArgumentParser(description="每日文献情报流水线")
-    parser.add_argument("--user", default=str(BASE_DIR / "config" / "users" / "user001.yaml"),
-                        help="用户配置 yaml 路径")
+    parser.add_argument("--user", default=None,
+                        help="只执行指定用户（config/users/ 下的文件名，不含 .yaml）；默认执行所有 active 用户")
     parser.add_argument("--days", type=int, default=1, help="回溯天数（默认 1）")
     parser.add_argument("--limit", type=int, default=email_cfg["daily_paper_number"],
                         help="最多推荐篇数（默认取 config/email.yaml 的 daily_paper_number）")
@@ -61,69 +164,21 @@ def main() -> int:
     )
     log = logging.getLogger("main")
 
-    user = load_user(Path(args.user))
-    log.info("用户：%s <%s>", user["name"], user["email"])
-
-    papers = fetch_recent(user, days=args.days)
-    log.info("PubMed 获取 %d 篇（去重后）", len(papers))
-    if not papers:
-        log.info("今日无新论文，流程结束")
-        return 0
-
-    scoring_cfg = load_scoring_config()
-    scored = rank_papers(papers, user, scoring_cfg)
-    if scored:
-        log.info("规则粗筛：候选分数区间 %d–%d", scored[-1][0], scored[0][0])
-
-    conn = connect()
-    seen = get_seen_keys(conn)
-    fresh = [(s, p) for s, p in scored if dedup_key(p) not in seen]
-    if len(fresh) < len(scored):
-        log.info("跨天去重：%d 篇已在历史邮件中出现过，跳过", len(scored) - len(fresh))
-    selected = assign_categories(fresh[: args.limit], scoring_cfg["tiers"])
-    if not selected:
-        log.info("今日检索结果均为历史已发论文，流程结束")
-        return 0
-    n_must = sum(1 for _, c, _ in selected if c == "Must Read")
-    n_important = sum(1 for _, c, _ in selected if c == "Important")
-    log.info("进入 AI 处理：%d 篇（Must Read %d / Important %d / Reference %d）",
-             len(selected), n_must, n_important, len(selected) - n_must - n_important)
-
-    persist = not args.dry_run  # dry-run 不写库，避免把未发送的论文标记为已发
-    llm = LLMClient()
-    items = []
-    for i, (score, category, paper) in enumerate(selected, 1):
-        log.info("[%d/%d] (%d 分, %s) %s", i, len(selected), score, category, paper.title[:60])
-        analysis = analyze_paper(paper, llm)
-        news = generate_summary(paper, analysis, llm)
-        if persist:
-            paper_id = save_paper(conn, paper)
-            save_analysis(conn, paper_id, analysis)
-            save_news_summary(conn, paper_id, news)
-        translation = translate_paper(paper, llm) if email_cfg["show_translation"] else {}
-        items.append({
-            "paper": paper,
-            "analysis": analysis,
-            "news": news,
-            "title_zh": translation.get("title_zh", ""),
-            "abstract_zh": translation.get("abstract_zh", ""),
-            "category": category,
-        })
-    conn.close()
-
-    log.info("生成今日价值总结")
-    daily_summary = generate_daily_summary(items, llm)
-
-    today = date.today().isoformat()
-    html = build_digest_html(user["name"], today, items, daily_summary, email_cfg)
-
-    if args.dry_run:
-        out = LOG_DIR / f"digest_{today}.html"
-        out.write_text(html, encoding="utf-8")
-        log.info("dry-run：邮件 HTML 已写入 %s", out)
+    if args.user:
+        users = [(args.user, load_user(USERS_DIR / f"{args.user}.yaml"))]
     else:
-        send_email(user["email"], f"Daily Literature Intelligence Report · {today}", html)
-        log.info("邮件已发送至 %s", user["email"])
+        users = load_users()
+    if not users:
+        log.info("没有 active 用户，流程结束")
+        return 0
+    log.info("本次执行 %d 个用户：%s", len(users), ", ".join(slug for slug, _ in users))
+
+    lab = load_lab_profile()
+    for slug, user in users:
+        try:
+            run_for_user(slug, apply_lab_profile(user, lab), args, email_cfg, log)
+        except Exception:
+            log.exception("用户 %s 流程失败，继续下一个用户", slug)
     return 0
 
 

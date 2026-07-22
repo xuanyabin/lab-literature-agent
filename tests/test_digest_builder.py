@@ -60,3 +60,16 @@ def test_keywords_and_doi_hidden_when_config_off():
     html = build([make_item()], config={"show_keywords": False, "show_doi": False})
     assert "snRNA-seq" not in html
     assert "10.1038/x" not in html
+
+
+def test_reason_and_score_shown_when_present():
+    item = {**make_item(), "reason": "与你关注的蜜蜂单细胞研究直接相关", "score": 88}
+    html = build([item])
+    assert "推荐理由" in html
+    assert "与你关注的蜜蜂单细胞研究直接相关" in html
+    assert "88 分" in html
+
+
+def test_reason_absent_when_empty():
+    html = build([make_item()])
+    assert "推荐理由" not in html

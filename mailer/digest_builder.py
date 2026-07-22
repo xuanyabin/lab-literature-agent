@@ -66,8 +66,11 @@ def _news_row(i: int, it: dict) -> str:
 
 def _paper_card(i: int, it: dict, cfg: dict) -> str:
     p = it["paper"]
+    head = f'Rank {i} {_badge(it.get("category", "Reference"))}'
+    if it.get("score") is not None:
+        head += f' · {it["score"]} 分'
     rows = [
-        f'<div class="card-head">Rank {i} {_badge(it.get("category", "Reference"))}</div>',
+        f'<div class="card-head">{head}</div>',
         f'<div class="card-title">{escape(p.title)}</div>',
     ]
     if cfg["show_translation"] and it.get("title_zh"):
@@ -80,6 +83,8 @@ def _paper_card(i: int, it: dict, cfg: dict) -> str:
     if cfg["show_keywords"]:
         keywords = "、".join(p.keywords) or "—"
         rows.append(f'<div class="meta">Keywords: {escape(keywords)}</div>')
+    if it.get("reason"):
+        rows.append(f'<div class="reason"><span class="abs-label">推荐理由</span>{escape(it["reason"])}</div>')
     rows.append(f'<div class="abstract"><span class="abs-label">Abstract</span>{escape(p.abstract or "（无摘要）")}</div>')
     if cfg["show_translation"] and it.get("abstract_zh"):
         rows.append(f'<div class="abstract"><span class="abs-label">中文摘要</span>{escape(it["abstract_zh"])}</div>')

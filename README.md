@@ -51,7 +51,7 @@ cp .env.example .env   # 填入 OPENAI_API_KEY 与 SMTP 配置
 - [x] Phase 1.5 三段式邮件结构（新闻摘要 / 详细卡片 / 每日价值总结，配置见 config/email.yaml）
 - [x] Phase 2 数据库持久化
 - [x] Phase 3 多用户系统（遍历 config/users/ 所有 active 用户，实验室公共方向叠加个人词表，按用户隔离的跨天去重）
-- [ ] Phase 4 个性化推荐引擎
+- [x] Phase 4 个性化推荐引擎（六维加权 Final Score：个人相关度/实验室方向/期刊影响力/新颖性/方法相关度/时效性，附 AI 推荐理由）
 - [ ] Phase 5 反馈学习系统
 - [ ] Phase 6 每周情报报告
 

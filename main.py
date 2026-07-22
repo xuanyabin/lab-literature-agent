@@ -1,11 +1,13 @@
-"""每日文献情报流水线入口（Phase 3：多用户推荐）。
+"""每日文献情报流水线入口（Phase 4：个性化推荐引擎）。
 
 流程：遍历 config/users/ 下所有 active 用户，逐人执行——PubMed 获取
-      （严格/宽松降级检索）→ 规则粗筛打分并按配额定级
-      （Must Read / Important / Reference；实验室公共方向词叠加个人词表）
-      → 按用户跨天去重 → AI 摘要分析 → 新闻摘要 → 中文翻译
-      → 每日价值总结 → HTML 邮件；论文与分析结果入库 SQLite，
-      推荐记录写入 recommendations 表（用户之间去重互不影响）。
+      （严格/宽松降级检索）→ 规则粗筛打分选出当日候选
+      （实验室公共方向词叠加个人词表）→ 按用户跨天去重
+      → AI 摘要分析 → 新闻摘要 → 中文翻译
+      → 个性化精排（六维加权 Final Score + AI 推荐理由，按配额定级
+      Must Read / Important / Reference）→ 每日价值总结 → HTML 邮件；
+      论文与分析结果入库 SQLite，推荐记录写入 recommendations 表
+      （用户之间去重互不影响）。
 
 用法：
     python main.py                      # 对所有 active 用户执行完整流程并发送邮件
@@ -33,7 +35,8 @@ from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import LLMClient
 from processing.paper_news_generator import generate_summary
 from processing.translator import translate_paper
-from recommendation.scorer import assign_categories, load_scoring_config, rank_papers
+from recommendation.scorer import load_scoring_config, rank_papers
+from recommendation.ranker import load_ranker_weights, rank_items
 from sources.pubmed import fetch_recent
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -93,29 +96,19 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     fresh = [(s, p) for s, p in scored if dedup_key(p) not in seen]
     if len(fresh) < len(scored):
         log.info("跨天去重：%d 篇已在历史邮件中出现过，跳过", len(scored) - len(fresh))
-    selected = assign_categories(fresh[: args.limit], scoring_cfg["tiers"])
-    if not selected:
+    shortlist = fresh[: args.limit]
+    if not shortlist:
         log.info("今日检索结果均为历史已发论文，流程结束")
         conn.close()
         return
-    n_must = sum(1 for _, c, _ in selected if c == "Must Read")
-    n_important = sum(1 for _, c, _ in selected if c == "Important")
-    log.info("进入 AI 处理：%d 篇（Must Read %d / Important %d / Reference %d）",
-             len(selected), n_must, n_important, len(selected) - n_must - n_important)
+    log.info("进入 AI 处理：%d 篇", len(shortlist))
 
-    persist = not args.dry_run  # dry-run 不写库，避免把未发送的论文标记为已发
-    today = date.today().isoformat()
     llm = LLMClient()
     items = []
-    for i, (score, category, paper) in enumerate(selected, 1):
-        log.info("[%d/%d] (%d 分, %s) %s", i, len(selected), score, category, paper.title[:60])
+    for i, (score, paper) in enumerate(shortlist, 1):
+        log.info("[%d/%d] (粗筛 %d 分) %s", i, len(shortlist), score, paper.title[:60])
         analysis = analyze_paper(paper, llm)
         news = generate_summary(paper, analysis, llm)
-        if persist:
-            paper_id = save_paper(conn, paper)
-            save_analysis(conn, paper_id, analysis)
-            save_news_summary(conn, paper_id, news)
-            save_recommendation(conn, user["email"], paper_id, category, score, today)
         translation = translate_paper(paper, llm) if email_cfg["show_translation"] else {}
         items.append({
             "paper": paper,
@@ -123,8 +116,24 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
             "news": news,
             "title_zh": translation.get("title_zh", ""),
             "abstract_zh": translation.get("abstract_zh", ""),
-            "category": category,
         })
+
+    log.info("个性化精排：六维加权 Final Score + 生成推荐理由")
+    items = rank_items(items, user, llm, scoring_cfg["journal_tiers"],
+                       load_ranker_weights(), scoring_cfg["tiers"])
+    n_must = sum(1 for it in items if it["category"] == "Must Read")
+    n_important = sum(1 for it in items if it["category"] == "Important")
+    log.info("精排定级：Must Read %d / Important %d / Reference %d",
+             n_must, n_important, len(items) - n_must - n_important)
+
+    persist = not args.dry_run  # dry-run 不写库，避免把未发送的论文标记为已发
+    today = date.today().isoformat()
+    if persist:
+        for it in items:
+            paper_id = save_paper(conn, it["paper"])
+            save_analysis(conn, paper_id, it["analysis"])
+            save_news_summary(conn, paper_id, it["news"])
+            save_recommendation(conn, user["email"], paper_id, it["category"], it["score"], today)
     conn.close()
 
     log.info("生成今日价值总结")

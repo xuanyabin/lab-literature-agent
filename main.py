@@ -1,6 +1,7 @@
 """每日文献情报流水线入口（Phase 1.5：三段式 Daily Literature Intelligence Report）。
 
-流程：PubMed 获取 → 去重 → AI 摘要分析 → 新闻摘要 → 中文翻译 → 每日价值总结 → HTML 邮件。
+流程：PubMed 获取 → 去重（含数据库跨天去重）→ AI 摘要分析 → 新闻摘要 → 中文翻译
+      → 每日价值总结 → HTML 邮件；论文、分析结果与新闻摘要入库 SQLite。
 
 用法：
     python main.py                      # 完整流程并发送邮件
@@ -16,6 +17,7 @@ from pathlib import Path
 
 import yaml
 
+from database.db import connect, dedup_key, get_seen_keys, save_analysis, save_news_summary, save_paper
 from mailer.digest_builder import build_digest_html, load_email_config
 from mailer.sender import send_email
 from processing.analyzer import analyze_paper
@@ -67,15 +69,29 @@ def main() -> int:
     if not papers:
         log.info("今日无新论文，流程结束")
         return 0
-    papers = papers[: args.limit]
+
+    conn = connect()
+    seen = get_seen_keys(conn)
+    fresh = [p for p in papers if dedup_key(p) not in seen]
+    if len(fresh) < len(papers):
+        log.info("跨天去重：%d 篇已在历史邮件中出现过，跳过", len(papers) - len(fresh))
+    papers = fresh[: args.limit]
+    if not papers:
+        log.info("今日检索结果均为历史已发论文，流程结束")
+        return 0
     log.info("进入 AI 处理：%d 篇", len(papers))
 
+    persist = not args.dry_run  # dry-run 不写库，避免把未发送的论文标记为已发
     llm = LLMClient()
     items = []
     for i, paper in enumerate(papers, 1):
         log.info("[%d/%d] %s", i, len(papers), paper.title[:60])
         analysis = analyze_paper(paper, llm)
         news = generate_summary(paper, analysis, llm)
+        if persist:
+            paper_id = save_paper(conn, paper)
+            save_analysis(conn, paper_id, analysis)
+            save_news_summary(conn, paper_id, news)
         translation = translate_paper(paper, llm) if email_cfg["show_translation"] else {}
         items.append({
             "paper": paper,
@@ -85,6 +101,7 @@ def main() -> int:
             "abstract_zh": translation.get("abstract_zh", ""),
             "category": PLACEHOLDER_CATEGORY,
         })
+    conn.close()
 
     log.info("生成今日价值总结")
     daily_summary = generate_daily_summary(items, llm)

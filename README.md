@@ -46,7 +46,7 @@ cp .env.example .env   # 填入 OPENAI_API_KEY 与 SMTP 配置
 ## 开发阶段
 
 - [x] Phase 0 项目初始化
-- [ ] Phase 1 单用户 MVP（PubMed 获取 → AI 分析 → 新闻生成 → 邮件发送）
+- [x] Phase 1 单用户 MVP（PubMed 获取 → AI 分析 → 新闻生成 → 邮件发送）
 - [ ] Phase 2 数据库持久化
 - [ ] Phase 3 多用户系统
 - [ ] Phase 4 个性化推荐引擎

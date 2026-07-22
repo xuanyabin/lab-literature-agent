@@ -85,3 +85,16 @@ def test_build_queries_without_species_falls_back_to_flat_or():
 def test_build_queries_empty_terms_raises():
     with pytest.raises(ValueError):
         build_queries({"research_interest": [], "keywords": []})
+
+
+def test_build_queries_expands_aliases_into_or_groups():
+    user = {
+        "research_interest": ["insect evolution"],
+        "species": ["honeybee"],
+        "exclude": [],
+        "aliases": {"honeybee": ["Apis mellifera", "honeybee"]},  # 重复别名应去重
+    }
+    strict, relaxed = build_queries(user)
+    assert strict == '("honeybee" OR "Apis mellifera") AND ("insect evolution")'
+    assert relaxed == '"honeybee" OR "Apis mellifera" OR "insect evolution"'
+    assert relaxed.count('"honeybee"') == 1  # 大小写不敏感去重，原词只出现一次

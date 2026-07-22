@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 
 import requests
 
-from .paper import Paper
+from .paper import Paper, expand_with_aliases
 
 logger = logging.getLogger(__name__)
 
@@ -36,10 +36,15 @@ def build_queries(user: dict) -> tuple[str, str]:
 
     严格查询：物种组 OR 合并后与其余检索词 AND，缩小明显不相关的命中；
     宽松查询：全部检索词扁平 OR，严格查询命中过少时降级使用。
+    检索词会先并入用户 aliases 中的语义拓展词；
     两者都会附加用户 exclude 词的 NOT 排除。
     """
-    species = _clean(user.get("species"))
-    others = _clean(user.get("research_interest")) + _clean(user.get("keywords")) + _clean(user.get("methods"))
+    aliases = user.get("aliases") or {}
+    species = expand_with_aliases(_clean(user.get("species")), aliases)
+    others = expand_with_aliases(
+        _clean(user.get("research_interest")) + _clean(user.get("keywords")) + _clean(user.get("methods")),
+        aliases,
+    )
     if not species and not others:
         raise ValueError("用户配置中没有可用的检索词")
 

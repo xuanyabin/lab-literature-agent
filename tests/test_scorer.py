@@ -55,3 +55,27 @@ def test_load_scoring_config_defaults(tmp_path):
     assert cfg["weights"]["species"] == 5
     assert cfg["weights"]["methods"] == 2
     assert cfg["weights"]["research_interest"] == 1
+
+
+USER_WITH_ALIASES = {
+    **USER,
+    "aliases": {"honeybee": ["Apis mellifera", "Apis"]},
+}
+
+
+def test_alias_hit_scores_like_original_term():
+    # 摘要只出现别名 "Apis mellifera"，应视同 species 词 honeybee 命中
+    p = _paper("Brain atlas", abstract="An Apis mellifera study")
+    assert score_paper(p, USER_WITH_ALIASES, WEIGHTS) == 3
+    assert score_paper(p, USER, WEIGHTS) == 0  # 无 aliases 时不命中
+
+
+def test_alias_and_original_hit_counted_once():
+    # 原词与别名同时命中，同一原词只计一次权重
+    p = _paper("Honeybee brain", abstract="also Apis mellifera")
+    assert score_paper(p, USER_WITH_ALIASES, WEIGHTS) == 3
+
+
+def test_alias_matching_is_case_insensitive():
+    p = _paper("APIS MELLIFERA genome")
+    assert score_paper(p, USER_WITH_ALIASES, WEIGHTS) == 3

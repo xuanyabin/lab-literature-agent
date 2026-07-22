@@ -29,13 +29,22 @@ def _text_of(paper: Paper) -> str:
 
 
 def score_paper(paper: Paper, user: dict, weights: dict) -> int:
-    """每命中一个该类别检索词加对应权重分；同一词重复出现只计一次。"""
+    """每命中一个该类别检索词加对应权重分；同一词重复出现只计一次。
+
+    支持用户 yaml 中的 aliases 字段（{原词: [别名...]}，由 term_expander 生成、
+    人工审核后写入）：原词的任一变体（原词本身或其别名）命中即计分一次，
+    同一原词的多个变体命中不重复计分。
+    """
     text = _text_of(paper)
+    aliases = user.get("aliases") or {}
     score = 0
     for field, weight in weights.items():
         for term in user.get(field) or []:
-            term = term.strip().lower()
-            if term and term in text:
+            term = term.strip()
+            if not term:
+                continue
+            variants = [term, *(aliases.get(term) or [])]
+            if any(v.strip().lower() in text for v in variants if v and v.strip()):
                 score += weight
     return score
 

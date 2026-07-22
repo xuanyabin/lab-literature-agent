@@ -33,9 +33,12 @@ class LLMClient:
         if not api_key:
             raise RuntimeError("缺少 OPENAI_API_KEY：请在项目根目录 .env 中填写后重试")
 
+        # 支持自定义 OpenAI 兼容网关（如公司统一网关）；不设置则用 SDK 默认官方地址
+        base_url = os.environ.get("OPENAI_BASE_URL") or None
+
         from openai import OpenAI
 
-        self._client = OpenAI(api_key=api_key)
+        self._client = OpenAI(api_key=api_key, base_url=base_url)
 
     def complete(self, prompt: str) -> str:
         try:

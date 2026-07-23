@@ -1,9 +1,10 @@
 """每日文献情报流水线入口（Phase 5：反馈学习系统）。
 
 流程：遍历 config/users/ 下所有 active 用户，逐人执行——加载反馈学习词表
-      （Phase 5，与手配词表分离，参与检索与粗筛）→ PubMed 获取
-      （严格/宽松降级检索）→ 规则粗筛打分选出当日候选
-      （实验室公共方向词叠加个人词表）→ 按用户跨天去重
+      （Phase 5，与手配词表分离，参与检索与粗筛）→ PubMed + bioRxiv 获取
+      （严格/宽松降级检索；bioRxiv 无服务端检索，按日期拉全量后本地同语义过滤）
+      → 规则粗筛打分选出当日候选
+      （实验室公共方向词叠加个人词表；强相关不足时高水平期刊论文递补兜底）→ 按用户跨天去重
       → AI 摘要分析 → 新闻摘要 → 中文翻译
       → 个性化精排（六维加权 Final Score + AI 推荐理由，按配额定级
       Must Read / Important / Reference）→ 每日价值总结 → HTML 邮件
@@ -41,9 +42,10 @@ from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import LLMClient
 from processing.paper_news_generator import generate_summary
 from processing.translator import translate_paper
-from recommendation.scorer import load_scoring_config, rank_papers
+from recommendation.scorer import journal_fallback, load_scoring_config, rank_papers
 from recommendation.ranker import load_ranker_weights, rank_items
-from sources.pubmed import fetch_recent
+from sources.biorxiv import fetch_recent as fetch_biorxiv_recent
+from sources.pubmed import dedupe, fetch_recent as fetch_pubmed_recent
 
 BASE_DIR = Path(__file__).resolve().parent
 LOG_DIR = BASE_DIR / "logs"
@@ -92,8 +94,11 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     if user["learned_terms"]:
         log.info("学习词表：%d 个有效词参与检索与打分", len(user["learned_terms"]))
 
-    papers = fetch_recent(user, days=args.days)
+    papers = fetch_pubmed_recent(user, days=args.days)
     log.info("PubMed 获取 %d 篇（去重后）", len(papers))
+    preprints = fetch_biorxiv_recent(user, days=args.days)
+    log.info("bioRxiv 获取 %d 篇（本地过滤后）", len(preprints))
+    papers = dedupe(papers + preprints)  # PubMed 在前，撞 DOI/标题时已发表版优先
     if not papers:
         log.info("今日无新论文，流程结束")
         conn.close()
@@ -108,7 +113,7 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     fresh = [(s, p) for s, p in scored if dedup_key(p) not in seen]
     if len(fresh) < len(scored):
         log.info("跨天去重：%d 篇已在历史邮件中出现过，跳过", len(scored) - len(fresh))
-    shortlist = fresh[: args.limit]
+    shortlist = journal_fallback(fresh, scoring_cfg, args.limit)
     if not shortlist:
         log.info("今日检索结果均为历史已发论文，流程结束")
         conn.close()

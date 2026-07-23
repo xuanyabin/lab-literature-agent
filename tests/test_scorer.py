@@ -2,6 +2,7 @@ import yaml
 
 from recommendation.scorer import (
     assign_categories,
+    journal_fallback,
     load_journal_tiers,
     load_scoring_config,
     rank_papers,
@@ -191,3 +192,49 @@ def test_lab_topics_score_like_any_weighted_field():
     p = _paper("Unrelated title", abstract="A genomics study")
     assert score_paper(p, user, cfg) == 1
     assert score_paper(p, USER, cfg) == 0  # 未注入 lab_topics 的用户不受影响
+
+
+def test_journal_fallback_not_triggered_when_strong_enough():
+    cfg = {**CONFIG, "journal_tiers": {"nature": "t0"}}
+    ranked = [
+        (10, _paper("s0")), (9, _paper("s1")), (8, _paper("s2")),
+        (5, _paper("nature extra", journal="Nature")),
+    ]
+    out = journal_fallback(ranked, cfg, limit=3)
+    assert [p.title for _, p in out] == ["s0", "s1", "s2"]
+
+
+def test_journal_fallback_replaces_weak_tail_with_tiered():
+    cfg = {**CONFIG, "journal_tiers": {"nature": "t0", "cell": "t0"}}
+    ranked = [
+        (9, _paper("strong0")),
+        (2, _paper("weak1")),
+        (1, _paper("weak2")),
+        (0, _paper("weak3")),
+        (5, _paper("nature a", journal="Nature")),
+        (5, _paper("cell b", journal="Cell")),
+        (0, _paper("obscure", journal="Obscure")),
+    ]
+    out = journal_fallback(ranked, cfg, limit=4)
+    titles = [p.title for _, p in out]
+    # 强相关仅 strong0 一篇，缺口 must_read-1=2：尾部最弱的两篇非分层论文被顶刊递补
+    assert len(out) == 4
+    assert titles[0] == "strong0"
+    assert "nature a" in titles and "cell b" in titles
+    assert "weak1" in titles  # 只递补缺口数，其余弱相关保留
+    assert "weak2" not in titles and "weak3" not in titles
+    assert "obscure" not in titles  # 未分层期刊不参与递补
+    assert [s for s, _ in out] == sorted((s for s, _ in out), reverse=True)
+
+
+def test_journal_fallback_noop_when_within_limit():
+    cfg = {**CONFIG, "journal_tiers": {"nature": "t0"}}
+    ranked = [(1, _paper("weak0")), (0, _paper("weak1"))]
+    out = journal_fallback(ranked, cfg, limit=15)
+    assert [p.title for _, p in out] == ["weak0", "weak1"]
+
+
+def test_journal_fallback_noop_without_tiered_pool():
+    ranked = [(2, _paper(f"w{i}")) for i in range(5)]
+    out = journal_fallback(ranked, CONFIG, limit=3)  # CONFIG 无分层名单
+    assert [p.title for _, p in out] == ["w0", "w1", "w2"]

@@ -53,7 +53,17 @@ cp .env.example .env   # 填入 OPENAI_API_KEY 与 SMTP 配置
 - [x] Phase 3 多用户系统（遍历 config/users/ 所有 active 用户，实验室公共方向叠加个人词表，按用户隔离的跨天去重）
 - [x] Phase 4 个性化推荐引擎（六维加权 Final Score：个人相关度/实验室方向/期刊影响力/新颖性/方法相关度/时效性，附 AI 推荐理由）
 - [x] Phase 5 反馈学习系统（邮件卡片反馈链接 → IMAP 收集标注 → 全自动学习词表：提权/降权/衰减，作用于检索与粗筛打分）
+- [x] Phase 5.5 bioRxiv 预印本数据源 + 高水平期刊加权与低相关兜底
 - [ ] Phase 6 每周情报报告
+
+## 数据源与期刊兜底（Phase 5.5）
+
+- PubMed：服务端严格/宽松降级检索；bioRxiv：官方 details API 按日期拉取全量后本地同语义过滤
+  （严格 = 物种组 + 其余词组双命中，不足时降级宽松；模块级缓存，50 个用户共享一次抓取）
+- 两源合并去重（撞 DOI/标题时 PubMed 已发表版优先）；bioRxiv API 异常记日志并跳过，不阻断主流程
+- 期刊加权：粗筛 T0 +8 / T1 +3（config/scoring.yaml），精排期刊影响力权重 20
+- 低相关兜底：当日 shortlist 中强相关（分数超过纯顶刊加分水平）不足 must_read 配额时，
+  从候选池递补高水平分层期刊论文替换尾部最弱的非分层论文（recommendation/scorer.py `journal_fallback`）
 
 ## 反馈学习（Phase 5）
 

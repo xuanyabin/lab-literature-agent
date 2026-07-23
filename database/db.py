@@ -159,6 +159,29 @@ def save_recommendation(conn: sqlite3.Connection, user_email: str, paper_id: int
     conn.commit()
 
 
+def get_week_recommendations(conn: sqlite3.Connection, user_email: str,
+                             since_date: str) -> list[sqlite3.Row]:
+    """该用户 since_date 以来收到过的推荐（含一句话新闻），供周报聚合。
+
+    排序：Must Read → Important → Reference，同级按分数降序。
+    """
+    return conn.execute(
+        """SELECT r.category, r.score, r.sent_date,
+                  p.id AS paper_id, p.title, p.journal, p.date, p.url, p.keywords,
+                  s.summary AS news
+           FROM recommendations r
+           JOIN papers p ON p.id = r.paper_id
+           LEFT JOIN paper_news_summary s ON s.paper_id = p.id
+           WHERE r.user_email = ? AND r.sent_date >= ?
+           ORDER BY CASE r.category
+                        WHEN 'Must Read' THEN 0
+                        WHEN 'Important' THEN 1
+                        ELSE 2
+                    END, r.score DESC""",
+        (user_email, since_date),
+    ).fetchall()
+
+
 def save_feedback(conn: sqlite3.Connection, user_email: str, paper_id: int,
                   value: str, reason: str = "") -> bool:
     """记录一条用户标注（幂等：同一用户对同一论文的同一标注只记一次），返回是否为新插入。"""

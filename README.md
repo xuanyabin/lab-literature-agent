@@ -54,7 +54,21 @@ cp .env.example .env   # 填入 OPENAI_API_KEY 与 SMTP 配置
 - [x] Phase 4 个性化推荐引擎（六维加权 Final Score：个人相关度/实验室方向/期刊影响力/新颖性/方法相关度/时效性，附 AI 推荐理由）
 - [x] Phase 5 反馈学习系统（邮件卡片反馈链接 → IMAP 收集标注 → 全自动学习词表：提权/降权/衰减，作用于检索与粗筛打分）
 - [x] Phase 5.5 bioRxiv 预印本数据源 + 高水平期刊加权与低相关兜底
-- [ ] Phase 6 每周情报报告
+- [x] Phase 6 每周情报报告
+
+## 每周情报报告（Phase 6）
+
+聚合 SQLite 中最近 7 天的推荐记录（不重新检索分析），每个 active 用户一封个性化周报：
+LLM 周度趋势总结（仅基于 Must Read / Important）+ 分布统计（定级 / 期刊分层 /
+Top 期刊 / 高频关键词）+ 本周 Must Read / Important 论文清单。
+
+```bash
+python weekly_report.py              # 对所有 active 用户生成周报并发送邮件
+python weekly_report.py --dry-run    # 不发邮件，HTML 写入 logs/
+python weekly_report.py --user user001 --days 7
+```
+
+建议 cron 每周一早上独立执行：`53 7 * * 1 /Users/sanshui/lab-literature-inteligence/run_weekly.sh`
 
 ## 数据源与期刊兜底（Phase 5.5）
 

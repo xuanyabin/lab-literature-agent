@@ -36,7 +36,8 @@ def build_queries(user: dict) -> tuple[str, str]:
 
     严格查询：物种组 OR 合并后与其余检索词 AND，缩小明显不相关的命中；
     宽松查询：全部检索词扁平 OR，严格查询命中过少时降级使用。
-    检索词会先并入用户 aliases 中的语义拓展词；
+    检索词会先并入用户 aliases 中的语义拓展词，再并入反馈学习词表中
+    当前有效的学习词（Phase 5，user["learned_terms"] 为 [(词, 有效权重)]）；
     两者都会附加用户 exclude 词的 NOT 排除。
     """
     aliases = user.get("aliases") or {}
@@ -45,6 +46,11 @@ def build_queries(user: dict) -> tuple[str, str]:
         _clean(user.get("research_interest")) + _clean(user.get("keywords")) + _clean(user.get("methods")),
         aliases,
     )
+    seen = {t.lower() for t in species + others}
+    for term in _clean(t for t, _ in user.get("learned_terms") or []):
+        if term.lower() not in seen:
+            seen.add(term.lower())
+            others.append(term)
     if not species and not others:
         raise ValueError("用户配置中没有可用的检索词")
 

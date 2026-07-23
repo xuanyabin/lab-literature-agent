@@ -4,7 +4,8 @@
 昂贵的 LLM 处理（分析/新闻/翻译）之外；同分候选用"标题命中 /
 命中频次 / 期刊分层"拉开区分度；assign_categories 再按配额把
 排序结果定级为 Must Read / Important / Reference。
-LLM 精排在 Phase 4 接入。
+LLM 精排在 Phase 4 接入；Phase 5 起额外叠加反馈学习词表命中加分
+（按有效权重计、单篇封顶，与用户手配词表分离）。
 """
 
 import logging
@@ -13,6 +14,7 @@ from pathlib import Path
 
 import yaml
 
+from feedback.vocab import DEFAULT_LEARNED_CONFIG
 from sources.paper import Paper
 
 logger = logging.getLogger(__name__)
@@ -42,6 +44,8 @@ def load_scoring_config(path: Path = DEFAULT_SCORING_CONFIG,
         "journal_t1": cfg.get("journal_t1", 2),
         "tiers": {**_DEFAULT_TIERS, **(cfg.get("tiers") or {})},
         "journal_tiers": load_journal_tiers(journals_path),
+        "learned_score_cap": (cfg.get("learned") or {}).get(
+            "score_cap", DEFAULT_LEARNED_CONFIG["score_cap"]),
     }
 
 
@@ -95,6 +99,16 @@ def score_paper(paper: Paper, user: dict, config: dict) -> int:
             if any(v in title for v in variants):
                 score += config.get("title_bonus", 1)
             score += min(hits - 1, config.get("frequency_cap", 3)) * config.get("frequency_bonus", 1)
+    # 反馈学习词表（Phase 5）：命中按有效权重加分，单篇封顶 learned_score_cap
+    learned = 0
+    for term, term_weight in user.get("learned_terms") or []:
+        variant = str(term).strip().lower()
+        if not variant or variant not in text:
+            continue
+        learned += max(1, round(term_weight))
+        if variant in title:
+            learned += config.get("title_bonus", 1)
+    score += min(learned, config.get("learned_score_cap", DEFAULT_LEARNED_CONFIG["score_cap"]))
     tier = (config.get("journal_tiers") or {}).get(_normalize_journal(paper.journal))
     if tier:
         score += config.get(f"journal_{tier}", 0)

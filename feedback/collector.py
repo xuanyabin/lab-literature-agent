@@ -1,0 +1,104 @@
+"""反馈收集（Phase 5）：IMAP 轮询发件邮箱，解析用户的回信标注。
+
+邮件卡片上的反馈链接是 mailto：用户点击后生成回信草稿，主题带
+    [FB] u=<用户邮箱> p=<论文id> v=<relevant|not_relevant|already_read|save>
+正文首段可填原因（收藏时尤其有用）。本模块轮询收件箱中未读的
+"[FB]" 回信，解析后写入 feedback 表并标记已读；无法解析的回信
+记录日志后同样标记已读（避免毒消息反复重试）。
+
+IMAP 配置来自 .env：IMAP_HOST 必填（缺失时跳过收集并告警）；
+IMAP_PORT 默认 993；IMAP_USER / IMAP_PASSWORD 缺省回退 SMTP_USER / SMTP_PASSWORD。
+"""
+
+import email
+import email.message
+import imaplib
+import logging
+import os
+import re
+
+from dotenv import load_dotenv
+
+from database.db import save_feedback
+
+logger = logging.getLogger(__name__)
+
+SUBJECT_TAG = "[FB]"
+VALID_VALUES = {"relevant", "not_relevant", "already_read", "save"}
+
+_TOKEN = re.compile(r"u=(?P<u>\S+)\s+p=(?P<p>\d+)\s+v=(?P<v>\w+)")
+
+
+def parse_feedback_message(msg: email.message.Message) -> dict | None:
+    """从回信解析 {user_email, paper_id, value, reason}；主题不含合法 token 返回 None。"""
+    subject = str(email.header.make_header(email.header.decode_header(msg.get("Subject", ""))))
+    if SUBJECT_TAG not in subject:
+        return None
+    m = _TOKEN.search(subject)
+    if not m or m.group("v") not in VALID_VALUES:
+        return None
+    return {
+        "user_email": m.group("u"),
+        "paper_id": int(m.group("p")),
+        "value": m.group("v"),
+        "reason": _plain_body(msg),
+    }
+
+
+def _plain_body(msg: email.message.Message) -> str:
+    """取第一个 text/plain 部分，去掉引用原信的行，合并剩余非空行（限 500 字符）。"""
+    part = msg if msg.get_content_type() == "text/plain" else None
+    if part is None:
+        for p in msg.walk():
+            if p.get_content_type() == "text/plain":
+                part = p
+                break
+    if part is None:
+        return ""
+    payload = part.get_payload(decode=True) or b""
+    charset = part.get_content_charset() or "utf-8"
+    text = payload.decode(charset, errors="replace")
+    lines = [ln.strip() for ln in text.splitlines()
+             if ln.strip() and not ln.strip().startswith(">")]
+    return " ".join(lines)[:500]
+
+
+def collect(conn, imap_factory=imaplib.IMAP4_SSL) -> int:
+    """轮询收件箱，把 "[FB]" 回信写入 feedback 表，返回新记录的条数。"""
+    load_dotenv()
+    host = os.environ.get("IMAP_HOST", "")
+    if not host:
+        logger.warning("缺少 IMAP_HOST（请在 .env 中填写），跳过反馈收集")
+        return 0
+    port = int(os.environ.get("IMAP_PORT", "993"))
+    user = os.environ.get("IMAP_USER") or os.environ.get("SMTP_USER", "")
+    password = os.environ.get("IMAP_PASSWORD") or os.environ.get("SMTP_PASSWORD", "")
+
+    client = imap_factory(host, port)
+    try:
+        client.login(user, password)
+        client.select("INBOX")
+        _, data = client.search(None, f'(UNSEEN SUBJECT "{SUBJECT_TAG}")')
+        ids = data[0].split() if data and data[0] else []
+        recorded = 0
+        for msg_id in ids:
+            _, fetched = client.fetch(msg_id, "(RFC822)")
+            msg = email.message_from_bytes(fetched[0][1])
+            parsed = parse_feedback_message(msg)
+            if parsed is None:
+                logger.warning("无法解析的反馈回信（msgid %s），标记已读跳过", msg_id.decode())
+            else:
+                exists = conn.execute("SELECT 1 FROM papers WHERE id = ?",
+                                      (parsed["paper_id"],)).fetchone()
+                if not exists:
+                    logger.warning("反馈指向不存在的论文 id=%d，跳过", parsed["paper_id"])
+                elif save_feedback(conn, parsed["user_email"], parsed["paper_id"],
+                                   parsed["value"], parsed["reason"]):
+                    recorded += 1
+            client.store(msg_id, "+FLAGS", "\\Seen")
+        return recorded
+    finally:
+        try:
+            client.logout()
+        except Exception:
+            logger.debug("IMAP logout 失败（连接可能已断开）", exc_info=True)

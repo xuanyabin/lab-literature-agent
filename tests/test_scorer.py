@@ -157,6 +157,33 @@ def test_assign_categories_short_list_fills_in_order():
     assert [c for _, c, _ in out] == ["Must Read", "Must Read"]
 
 
+def test_learned_terms_add_score():
+    # 反馈学习词表命中：按有效权重加分（max(1, round(eff))），与手配词表分离
+    user = {**USER, "learned_terms": [("microbiome", 1.0)]}
+    p = _paper("Unrelated title", abstract="A microbiome study")
+    assert score_paper(p, user, CONFIG) == 1
+    assert score_paper(p, USER, CONFIG) == 0  # 未注入学习词的用户不受影响
+
+
+def test_learned_term_title_bonus():
+    user = {**USER, "learned_terms": [("microbiome", 1.0)]}
+    assert score_paper(_paper("Gut microbiome atlas"), user, CONFIG) == 2  # 1 + 标题 1
+
+
+def test_learned_score_capped_by_default():
+    # CONFIG 未配 learned_score_cap，回退默认值 6
+    user = {**USER, "learned_terms": [("t1x", 3.0), ("t2x", 3.0), ("t3x", 3.0)]}
+    p = _paper("Unrelated", abstract="t1x t2x t3x")
+    assert score_paper(p, user, CONFIG) == 6  # 3 词各 3 分共 9，封顶 6
+
+
+def test_learned_score_cap_from_config():
+    user = {**USER, "learned_terms": [("t1x", 3.0), ("t2x", 3.0)]}
+    cfg = {**CONFIG, "learned_score_cap": 4}
+    p = _paper("Unrelated", abstract="t1x t2x")
+    assert score_paper(p, user, cfg) == 4
+
+
 def test_lab_topics_score_like_any_weighted_field():
     # lab_topics 由 main.apply_lab_profile 注入 user dict，scorer 通用遍历 weights 即可命中
     cfg = {**CONFIG, "weights": {**CONFIG["weights"], "lab_topics": 1}}

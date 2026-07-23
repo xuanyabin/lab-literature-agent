@@ -73,3 +73,33 @@ def test_reason_and_score_shown_when_present():
 def test_reason_absent_when_empty():
     html = build([make_item()])
     assert "推荐理由" not in html
+
+
+def _build_with_feedback(item, user_email="a@x.com", config=None):
+    cfg = {"feedback_email": "bot@x.com", **(config or {})}
+    return build_digest_html("轩亚冰", "2025-07-22", [item], "总结。", cfg,
+                             user_email=user_email)
+
+
+def test_feedback_links_rendered_with_mailto_token():
+    item = {**make_item(), "paper_id": 7}
+    html = _build_with_feedback(item)
+    assert "mailto:bot@x.com?subject=" in html
+    # 主题经 URL 编码：[FB]→%5BFB%5D，=→%3D
+    assert "%5BFB%5D" in html and "p%3D7" in html and "v%3Dsave" in html
+    assert "不相关" in html and "收藏" in html
+
+
+def test_feedback_links_absent_without_user_email():
+    item = {**make_item(), "paper_id": 7}
+    html = _build_with_feedback(item, user_email="")
+    assert "mailto:" not in html
+
+
+def test_feedback_links_absent_without_paper_id_or_feedback_email():
+    # dry-run 未入库（无 paper_id）或未配 feedback_email 时不渲染反馈行
+    assert "mailto:" not in _build_with_feedback(make_item())
+    item = {**make_item(), "paper_id": 7}
+    html = build_digest_html("轩亚冰", "2025-07-22", [item], "总结。", {},
+                             user_email="a@x.com")
+    assert "mailto:" not in html

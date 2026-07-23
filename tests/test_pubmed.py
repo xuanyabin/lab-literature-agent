@@ -98,3 +98,17 @@ def test_build_queries_expands_aliases_into_or_groups():
     assert strict == '("honeybee" OR "Apis mellifera") AND ("insect evolution")'
     assert relaxed == '"honeybee" OR "Apis mellifera" OR "insect evolution"'
     assert relaxed.count('"honeybee"') == 1  # 大小写不敏感去重，原词只出现一次
+
+
+def test_build_queries_includes_learned_terms():
+    # 反馈学习词表（Phase 5）并入 others 组；与手配词重复时去重
+    user = {
+        "research_interest": ["insect evolution"],
+        "species": ["Apis"],
+        "exclude": [],
+        "learned_terms": [("gut microbiome", 1.0), ("Insect Evolution", 2.0)],
+    }
+    strict, relaxed = build_queries(user)
+    assert strict == '("Apis") AND ("insect evolution" OR "gut microbiome")'
+    assert relaxed == '"Apis" OR "insect evolution" OR "gut microbiome"'
+    assert relaxed.count('"insect evolution"') == 1

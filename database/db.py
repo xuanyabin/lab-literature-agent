@@ -1,9 +1,10 @@
-"""SQLite 持久化层（Phase 3）。
+"""SQLite 持久化层（Phase 5）。
 
 数据库文件：项目根目录 literature_agent.db（已被 .gitignore 排除）。
 papers / paper_analysis / paper_news_summary 为全局共享表（同一篇论文
 只存一份）；recommendations 记录"哪篇论文发给了哪个用户"，跨天去重
-按用户隔离（A 收过的论文不影响 B）；feedback 等表在后续 Phase 加入。
+按用户隔离（A 收过的论文不影响 B）；feedback 记录用户回传的标注，
+learned_terms 是反馈闭环自动维护的学习词表（与用户手配词表分离）。
 """
 
 import json
@@ -52,6 +53,26 @@ CREATE TABLE IF NOT EXISTS recommendations (
     category TEXT,
     score INTEGER,
     UNIQUE(user_email, paper_id)
+);
+CREATE TABLE IF NOT EXISTS feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    paper_id INTEGER NOT NULL REFERENCES papers(id),
+    value TEXT NOT NULL,
+    reason TEXT,
+    created_time TEXT NOT NULL,
+    processed INTEGER NOT NULL DEFAULT 0,
+    UNIQUE(user_email, paper_id, value)
+);
+CREATE TABLE IF NOT EXISTS learned_terms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_email TEXT NOT NULL,
+    term TEXT NOT NULL,
+    weight REAL NOT NULL,
+    support INTEGER NOT NULL DEFAULT 0,
+    last_seen TEXT NOT NULL,
+    created_time TEXT NOT NULL,
+    UNIQUE(user_email, term)
 );
 """
 
@@ -136,3 +157,63 @@ def save_recommendation(conn: sqlite3.Connection, user_email: str, paper_id: int
         (user_email, paper_id, sent_date, category, score),
     )
     conn.commit()
+
+
+def save_feedback(conn: sqlite3.Connection, user_email: str, paper_id: int,
+                  value: str, reason: str = "") -> bool:
+    """记录一条用户标注（幂等：同一用户对同一论文的同一标注只记一次），返回是否为新插入。"""
+    cur = conn.execute(
+        """INSERT OR IGNORE INTO feedback
+           (user_email, paper_id, value, reason, created_time)
+           VALUES (?, ?, ?, ?, ?)""",
+        (user_email, paper_id, value, reason, datetime.now(timezone.utc).isoformat()),
+    )
+    conn.commit()
+    return cur.rowcount > 0
+
+
+def get_unprocessed_feedback(conn: sqlite3.Connection, user_email: str) -> list[sqlite3.Row]:
+    """该用户尚未进入学习闭环的反馈，附带论文标题与摘要（按时间升序）。"""
+    return conn.execute(
+        """SELECT f.id, f.user_email, f.paper_id, f.value, f.reason, p.title, p.abstract
+           FROM feedback f JOIN papers p ON p.id = f.paper_id
+           WHERE f.user_email = ? AND f.processed = 0
+           ORDER BY f.id""",
+        (user_email,),
+    ).fetchall()
+
+
+def mark_feedback_processed(conn: sqlite3.Connection, feedback_ids: list[int]) -> None:
+    conn.executemany("UPDATE feedback SET processed = 1 WHERE id = ?",
+                     [(i,) for i in feedback_ids])
+    conn.commit()
+
+
+def get_learned_term(conn: sqlite3.Connection, user_email: str, term: str) -> sqlite3.Row | None:
+    return conn.execute(
+        "SELECT * FROM learned_terms WHERE user_email = ? AND term = ?",
+        (user_email, term),
+    ).fetchone()
+
+
+def upsert_learned_term(conn: sqlite3.Connection, user_email: str, term: str,
+                        weight: float, support: int, last_seen: str) -> None:
+    """写入/更新一个学习词（weight 为未衰减的原始权重，衰减在读取时计算）。"""
+    conn.execute(
+        """INSERT INTO learned_terms (user_email, term, weight, support, last_seen, created_time)
+           VALUES (?, ?, ?, ?, ?, ?)
+           ON CONFLICT(user_email, term)
+           DO UPDATE SET weight = excluded.weight, support = excluded.support,
+                         last_seen = excluded.last_seen""",
+        (user_email, term, weight, support, last_seen,
+         datetime.now(timezone.utc).isoformat()),
+    )
+    conn.commit()
+
+
+def load_learned_terms(conn: sqlite3.Connection, user_email: str) -> list[sqlite3.Row]:
+    """该用户全部学习词（含未提权的候选词与已衰减词，过滤在读取方做）。"""
+    return conn.execute(
+        "SELECT term, weight, support, last_seen FROM learned_terms WHERE user_email = ?",
+        (user_email,),
+    ).fetchall()

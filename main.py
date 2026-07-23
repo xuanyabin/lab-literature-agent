@@ -1,11 +1,13 @@
-"""每日文献情报流水线入口（Phase 4：个性化推荐引擎）。
+"""每日文献情报流水线入口（Phase 5：反馈学习系统）。
 
-流程：遍历 config/users/ 下所有 active 用户，逐人执行——PubMed 获取
+流程：遍历 config/users/ 下所有 active 用户，逐人执行——加载反馈学习词表
+      （Phase 5，与手配词表分离，参与检索与粗筛）→ PubMed 获取
       （严格/宽松降级检索）→ 规则粗筛打分选出当日候选
       （实验室公共方向词叠加个人词表）→ 按用户跨天去重
       → AI 摘要分析 → 新闻摘要 → 中文翻译
       → 个性化精排（六维加权 Final Score + AI 推荐理由，按配额定级
-      Must Read / Important / Reference）→ 每日价值总结 → HTML 邮件；
+      Must Read / Important / Reference）→ 每日价值总结 → HTML 邮件
+      （卡片带反馈链接，回信由 python -m feedback 收集学习）；
       论文与分析结果入库 SQLite，推荐记录写入 recommendations 表
       （用户之间去重互不影响）。
 
@@ -14,20 +16,24 @@
     python main.py --dry-run            # 不发邮件，HTML 写入 logs/
     python main.py --user user001       # 只对指定用户执行（调试用）
     python main.py --days 3 --limit 15  # 回溯 3 天，最多 15 篇（默认篇数见 config/email.yaml）
+    python -m feedback                  # 收集反馈回信并执行学习闭环（建议每日先跑）
 """
 
 import argparse
 import logging
+import os
 import sys
 from datetime import date
 from pathlib import Path
 
 import yaml
+from dotenv import load_dotenv
 
 from database.db import (
     connect, dedup_key, get_seen_keys, save_analysis, save_news_summary,
     save_paper, save_recommendation,
 )
+from feedback.vocab import load_active_terms
 from mailer.digest_builder import build_digest_html, load_email_config
 from mailer.sender import send_email
 from processing.analyzer import analyze_paper
@@ -80,10 +86,17 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     """单用户完整流水线：检索 → 打分定级 → 去重 → AI 处理 → 生成并投递邮件。"""
     log.info("用户：%s <%s>", user["name"], user["email"])
 
+    conn = connect()
+    user = dict(user)
+    user["learned_terms"] = load_active_terms(conn, user["email"])
+    if user["learned_terms"]:
+        log.info("学习词表：%d 个有效词参与检索与打分", len(user["learned_terms"]))
+
     papers = fetch_recent(user, days=args.days)
     log.info("PubMed 获取 %d 篇（去重后）", len(papers))
     if not papers:
         log.info("今日无新论文，流程结束")
+        conn.close()
         return
 
     scoring_cfg = load_scoring_config()
@@ -91,7 +104,6 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     if scored:
         log.info("规则粗筛：候选分数区间 %d–%d", scored[-1][0], scored[0][0])
 
-    conn = connect()
     seen = get_seen_keys(conn, user["email"])
     fresh = [(s, p) for s, p in scored if dedup_key(p) not in seen]
     if len(fresh) < len(scored):
@@ -131,6 +143,7 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     if persist:
         for it in items:
             paper_id = save_paper(conn, it["paper"])
+            it["paper_id"] = paper_id
             save_analysis(conn, paper_id, it["analysis"])
             save_news_summary(conn, paper_id, it["news"])
             save_recommendation(conn, user["email"], paper_id, it["category"], it["score"], today)
@@ -139,7 +152,8 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     log.info("生成今日价值总结")
     daily_summary = generate_daily_summary(items, llm)
 
-    html = build_digest_html(user["name"], today, items, daily_summary, email_cfg)
+    html = build_digest_html(user["name"], today, items, daily_summary, email_cfg,
+                             user_email=user["email"])
 
     if args.dry_run:
         out = LOG_DIR / f"digest_{today}_{slug}.html"
@@ -152,6 +166,8 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
 
 def main() -> int:
     email_cfg = load_email_config()
+    load_dotenv()
+    email_cfg["feedback_email"] = os.environ.get("DIGEST_FROM_EMAIL", "")
 
     parser = argparse.ArgumentParser(description="每日文献情报流水线")
     parser.add_argument("--user", default=None,

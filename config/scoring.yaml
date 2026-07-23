@@ -30,3 +30,14 @@ ranker:
     novelty: 10    # 新颖性（LLM 语义判断）
     method: 10     # 方法相关度
     recency: 5     # 时效性
+
+# Phase 5 反馈学习词表：由反馈闭环自动维护（与用户手配词表分离），改这里调行为
+learned:
+  promote_support: 2    # 同一新词需在 ≥N 篇高分标注论文中出现才提权（防漂移护栏）
+  initial_weight: 1.0   # 新词提权时的初始权重
+  boost: 0.5            # 每再多一篇高分支持论文的提权幅度
+  max_weight: 3.0       # 单词权重上限
+  negative_factor: 0.5  # 低分标注时命中学习词的权重乘数（只降权，不写 exclude）
+  half_life_days: 30    # 词权重时间衰减半衰期（读取时计算，不回写）
+  min_effective: 0.3    # 有效权重低于该值视为失效（不参与检索/打分）
+  score_cap: 6          # 单篇论文 learned 词加分上限（避免压过手配词表）

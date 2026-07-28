@@ -135,3 +135,19 @@ def test_no_terms_returns_empty(monkeypatch, payload):
     calls = _mock_get(monkeypatch, payload)
     assert biorxiv.fetch_recent({"species": []}, days=1) == []
     assert calls == []  # 无检索词时不发起请求
+
+
+def test_fetch_recent_global_direct_terms(monkeypatch, payload):
+    _mock_get(monkeypatch, payload)
+    # 词表已合并展开好直接传入：大小写不敏感，双组命中仅第 1 篇
+    papers = biorxiv.fetch_recent_global(
+        ["Honeybee", "Apis mellifera"], ["single-cell RNA sequencing"], days=1)
+    assert [p.doi for p in papers] == ["10.1101/2026.07.20.123456"]
+
+
+def test_fetch_recent_global_relaxed_fallback(monkeypatch, payload):
+    _mock_get(monkeypatch, payload)
+    # 两组各只命中不同篇 → 严格为空，降级宽松返回两篇（保持抓取顺序）
+    papers = biorxiv.fetch_recent_global(["mouse"], ["microbiome"], days=1)
+    assert [p.doi for p in papers] == [
+        "10.1101/2026.07.20.123456", "10.1101/2026.07.20.654321"]

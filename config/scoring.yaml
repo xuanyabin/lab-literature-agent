@@ -1,8 +1,9 @@
 # 规则粗筛打分权重（第 2 层）：调整推荐行为只需改这里，无需改代码
-# 每命中一个该类别检索词即加对应分数；命中 exclude 词的论文直接淘汰
+# 所有检索词等权：每命中一个检索词（原词或 aliases/自动扩展变体）加 1 分；
+# 命中 exclude 词的论文直接淘汰；期刊影响力不在粗筛参与（由精排 journal 维度承担）
 weights:
-  species: 3            # 物种词（如 honeybee、Bombus）
-  methods: 2            # 方法词（如 single-cell RNA sequencing）
+  species: 1            # 物种词（如 honeybee、Bombus）
+  methods: 1            # 方法词（如 single-cell RNA sequencing）
   research_interest: 1  # 研究兴趣词
   keywords: 1           # 关键词
   lab_topics: 1         # 实验室公共方向词（来自 config/lab.yaml，对所有用户生效）
@@ -12,24 +13,19 @@ title_bonus: 1          # 检索词命中标题时额外加分
 frequency_bonus: 1      # 同一检索词每多出现一次额外加分（按命中次数最多的变体计）
 frequency_cap: 3        # 每个检索词的频次加分封顶
 
-# 期刊分层加分（分层名单见 config/journals.yaml）
-journal_t0: 8           # T0：CNS 正刊及顶级子刊
-journal_t1: 3           # T1：领域强刊
-
-# 每日推荐分档配额（得分为 0 的论文始终为 Reference，不占 Must Read/Important 配额）
-tiers:
-  must_read: 3
-  important: 5
-
 # Phase 4 个性化精排：六维权重（各维度 0-100，按权重加权平均为 Final Score）
 ranker:
   weights:
     personal: 30   # 个人相关度（LLM 语义判断）
     lab: 25        # 实验室方向相关度
-    journal: 20    # 期刊影响力
+    journal: 20    # 期刊影响力（journals.yaml 分层；期刊因素只在此体现）
     novelty: 10    # 新颖性（LLM 语义判断）
     method: 10     # 方法相关度
     recency: 5     # 时效性
+  # 重要性按 Final Score 绝对阈值定级（宁缺毋滥：当日全部低分则没有 Must Read）
+  thresholds:
+    must_read: 75  # Final Score ≥ 75 → Must Read
+    important: 60  # Final Score ≥ 60 → Important；其余 Reference
 
 # Phase 5 反馈学习词表：由反馈闭环自动维护（与用户手配词表分离），改这里调行为
 learned:

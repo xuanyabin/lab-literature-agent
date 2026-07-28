@@ -1,8 +1,8 @@
 """SQLite 持久化层（Phase 5）。
 
 数据库文件：项目根目录 literature_agent.db（已被 .gitignore 排除）。
-papers / paper_analysis / paper_news_summary 为全局共享表（同一篇论文
-只存一份）；recommendations 记录"哪篇论文发给了哪个用户"，跨天去重
+papers / paper_analysis / paper_news_summary / paper_translation 为全局共享表
+（同一篇论文只存一份）；recommendations 记录"哪篇论文发给了哪个用户"，跨天去重
 按用户隔离（A 收过的论文不影响 B）；feedback 记录用户回传的标注，
 learned_terms 是反馈闭环自动维护的学习词表（与用户手配词表分离）。
 """
@@ -43,6 +43,12 @@ CREATE TABLE IF NOT EXISTS paper_analysis (
 CREATE TABLE IF NOT EXISTS paper_news_summary (
     paper_id INTEGER PRIMARY KEY REFERENCES papers(id),
     summary TEXT,
+    created_time TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS paper_translation (
+    paper_id INTEGER PRIMARY KEY REFERENCES papers(id),
+    title_zh TEXT,
+    abstract_zh TEXT,
     created_time TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS recommendations (
@@ -89,6 +95,12 @@ def dedup_key(paper: Paper) -> str:
     if paper.doi:
         return f"doi:{paper.doi.lower()}"
     return "title:" + " ".join(paper.title.lower().split())
+
+
+def get_paper_id(conn: sqlite3.Connection, key: str) -> int | None:
+    """按 dedup_key 查 papers.id；未入库返回 None。"""
+    row = conn.execute("SELECT id FROM papers WHERE dedup_key = ?", (key,)).fetchone()
+    return row["id"] if row else None
 
 
 def get_seen_keys(conn: sqlite3.Connection, user_email: str) -> set[str]:
@@ -145,6 +157,54 @@ def save_news_summary(conn: sqlite3.Connection, paper_id: int, summary: str) -> 
         (paper_id, summary, datetime.now(timezone.utc).isoformat()),
     )
     conn.commit()
+
+
+def get_analysis(conn: sqlite3.Connection, paper_id: int) -> dict | None:
+    """读取已缓存的 AI 分析；无行返回 None。键与 analyzer.EMPTY_ANALYSIS 对齐
+    （field 列不入库，固定给 ""），methods/organisms 从 JSON 还原。"""
+    row = conn.execute(
+        "SELECT * FROM paper_analysis WHERE paper_id = ?", (paper_id,)
+    ).fetchone()
+    if not row:
+        return None
+    return {
+        "field": "",
+        "problem": row["problem"] or "",
+        "solution": row["solution"] or "",
+        "finding": row["finding"] or "",
+        "methods": json.loads(row["methods"] or "[]"),
+        "organisms": json.loads(row["organisms"] or "[]"),
+    }
+
+
+def get_news_summary(conn: sqlite3.Connection, paper_id: int) -> str | None:
+    """读取已缓存的一句话新闻摘要；无行返回 None。"""
+    row = conn.execute(
+        "SELECT summary FROM paper_news_summary WHERE paper_id = ?", (paper_id,)
+    ).fetchone()
+    return row["summary"] if row else None
+
+
+def save_translation(conn: sqlite3.Connection, paper_id: int,
+                     title_zh: str, abstract_zh: str) -> None:
+    conn.execute(
+        """INSERT OR REPLACE INTO paper_translation
+           (paper_id, title_zh, abstract_zh, created_time)
+           VALUES (?, ?, ?, ?)""",
+        (paper_id, title_zh, abstract_zh, datetime.now(timezone.utc).isoformat()),
+    )
+    conn.commit()
+
+
+def get_translation(conn: sqlite3.Connection, paper_id: int) -> dict | None:
+    """读取已缓存的中文翻译 {"title_zh", "abstract_zh"}；无行返回 None。"""
+    row = conn.execute(
+        "SELECT title_zh, abstract_zh FROM paper_translation WHERE paper_id = ?",
+        (paper_id,),
+    ).fetchone()
+    if not row:
+        return None
+    return {"title_zh": row["title_zh"] or "", "abstract_zh": row["abstract_zh"] or ""}
 
 
 def save_recommendation(conn: sqlite3.Connection, user_email: str, paper_id: int,

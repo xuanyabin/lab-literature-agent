@@ -84,6 +84,18 @@ def fetch_recent(user: dict, days: int = 1, retmax: int = 50, min_results: int =
     return dedupe(parse_efetch_xml(_efetch(pmids)))
 
 
+def search_pmids(query: str, days: int, retmax: int) -> list[str]:
+    """按查询式检索 PubMed，返回 PMID 列表（全局池按簇检索的公开包装）。"""
+    return _esearch(query, days, retmax)
+
+
+def fetch_by_pmids(pmids: list[str]) -> list[Paper]:
+    """按 PMID 列表取回论文详情（不去重，全局去重由调用方统一做）。"""
+    if not pmids:
+        return []
+    return parse_efetch_xml(_efetch(pmids))
+
+
 def _esearch(query: str, days: int, retmax: int) -> list[str]:
     resp = _get_with_retry(
         f"{EUTILS_BASE}/esearch.fcgi",

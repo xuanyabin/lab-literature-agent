@@ -120,3 +120,20 @@ def test_collect_duplicate_ignored(conn, monkeypatch):
     subject = f"[FB] u=a@x.com p={paper_id} v=save"
     recorded, _ = _run_collect(conn, [_msg(subject), _msg(subject)], monkeypatch)
     assert recorded == 1  # 第二封重复被幂等跳过
+
+
+def test_collect_rejects_spoofed_sender(conn, monkeypatch):
+    """发件人与主题中标注的用户不符时拒绝记录（防止伪造回信污染他人词表）。"""
+    paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
+                                      date="2026-07-22", doi="", url=""))
+    msgs = [
+        # 伪造：attacker 发出的回信标注成受害者 a@x.com
+        _msg(f"[FB] u=a@x.com p={paper_id} v=not_relevant", sender="attacker@evil.com"),
+        # 大小写不敏感：发件人大小写不同仍视为本人
+        _msg(f"[FB] u=a@x.com p={paper_id} v=save", sender="A@x.com"),
+    ]
+    recorded, fake = _run_collect(conn, msgs, monkeypatch)
+    assert recorded == 1
+    assert len(fake.seen) == 2  # 伪造邮件同样标记已读，不反复重试
+    row = conn.execute("SELECT value FROM feedback WHERE paper_id=?", (paper_id,)).fetchone()
+    assert row["value"] == "save"  # 只记录了本人那条，伪造的 not_relevant 被丢弃

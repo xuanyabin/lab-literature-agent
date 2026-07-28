@@ -86,6 +86,49 @@ def fetch_recent(user: dict, days: int = 1, max_results: int = 50, min_results: 
     return [_to_paper(item) for item in picked[:max_results]]
 
 
+def fetch_recent_global(species: list[str], others: list[str], days: int = 1,
+                        max_results: int = 200, min_results: int = 5) -> list[Paper]:
+    """全局池模式的 bioRxiv 过滤：与 fetch_recent 同一过滤语义，但词表由调用方
+    合并全用户并展开 aliases 后直接传入（本函数只做小写化，不再处理 aliases /
+    exclude / learned_terms）；exclude 由全局池之后的每用户粗筛各自执行。"""
+    species = [t.lower() for t in _clean(species)]
+    others = [t.lower() for t in _clean(others)]
+    if not species and not others:
+        logger.info("全局词表为空，bioRxiv 过滤跳过")
+        return []
+
+    to_date = date.today()
+    from_date = to_date - timedelta(days=max(days - 1, 0))
+    details = _fetch_details(from_date.isoformat(), to_date.isoformat())
+    if not details:
+        return []
+
+    strict: list[dict] = []
+    relaxed: list[dict] = []
+    for item in details:
+        text = " ".join([
+            item.get("title") or "",
+            item.get("abstract") or "",
+            item.get("category") or "",
+        ]).lower()
+        sp_hit = any(t in text for t in species)
+        ot_hit = any(t in text for t in others)
+        if species and others:
+            if sp_hit and ot_hit:
+                strict.append(item)
+            elif sp_hit or ot_hit:
+                relaxed.append(item)
+        elif sp_hit or ot_hit:
+            strict.append(item)
+    if len(strict) >= min_results or not relaxed:
+        picked = strict
+    else:
+        logger.info("bioRxiv 全局严格过滤仅命中 %d 篇，降级为宽松匹配", len(strict))
+        picked = strict + relaxed
+    logger.info("bioRxiv 全局过滤命中 %d 篇（全量 %d 篇）", len(picked), len(details))
+    return [_to_paper(item) for item in picked[:max_results]]
+
+
 def _fetch_details(from_date: str, to_date: str) -> list[dict]:
     """按日期区间分页拉取 bioRxiv 全量详情（每页 100 条），带模块级缓存。"""
     key = (from_date, to_date)

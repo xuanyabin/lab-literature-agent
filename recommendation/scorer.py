@@ -1,12 +1,12 @@
-"""规则粗筛打分（三层漏斗的第 2 层）：零成本加权关键词匹配 + tie-break。
+"""规则粗筛打分（三层漏斗的第 2 层）：零成本等权关键词匹配 + tie-break。
 
 对检索层返回的候选论文按用户配置打分并排序，把零相关论文挡在
-昂贵的 LLM 处理（分析/新闻/翻译）之外；同分候选用"标题命中 /
-命中频次 / 期刊分层"拉开区分度；assign_categories 再按配额把
-排序结果定级为 Must Read / Important / Reference；journal_fallback
-在当日强相关不足时用 limit 之外的高水平分层期刊论文递补兜底。
-LLM 精排在 Phase 4 接入；Phase 5 起额外叠加反馈学习词表命中加分
-（按有效权重计、单篇封顶，与用户手配词表分离）。
+昂贵的 LLM 处理（分析/新闻/翻译）之外；所有检索词等权（原词或其
+aliases/自动扩展变体命中即计一次），同分候选用"标题命中 / 命中频次"
+拉开区分度；命中 exclude 词的论文直接剔除。期刊影响力不在本层参与，
+由精排（recommendation/ranker.py）journal 维度独立承担；重要性定级
+也在精排按 Final Score 绝对阈值判定（宁缺毋滥）。Phase 5 起额外叠加
+反馈学习词表命中加分（按有效权重计、单篇封顶，与用户手配词表分离）。
 """
 
 import logging
@@ -24,8 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SCORING_CONFIG = BASE_DIR / "config" / "scoring.yaml"
 DEFAULT_JOURNALS_CONFIG = BASE_DIR / "config" / "journals.yaml"
 
-_DEFAULT_WEIGHTS = {"species": 3, "methods": 2, "research_interest": 1, "keywords": 1}
-_DEFAULT_TIERS = {"must_read": 3, "important": 5}
+_DEFAULT_WEIGHTS = {
+    "species": 1, "methods": 1, "research_interest": 1,
+    "keywords": 1, "lab_topics": 1,
+}
 
 CATEGORY_MUST_READ = "Must Read"
 CATEGORY_IMPORTANT = "Important"
@@ -41,9 +43,6 @@ def load_scoring_config(path: Path = DEFAULT_SCORING_CONFIG,
         "title_bonus": cfg.get("title_bonus", 1),
         "frequency_bonus": cfg.get("frequency_bonus", 1),
         "frequency_cap": cfg.get("frequency_cap", 3),
-        "journal_t0": cfg.get("journal_t0", 5),
-        "journal_t1": cfg.get("journal_t1", 2),
-        "tiers": {**_DEFAULT_TIERS, **(cfg.get("tiers") or {})},
         "journal_tiers": load_journal_tiers(journals_path),
         "learned_score_cap": (cfg.get("learned") or {}).get(
             "score_cap", DEFAULT_LEARNED_CONFIG["score_cap"]),
@@ -54,7 +53,7 @@ def load_journal_tiers(path: Path = DEFAULT_JOURNALS_CONFIG) -> dict[str, str]:
     """读取期刊分层名单（config/journals.yaml），返回 {规范化刊名: "t0"|"t1"}；文件缺失时返回空表。"""
     p = Path(path)
     if not p.exists():
-        logger.warning("期刊分层配置不存在：%s，期刊加分跳过", p)
+        logger.warning("期刊分层配置不存在：%s，精排期刊维度按未分层处理", p)
         return {}
     cfg = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
     return {
@@ -75,13 +74,12 @@ def _text_of(paper: Paper) -> str:
 
 
 def score_paper(paper: Paper, user: dict, config: dict) -> int:
-    """关键词加权打分 + tie-break（标题命中、命中频次、期刊分层）。
+    """等权关键词打分 + tie-break（标题命中、命中频次）。
 
-    每个检索词命中即计该类别权重一次：原词的任一变体（原词本身或其
-    aliases）命中即算，同一原词的多个变体命中不重复计权重。
-    tie-break：变体命中标题加 title_bonus；命中频次按命中次数最多的
-    变体计，每多一次加 frequency_bonus（封顶 frequency_cap）；
-    期刊命中 journals.yaml 分层名单加 journal_t0 / journal_t1。
+    每个检索词命中即计该类别权重一次（默认全部等权 1 分）：原词的任一
+    变体（原词本身或其 aliases）命中即算，同一原词的多个变体命中不重复
+    计分。tie-break：变体命中标题加 title_bonus；命中频次按命中次数最多
+    的变体计，每多一次加 frequency_bonus（封顶 frequency_cap）。
     """
     text = _text_of(paper)
     title = paper.title.lower()
@@ -110,9 +108,6 @@ def score_paper(paper: Paper, user: dict, config: dict) -> int:
         if variant in title:
             learned += config.get("title_bonus", 1)
     score += min(learned, config.get("learned_score_cap", DEFAULT_LEARNED_CONFIG["score_cap"]))
-    tier = (config.get("journal_tiers") or {}).get(_normalize_journal(paper.journal))
-    if tier:
-        score += config.get(f"journal_{tier}", 0)
     return score
 
 
@@ -136,61 +131,3 @@ def rank_papers(papers: list[Paper], user: dict, config: dict) -> list[tuple[int
     if zero:
         logger.info("规则粗筛：%d/%d 篇得分为 0（将排在末尾）", zero, len(scored))
     return scored
-
-
-def journal_fallback(ranked: list[tuple[int, Paper]], config: dict,
-                     limit: int) -> list[tuple[int, Paper]]:
-    """低相关兜底：top-limit 中强相关不足 must_read 配额时，用分层期刊论文递补。
-
-    强相关 = 分数超过 journal_t0（即高于"零关键词命中、仅靠顶刊加分"的水平）。
-    递补来源：limit 之外按序取 T0/T1 分层期刊论文，替换 shortlist 尾部最弱的
-    非分层论文，递补数量 = 缺口数，最后按分数重新稳定排序。
-    候选总数不超过 limit、强相关足够、或 limit 之外无分层论文时原样返回。
-    """
-    shortlist = ranked[:limit]
-    if len(ranked) <= limit:
-        return shortlist
-    strong = sum(1 for s, _ in shortlist if s > config.get("journal_t0", 5))
-    gap = (config.get("tiers") or {}).get("must_read", 3) - strong
-    if gap <= 0:
-        return shortlist
-    tiers_map = config.get("journal_tiers") or {}
-
-    def tier_of(paper: Paper) -> str:
-        return tiers_map.get(_normalize_journal(paper.journal), "")
-
-    result = list(shortlist)
-    replaced = 0
-    for cand in ((s, p) for s, p in ranked[limit:] if tier_of(p)):
-        if replaced >= gap:
-            break
-        for i in range(len(result) - 1, -1, -1):
-            if not tier_of(result[i][1]):
-                result[i] = cand
-                replaced += 1
-                break
-    if replaced:
-        result.sort(key=lambda x: -x[0])
-        logger.info("低相关兜底：top-%d 强相关仅 %d 篇，以 %d 篇分层期刊论文递补",
-                    limit, strong, replaced)
-    return result
-
-
-def assign_categories(ranked: list[tuple[int, Paper]], tiers: dict) -> list[tuple[int, str, Paper]]:
-    """把按分数降序的 [(score, paper)] 按配额定级为 [(score, category, paper)]。
-
-    前 must_read 篇为 Must Read，接下来 important 篇为 Important，其余 Reference；
-    得分为 0 的论文始终为 Reference 且不占 Must Read/Important 配额（宁缺毋滥）。
-    """
-    must_read_left = tiers.get("must_read", 3)
-    important_left = tiers.get("important", 5)
-    out = []
-    for score, paper in ranked:
-        if score > 0 and must_read_left > 0:
-            category, must_read_left = CATEGORY_MUST_READ, must_read_left - 1
-        elif score > 0 and important_left > 0:
-            category, important_left = CATEGORY_IMPORTANT, important_left - 1
-        else:
-            category = CATEGORY_REFERENCE
-        out.append((score, category, paper))
-    return out

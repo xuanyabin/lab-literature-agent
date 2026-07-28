@@ -7,6 +7,7 @@ from recommendation.ranker import (
     journal_influence,
     judge_paper,
     lab_relevance,
+    load_ranker_thresholds,
     load_ranker_weights,
     method_relevance,
     rank_items,
@@ -24,7 +25,7 @@ USER = {
 }
 
 WEIGHTS = {"personal": 35, "lab": 25, "journal": 15, "novelty": 10, "method": 10, "recency": 5}
-TIERS = {"must_read": 1, "important": 1}
+THRESHOLDS = {"must_read": 60, "important": 20}
 JOURNAL_TIERS = {"nature": "t0", "plos one": "t1"}
 
 
@@ -83,19 +84,30 @@ def test_judge_paper_fallback_on_bad_json():
     assert result == {"personal_relevance": 50, "novelty": 50, "reason": ""}
 
 
-def test_rank_items_sorts_by_final_score_and_assigns_quota():
+def test_rank_items_sorts_by_final_score_and_assigns_by_threshold():
+    # 阈值定级：High 65 ≥ 60 → Must Read；Genomics 32 ≥ 20 → Important；Low 10 → Reference
     today = date(2026, 7, 22)
     d = today.isoformat()
     items = [
         {"paper": _paper("Low paper", journal="Obscure", date_str=d), "analysis": {}},
         {"paper": _paper("High paper", journal="Nature", date_str=d), "analysis": {}},
-        {"paper": _paper("Low paper 2", journal="Obscure", date_str=d), "analysis": {}},
+        {"paper": _paper("Genomics paper", journal="Nature", date_str=d), "analysis": {}},
     ]
-    ranked = rank_items(items, USER, FakeLLM(), JOURNAL_TIERS, WEIGHTS, TIERS, today)
-    assert [it["paper"].title for it in ranked] == ["High paper", "Low paper", "Low paper 2"]
+    ranked = rank_items(items, USER, FakeLLM(), JOURNAL_TIERS, WEIGHTS, THRESHOLDS, today)
+    assert [it["paper"].title for it in ranked] == ["High paper", "Genomics paper", "Low paper"]
     assert [it["category"] for it in ranked] == ["Must Read", "Important", "Reference"]
-    assert ranked[0]["score"] > ranked[1]["score"]
+    assert ranked[0]["score"] > ranked[1]["score"] > ranked[2]["score"]
     assert ranked[0]["reason"] == "高相关"
+
+
+def test_rank_items_all_low_scores_no_must_read():
+    # 宁缺毋滥：当日全部低分时没有 Must Read / Important，不凑配额
+    today = date(2026, 7, 22)
+    d = today.isoformat()
+    items = [{"paper": _paper(f"Low paper {i}", journal="Obscure", date_str=d), "analysis": {}}
+             for i in range(3)]
+    ranked = rank_items(items, USER, FakeLLM(), JOURNAL_TIERS, WEIGHTS, THRESHOLDS, today)
+    assert [it["category"] for it in ranked] == ["Reference"] * 3
 
 
 def test_rank_items_llm_failure_keeps_pipeline_alive():
@@ -104,11 +116,11 @@ def test_rank_items_llm_failure_keeps_pipeline_alive():
             return "```json\n{broken\n```"
 
     items = [{"paper": _paper("Genomics paper"), "analysis": {}}]
-    ranked = rank_items(items, USER, BadLLM(), {}, WEIGHTS, TIERS)
-    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级
-    assert ranked[0]["score"] > 0
+    ranked = rank_items(items, USER, BadLLM(), {}, WEIGHTS, THRESHOLDS)
+    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级（42 分 → Important）
+    assert ranked[0]["score"] == 42
     assert ranked[0]["reason"] == ""
-    assert ranked[0]["category"] == "Must Read"
+    assert ranked[0]["category"] == "Important"
 
 
 def test_load_ranker_weights_defaults_and_override(tmp_path):
@@ -118,3 +130,12 @@ def test_load_ranker_weights_defaults_and_override(tmp_path):
     weights = load_ranker_weights(path)
     assert weights["personal"] == 50
     assert weights["lab"] == 25  # 未覆盖字段回退默认
+
+
+def test_load_ranker_thresholds_defaults_and_override(tmp_path):
+    assert load_ranker_thresholds(tmp_path / "missing.yaml") == {"must_read": 75, "important": 60}
+    path = tmp_path / "scoring.yaml"
+    path.write_text(yaml.dump({"ranker": {"thresholds": {"must_read": 80}}}), encoding="utf-8")
+    thresholds = load_ranker_thresholds(path)
+    assert thresholds["must_read"] == 80
+    assert thresholds["important"] == 60  # 未覆盖字段回退默认

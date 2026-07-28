@@ -1,8 +1,9 @@
 import pytest
 
 from database.db import (
-    connect, dedup_key, get_seen_keys, save_analysis, save_news_summary,
-    save_paper, save_recommendation,
+    connect, dedup_key, get_analysis, get_news_summary, get_paper_id,
+    get_seen_keys, get_translation, save_analysis, save_news_summary,
+    save_paper, save_recommendation, save_translation,
 )
 from sources.paper import Paper
 
@@ -80,3 +81,40 @@ def test_save_news_summary(conn):
     ).fetchone()
     assert row["summary"] == "一句话摘要。"
     assert row["created_time"]
+
+
+def test_get_paper_id(conn):
+    assert get_paper_id(conn, "doi:10.1/x") is None
+    pid = save_paper(conn, _paper())
+    assert get_paper_id(conn, "doi:10.1/x") == pid
+
+
+def test_get_analysis_roundtrip(conn):
+    pid = save_paper(conn, _paper())
+    assert get_analysis(conn, pid) is None
+    save_analysis(conn, pid, {"problem": "P", "solution": "S", "finding": "F",
+                              "methods": ["scRNA-seq"], "organisms": ["Apis"]})
+    assert get_analysis(conn, pid) == {
+        "field": "", "problem": "P", "solution": "S", "finding": "F",
+        "methods": ["scRNA-seq"], "organisms": ["Apis"],
+    }
+
+
+def test_get_news_summary_roundtrip(conn):
+    pid = save_paper(conn, _paper())
+    assert get_news_summary(conn, pid) is None
+    save_news_summary(conn, pid, "一句话摘要。")
+    assert get_news_summary(conn, pid) == "一句话摘要。"
+
+
+def test_translation_roundtrip_and_replace(conn):
+    pid = save_paper(conn, _paper())
+    assert get_translation(conn, pid) is None
+    save_translation(conn, pid, "题", "摘")
+    assert get_translation(conn, pid) == {"title_zh": "题", "abstract_zh": "摘"}
+    save_translation(conn, pid, "题2", "摘2")  # INSERT OR REPLACE 覆盖
+    assert get_translation(conn, pid) == {"title_zh": "题2", "abstract_zh": "摘2"}
+    count = conn.execute(
+        "SELECT COUNT(*) AS c FROM paper_translation WHERE paper_id = ?", (pid,)
+    ).fetchone()["c"]
+    assert count == 1

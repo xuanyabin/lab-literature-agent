@@ -53,7 +53,7 @@ cp .env.example .env   # 填入 OPENAI_API_KEY 与 SMTP 配置
 - [x] Phase 3 多用户系统（遍历 config/users/ 所有 active 用户，实验室公共方向叠加个人词表，按用户隔离的跨天去重）
 - [x] Phase 4 个性化推荐引擎（六维加权 Final Score：个人相关度/实验室方向/期刊影响力/新颖性/方法相关度/时效性，附 AI 推荐理由）
 - [x] Phase 5 反馈学习系统（邮件卡片反馈链接 → IMAP 收集标注 → 全自动学习词表：提权/降权/衰减，作用于检索与粗筛打分）
-- [x] Phase 5.5 bioRxiv 预印本数据源 + 高水平期刊加权与低相关兜底
+- [x] Phase 5.5 bioRxiv 预印本数据源（期刊加权与低相关兜底已于 V4 粗筛改造退役：粗筛零成本等权关键词匹配，期刊因素只在精排体现）
 - [x] Phase 6 每周情报报告
 
 ## 每周情报报告（Phase 6）
@@ -70,14 +70,19 @@ python weekly_report.py --user user001 --days 7
 
 建议 cron 每周一早上独立执行：`53 7 * * 1 /Users/sanshui/lab-literature-inteligence/run_weekly.sh`
 
-## 数据源与期刊兜底（Phase 5.5）
+## 数据源与粗筛策略（Phase 5.5 / V4）
 
 - PubMed：服务端严格/宽松降级检索；bioRxiv：官方 details API 按日期拉取全量后本地同语义过滤
   （严格 = 物种组 + 其余词组双命中，不足时降级宽松；模块级缓存，50 个用户共享一次抓取）
 - 两源合并去重（撞 DOI/标题时 PubMed 已发表版优先）；bioRxiv API 异常记日志并跳过，不阻断主流程
-- 期刊加权：粗筛 T0 +8 / T1 +3（config/scoring.yaml），精排期刊影响力权重 20
-- 低相关兜底：当日 shortlist 中强相关（分数超过纯顶刊加分水平）不足 must_read 配额时，
-  从候选池递补高水平分层期刊论文替换尾部最弱的非分层论文（recommendation/scorer.py `journal_fallback`）
+- 粗筛（V4）：零成本等权关键词匹配（原词/aliases 命中即计 1 分 + tie-break），不按期刊过滤、
+  不做兜底递补；期刊影响力只在精排 journal 维度体现（config/scoring.yaml ranker.weights）
+- 召回增强（V4）：LLM 为个人检索词自动生成扩展词（同义词/拉丁学名/缩写，每词 ≤5 个，
+  与个人词等权），缓存于 `config/users/auto_terms/<slug>.yaml`（自动维护，勿手改；
+  缓存缺失/用户 yaml 更新/超 7 天时刷新，LLM 失败沿用旧缓存）；个人 aliases 仍保持
+  人工审核（`python -m processing.term_expander`）
+- 重要性定级（V4）：按 Final Score 绝对阈值（ranker.thresholds：≥75 Must Read / ≥60 Important），
+  宁缺毋滥，当日全部低分则可以没有 Must Read
 
 ## 反馈学习（Phase 5）
 

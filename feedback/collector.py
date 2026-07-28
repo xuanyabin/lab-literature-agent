@@ -4,7 +4,9 @@
     [FB] u=<用户邮箱> p=<论文id> v=<relevant|not_relevant|already_read|save>
 正文首段可填原因（收藏时尤其有用）。本模块轮询收件箱中未读的
 "[FB]" 回信，解析后写入 feedback 表并标记已读；无法解析的回信
-记录日志后同样标记已读（避免毒消息反复重试）。
+记录日志后同样标记已读（避免毒消息反复重试）。回信主题中的用户标注
+可被任何人填写，因此记录前必须校验实际发件人与标注用户一致，防止
+伪造回信污染他人学习词表。
 
 IMAP 配置来自 .env：IMAP_HOST 必填（缺失时跳过收集并告警）；
 IMAP_PORT 默认 993；IMAP_USER / IMAP_PASSWORD 缺省回退 SMTP_USER / SMTP_PASSWORD。
@@ -12,6 +14,7 @@ IMAP_PORT 默认 993；IMAP_USER / IMAP_PASSWORD 缺省回退 SMTP_USER / SMTP_P
 
 import email
 import email.message
+import email.utils
 import imaplib
 import logging
 import os
@@ -88,13 +91,19 @@ def collect(conn, imap_factory=imaplib.IMAP4_SSL) -> int:
             if parsed is None:
                 logger.warning("无法解析的反馈回信（msgid %s），标记已读跳过", msg_id.decode())
             else:
-                exists = conn.execute("SELECT 1 FROM papers WHERE id = ?",
-                                      (parsed["paper_id"],)).fetchone()
-                if not exists:
-                    logger.warning("反馈指向不存在的论文 id=%d，跳过", parsed["paper_id"])
-                elif save_feedback(conn, parsed["user_email"], parsed["paper_id"],
-                                   parsed["value"], parsed["reason"]):
-                    recorded += 1
+                # 防伪造：回信主题中的用户标注可被任何人填写，必须与实际发件人一致
+                sender = email.utils.parseaddr(msg.get("From", ""))[1].lower()
+                if sender != parsed["user_email"].lower():
+                    logger.warning("反馈发件人 %s 与标注用户 %s 不符，拒绝记录",
+                                   sender or "(空)", parsed["user_email"])
+                else:
+                    exists = conn.execute("SELECT 1 FROM papers WHERE id = ?",
+                                          (parsed["paper_id"],)).fetchone()
+                    if not exists:
+                        logger.warning("反馈指向不存在的论文 id=%d，跳过", parsed["paper_id"])
+                    elif save_feedback(conn, parsed["user_email"], parsed["paper_id"],
+                                       parsed["value"], parsed["reason"]):
+                        recorded += 1
             client.store(msg_id, "+FLAGS", "\\Seen")
         return recorded
     finally:

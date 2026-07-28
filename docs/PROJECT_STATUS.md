@@ -1,7 +1,8 @@
-# 项目状态（截至 2026-07-23，commit `b3b701c`）
+# 项目状态（截至 2026-07-28）
 
 Lab Literature Intelligence System：面向多用户的个性化文献情报平台。
-PROJECT.md 规划的 Phase 0–6 已全部完成，测试 115 passed。
+PROJECT.md 规划的 Phase 0–6 已全部完成，V4 粗筛改造进行中（已完成：去期刊化 + 等权 +
+阈值定级 + LLM 扩展词召回），测试 120 passed。
 
 ## 当前架构
 
@@ -11,11 +12,12 @@ PROJECT.md 规划的 Phase 0–6 已全部完成，测试 115 passed。
 python -m feedback          # 先跑：IMAP 收集反馈回信 → 学习闭环更新 learned 词表
 python main.py              # 再跑：对每个 active 用户（config/users/*.yaml）依次执行
   ├─ 加载 learned 词表（feedback/vocab.py，与手配词表分离）
+  ├─ 加载自动词表（config/users/auto_terms/<slug>.yaml：LLM 扩展词仅用于召回、等权，自动刷新）
   ├─ PubMed 检索（严格/宽松降级）+ bioRxiv 按日期拉全量本地过滤 → 合并去重
-  ├─ 规则粗筛打分（个人词 + 实验室公共方向 + 别名扩展 + 期刊分层加分 T0+8/T1+3）
-  ├─ 按用户跨天去重（recommendations 表）→ journal_fallback 低相关兜底
+  ├─ 规则粗筛打分（个人词 + 实验室公共方向 + 别名扩展，全部等权；期刊不参与粗筛）
+  ├─ 按用户跨天去重（recommendations 表）
   ├─ AI 处理：摘要分析 → 一句话科研新闻 → 中文翻译（LLMClient，config/model.yaml）
-  ├─ 个性化精排（六维加权 Final Score + AI 推荐理由 → Must Read/Important/Reference）
+  ├─ 个性化精排（六维加权 Final Score + AI 推荐理由 → 按绝对阈值定级 Must Read/Important/Reference）
   ├─ 入库 SQLite（papers / paper_analysis / paper_news_summary / recommendations）
   └─ 每日价值总结 → 三段式 HTML 邮件（卡片带反馈链接，回信即标注）
 ```

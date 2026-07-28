@@ -95,11 +95,16 @@ def main() -> int:
         return 0
     log.info("本次执行 %d 个用户：%s", len(users), ", ".join(slug for slug, _ in users))
 
+    failed = []
     for slug, user in users:
         try:
             run_for_user(slug, user, args, log)
         except Exception:
+            failed.append(slug)
             log.exception("用户 %s 周报失败，继续下一个用户", slug)
+    if failed:
+        log.error("本次执行有 %d 个用户失败：%s", len(failed), ", ".join(failed))
+        return 1
     return 0
 
 

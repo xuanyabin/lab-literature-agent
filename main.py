@@ -1,21 +1,25 @@
-"""每日文献情报流水线入口（Phase 5：反馈学习系统）。
+"""每日文献情报流水线入口（Phase 6：全局池 + 产物复用）。
 
-流程：遍历 config/users/ 下所有 active 用户，逐人执行——加载反馈学习词表
-      （Phase 5，与手配词表分离，参与检索与粗筛）→ PubMed + bioRxiv 获取
-      （严格/宽松降级检索；bioRxiv 无服务端检索，按日期拉全量后本地同语义过滤）
-      → 规则粗筛打分选出当日候选
-      （实验室公共方向词叠加个人词表；强相关不足时高水平期刊论文递补兜底）→ 按用户跨天去重
-      → AI 摘要分析 → 新闻摘要 → 中文翻译
-      → 个性化精排（六维加权 Final Score + AI 推荐理由，按配额定级
-      Must Read / Important / Reference）→ 每日价值总结 → HTML 邮件
+流程：遍历 config/users/ 下所有 active 用户，先做逐人词表准备——加载反馈学习词表
+      （Phase 5，与手配词表分离，参与检索与粗筛）→ 加载自动词表
+      （config/users/auto_terms/<slug>.yaml：LLM 扩展词仅用于召回、等权，
+      缓存缺失/用户 yaml 更新/超 7 天时自动刷新，失败沿用旧缓存）；
+      然后全局合并检索一次（sources/global_pool.py：全用户词表合并 → LLM 主题
+      聚类分簇检索 PubMed + bioRxiv 全局过滤，拼成当日全局池）→ 每用户本地规则
+      粗筛等权打分选出候选（实验室公共方向词叠加个人词表；期刊因素只在精排
+      journal 维度体现，粗筛不再按期刊加分）→ 按用户跨天去重 → top-N；
+      各用户 shortlist 求并集，并集只做一次 LLM 处理（分析/新闻摘要/翻译，
+      SQLite 全局表缓存复用，同一篇论文全实验室只处理一次）→ 每用户个性化精排
+      （六维加权 Final Score + AI 推荐理由，按 Final Score 绝对阈值定级
+      Must Read / Important / Reference，宁缺毋滥）→ 每日价值总结 → HTML 邮件
       （卡片带反馈链接，回信由 python -m feedback 收集学习）；
-      论文与分析结果入库 SQLite，推荐记录写入 recommendations 表
-      （用户之间去重互不影响）。
+      论文与产物入库 SQLite，推荐记录写入 recommendations 表
+      （用户之间去重互不影响）。LLM 日预算耗尽时快速失败，不发空壳邮件。
 
 用法：
     python main.py                      # 对所有 active 用户执行完整流程并发送邮件
     python main.py --dry-run            # 不发邮件，HTML 写入 logs/
-    python main.py --user user001       # 只对指定用户执行（调试用）
+    python main.py --user user001       # 只对指定用户执行（调试用；全局池也只按入选用户词表构建）
     python main.py --days 3 --limit 15  # 回溯 3 天，最多 15 篇（默认篇数见 config/email.yaml）
     python -m feedback                  # 收集反馈回信并执行学习闭环（建议每日先跑）
 """
@@ -30,22 +34,17 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
-from database.db import (
-    connect, dedup_key, get_seen_keys, save_analysis, save_news_summary,
-    save_paper, save_recommendation,
-)
+from database.db import connect, dedup_key, get_seen_keys, save_recommendation
 from feedback.vocab import load_active_terms
 from mailer.digest_builder import build_digest_html, load_email_config
 from mailer.sender import send_email
-from processing.analyzer import analyze_paper
+from processing.artifacts import ensure_artifacts
 from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import LLMClient
-from processing.paper_news_generator import generate_summary
-from processing.translator import translate_paper
-from recommendation.scorer import journal_fallback, load_scoring_config, rank_papers
-from recommendation.ranker import load_ranker_weights, rank_items
-from sources.biorxiv import fetch_recent as fetch_biorxiv_recent
-from sources.pubmed import dedupe, fetch_recent as fetch_pubmed_recent
+from processing.term_expander import apply_auto_terms, refresh_auto_terms
+from recommendation.ranker import load_ranker_thresholds, load_ranker_weights, rank_items
+from recommendation.scorer import load_scoring_config, rank_papers
+from sources.global_pool import fetch_global_pool
 
 BASE_DIR = Path(__file__).resolve().parent
 LOG_DIR = BASE_DIR / "logs"
@@ -83,76 +82,39 @@ def apply_lab_profile(user: dict, lab: dict) -> dict:
     return merged
 
 
-def run_for_user(slug: str, user: dict, args: argparse.Namespace,
-                 email_cfg: dict, log: logging.Logger) -> None:
-    """单用户完整流水线：检索 → 打分定级 → 去重 → AI 处理 → 生成并投递邮件。"""
-    log.info("用户：%s <%s>", user["name"], user["email"])
-
-    conn = connect()
-    user = dict(user)
-    user["learned_terms"] = load_active_terms(conn, user["email"])
-    if user["learned_terms"]:
-        log.info("学习词表：%d 个有效词参与检索与打分", len(user["learned_terms"]))
-
-    papers = fetch_pubmed_recent(user, days=args.days)
-    log.info("PubMed 获取 %d 篇（去重后）", len(papers))
-    preprints = fetch_biorxiv_recent(user, days=args.days)
-    log.info("bioRxiv 获取 %d 篇（本地过滤后）", len(preprints))
-    papers = dedupe(papers + preprints)  # PubMed 在前，撞 DOI/标题时已发表版优先
-    if not papers:
-        log.info("今日无新论文，流程结束")
-        conn.close()
-        return
-
-    scoring_cfg = load_scoring_config()
-    scored = rank_papers(papers, user, scoring_cfg)
-    if scored:
-        log.info("规则粗筛：候选分数区间 %d–%d", scored[-1][0], scored[0][0])
-
-    seen = get_seen_keys(conn, user["email"])
-    fresh = [(s, p) for s, p in scored if dedup_key(p) not in seen]
-    if len(fresh) < len(scored):
-        log.info("跨天去重：%d 篇已在历史邮件中出现过，跳过", len(scored) - len(fresh))
-    shortlist = journal_fallback(fresh, scoring_cfg, args.limit)
+def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
+            args: argparse.Namespace, email_cfg: dict, scoring_cfg: dict,
+            llm: LLMClient, conn, log: logging.Logger) -> None:
+    """单用户投递：从全局产物取本用户 shortlist → 个性化精排定级 → 价值总结 → 生成并投递邮件。"""
     if not shortlist:
-        log.info("今日检索结果均为历史已发论文，流程结束")
-        conn.close()
+        log.info("用户 %s 今日无新论文", slug)
         return
-    log.info("进入 AI 处理：%d 篇", len(shortlist))
+    log.info("用户：%s <%s>，进入精排 %d 篇", user["name"], user["email"], len(shortlist))
 
-    llm = LLMClient()
     items = []
-    for i, (score, paper) in enumerate(shortlist, 1):
-        log.info("[%d/%d] (粗筛 %d 分) %s", i, len(shortlist), score, paper.title[:60])
-        analysis = analyze_paper(paper, llm)
-        news = generate_summary(paper, analysis, llm)
-        translation = translate_paper(paper, llm) if email_cfg["show_translation"] else {}
+    for score, paper in shortlist:
+        a = artifacts[dedup_key(paper)]
         items.append({
             "paper": paper,
-            "analysis": analysis,
-            "news": news,
-            "title_zh": translation.get("title_zh", ""),
-            "abstract_zh": translation.get("abstract_zh", ""),
+            "analysis": a["analysis"],
+            "news": a["news"],
+            "title_zh": a["title_zh"],
+            "abstract_zh": a["abstract_zh"],
         })
 
     log.info("个性化精排：六维加权 Final Score + 生成推荐理由")
     items = rank_items(items, user, llm, scoring_cfg["journal_tiers"],
-                       load_ranker_weights(), scoring_cfg["tiers"])
+                       load_ranker_weights(), load_ranker_thresholds())
     n_must = sum(1 for it in items if it["category"] == "Must Read")
     n_important = sum(1 for it in items if it["category"] == "Important")
     log.info("精排定级：Must Read %d / Important %d / Reference %d",
              n_must, n_important, len(items) - n_must - n_important)
 
-    persist = not args.dry_run  # dry-run 不写库，避免把未发送的论文标记为已发
     today = date.today().isoformat()
-    if persist:
+    if not args.dry_run:  # dry-run 不写库，避免把未发送的论文标记为已发
         for it in items:
-            paper_id = save_paper(conn, it["paper"])
-            it["paper_id"] = paper_id
-            save_analysis(conn, paper_id, it["analysis"])
-            save_news_summary(conn, paper_id, it["news"])
-            save_recommendation(conn, user["email"], paper_id, it["category"], it["score"], today)
-    conn.close()
+            it["paper_id"] = artifacts[dedup_key(it["paper"])]["paper_id"]
+            save_recommendation(conn, user["email"], it["paper_id"], it["category"], it["score"], today)
 
     log.info("生成今日价值总结")
     daily_summary = generate_daily_summary(items, llm)
@@ -204,11 +166,67 @@ def main() -> int:
     log.info("本次执行 %d 个用户：%s", len(users), ", ".join(slug for slug, _ in users))
 
     lab = load_lab_profile()
+    conn = connect()
+    llm = LLMClient()  # 全局唯一实例：日预算跨用户统一计数
+
+    # 逐人词表准备：实验室公共方向 + 反馈学习词表 + 自动词表（扩展词/反馈新增词）
+    prepared = []
     for slug, user in users:
+        u = apply_lab_profile(user, lab)
+        u["learned_terms"] = load_active_terms(conn, u["email"])
+        if u["learned_terms"]:
+            log.info("用户 %s 学习词表：%d 个有效词参与检索与打分", slug, len(u["learned_terms"]))
+        auto = refresh_auto_terms(slug, u, USERS_DIR / f"{slug}.yaml", llm)
+        if auto["expansion"] or auto["feedback_added"]:
+            u = apply_auto_terms(u, auto)
+            log.info("用户 %s 自动词表：%d 个原词的扩展词、%d 个反馈新增关键词参与检索与打分",
+                     slug, len(auto["expansion"]), len(auto["feedback_added"]))
+        prepared.append((slug, u))
+
+    # 全局合并检索一次：全用户词表聚类分簇 → PubMed + bioRxiv 全局池
+    pool = fetch_global_pool([u for _, u in prepared], llm, days=args.days)
+    log.info("全局池：%d 篇（去重后）", len(pool))
+    if not pool:
+        log.info("全局池为空，今日无新文献")
+        conn.close()
+        return 0
+
+    # 每用户本地粗筛 + 跨天去重（语义与逐人检索时代完全一致，只是池子共享）
+    scoring_cfg = load_scoring_config()
+    shortlists: dict[str, list] = {}
+    for slug, u in prepared:
+        scored = rank_papers(pool, u, scoring_cfg)
+        if scored:
+            log.info("用户 %s 规则粗筛：候选分数区间 %d–%d", slug, scored[-1][0], scored[0][0])
+        seen = get_seen_keys(conn, u["email"])
+        fresh = [(s, p) for s, p in scored if dedup_key(p) not in seen]
+        if len(fresh) < len(scored):
+            log.info("用户 %s 跨天去重：%d 篇已在历史邮件中出现过，跳过",
+                     slug, len(scored) - len(fresh))
+        shortlists[slug] = fresh[:args.limit]
+
+    # 各用户 shortlist 求并集，LLM 产物全局只做一次（带 SQLite 缓存复用）
+    union: dict[str, object] = {}
+    for lst in shortlists.values():
+        for _, p in lst:
+            union.setdefault(dedup_key(p), p)
+    log.info("各用户 shortlist 并集 %d 篇，进入全局 AI 处理", len(union))
+    artifacts = ensure_artifacts(list(union.values()), llm, conn,
+                                 persist=not args.dry_run,
+                                 show_translation=email_cfg["show_translation"], log=log)
+
+    failed = []
+    for slug, u in prepared:
         try:
-            run_for_user(slug, apply_lab_profile(user, lab), args, email_cfg, log)
+            deliver(slug, u, shortlists[slug], artifacts, args, email_cfg,
+                    scoring_cfg, llm, conn, log)
         except Exception:
+            failed.append(slug)
             log.exception("用户 %s 流程失败，继续下一个用户", slug)
+    conn.close()
+    if failed:
+        log.error("以下用户流程失败：%s", ", ".join(failed))
+        return 1
     return 0
 
 

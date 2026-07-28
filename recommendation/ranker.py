@@ -5,13 +5,16 @@
 
     personal  个人相关度（LLM 依据个人研究画像语义判断）
     lab       实验室方向相关度（lab_topics 命中数，规则）
-    journal   期刊影响力（journals.yaml 分层，规则）
+    journal   期刊影响力（journals.yaml 分层，规则；期刊因素只在精排体现）
     novelty   新颖性（LLM 依据 AI 分析判断）
     method    方法相关度（个人 methods 命中数，规则）
     recency   时效性（发表日期距今，规则）
 
 同时生成一句中文推荐理由展示在邮件论文卡片上；LLM 输出异常时
-个人相关度/新颖性回退中性分 50，保证流水线不中断。
+个人相关度/新颖性回退中性分 50，保证流水线不中断（日预算耗尽除外：
+BudgetExhaustedError 直接向上传播，快速失败不发空壳邮件）。重要性按 Final Score
+绝对阈值定级（ranker.thresholds，宁缺毋滥：当日全部低分则可以没有
+Must Read）；不再按固定配额凑数。
 """
 
 import json
@@ -21,8 +24,14 @@ from pathlib import Path
 
 import yaml
 
-from processing.llm import load_prompt
-from recommendation.scorer import _normalize_journal, _text_of, assign_categories
+from processing.llm import BudgetExhaustedError, load_prompt
+from recommendation.scorer import (
+    CATEGORY_IMPORTANT,
+    CATEGORY_MUST_READ,
+    CATEGORY_REFERENCE,
+    _normalize_journal,
+    _text_of,
+)
 from sources.paper import Paper
 
 logger = logging.getLogger(__name__)
@@ -34,6 +43,7 @@ DEFAULT_RANKER_WEIGHTS = {
     "personal": 35, "lab": 25, "journal": 15,
     "novelty": 10, "method": 10, "recency": 5,
 }
+DEFAULT_RANKER_THRESHOLDS = {"must_read": 75, "important": 60}
 
 _NEUTRAL_JUDGMENT = {"personal_relevance": 50, "novelty": 50, "reason": ""}
 
@@ -46,6 +56,25 @@ def load_ranker_weights(path: Path = DEFAULT_SCORING_CONFIG) -> dict:
     cfg = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
     weights = (cfg.get("ranker") or {}).get("weights") or {}
     return {**DEFAULT_RANKER_WEIGHTS, **weights}
+
+
+def load_ranker_thresholds(path: Path = DEFAULT_SCORING_CONFIG) -> dict:
+    """读取 scoring.yaml 的 ranker.thresholds（Final Score 绝对定级阈值），缺省回退默认值。"""
+    p = Path(path)
+    if not p.exists():
+        return dict(DEFAULT_RANKER_THRESHOLDS)
+    cfg = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+    thresholds = (cfg.get("ranker") or {}).get("thresholds") or {}
+    return {**DEFAULT_RANKER_THRESHOLDS, **thresholds}
+
+
+def _category_of(score: int, thresholds: dict) -> str:
+    """按绝对阈值定级：≥ must_read → Must Read；≥ important → Important；其余 Reference。"""
+    if score >= thresholds.get("must_read", DEFAULT_RANKER_THRESHOLDS["must_read"]):
+        return CATEGORY_MUST_READ
+    if score >= thresholds.get("important", DEFAULT_RANKER_THRESHOLDS["important"]):
+        return CATEGORY_IMPORTANT
+    return CATEGORY_REFERENCE
 
 
 def _hits(text: str, terms: list, aliases: dict) -> int:
@@ -135,15 +164,22 @@ def _parse_judgment(raw: str) -> dict:
 
 
 def rank_items(items: list[dict], user: dict, llm, journal_tiers: dict,
-               weights: dict, tiers: dict, today: date | None = None) -> list[dict]:
-    """对 AI 处理完的 items 计算 Final Score，按分数降序重排并按配额定级。
+               weights: dict, thresholds: dict, today: date | None = None) -> list[dict]:
+    """对 AI 处理完的 items 计算 Final Score，按分数降序重排并按绝对阈值定级。
 
     每个 item 增加 "score"（0-100）、"reason"（推荐理由）、"category" 字段。
+    定级宁缺毋滥：当日全部低分则没有 Must Read / Important，不凑配额。
     """
     scored = []
     for it in items:
         paper, analysis = it["paper"], it["analysis"]
-        judgment = judge_paper(paper, analysis, user, llm)
+        try:
+            judgment = judge_paper(paper, analysis, user, llm)
+        except BudgetExhaustedError:
+            raise  # 日预算耗尽：快速失败，不发空壳邮件
+        except Exception:
+            logger.warning("精排 LLM 判断失败，回退中性分：%s", paper.title[:60], exc_info=True)
+            judgment = dict(_NEUTRAL_JUDGMENT)
         dims = {
             "personal": judgment["personal_relevance"],
             "lab": lab_relevance(paper, user),
@@ -156,8 +192,6 @@ def rank_items(items: list[dict], user: dict, llm, journal_tiers: dict,
         it["reason"] = judgment["reason"]
         scored.append((it["score"], it))
     scored.sort(key=lambda x: -x[0])
-    ranked = []
-    for score, category, it in assign_categories(scored, tiers):
-        it["category"] = category
-        ranked.append(it)
-    return ranked
+    for score, it in scored:
+        it["category"] = _category_of(score, thresholds)
+    return [it for _, it in scored]

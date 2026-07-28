@@ -40,8 +40,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SCORING_CONFIG = BASE_DIR / "config" / "scoring.yaml"
 
 DEFAULT_RANKER_WEIGHTS = {
-    "personal": 35, "lab": 25, "journal": 15,
-    "novelty": 10, "method": 10, "recency": 5,
+    "personal": 20, "lab": 20, "journal": 30,
+    "novelty": 10, "method": 10, "recency": 10,
 }
 DEFAULT_RANKER_THRESHOLDS = {"must_read": 75, "important": 60}
 

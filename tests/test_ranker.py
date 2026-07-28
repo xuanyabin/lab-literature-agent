@@ -24,7 +24,7 @@ USER = {
     "aliases": {"honeybee": ["Apis mellifera"]},
 }
 
-WEIGHTS = {"personal": 35, "lab": 25, "journal": 15, "novelty": 10, "method": 10, "recency": 5}
+WEIGHTS = {"personal": 20, "lab": 20, "journal": 30, "novelty": 10, "method": 10, "recency": 10}
 THRESHOLDS = {"must_read": 60, "important": 20}
 JOURNAL_TIERS = {"nature": "t0", "plos one": "t1"}
 
@@ -72,7 +72,7 @@ def test_final_score_weighted_average():
     dims = {"personal": 100, "lab": 100, "journal": 100, "novelty": 100, "method": 100, "recency": 100}
     assert final_score(dims, WEIGHTS) == 100
     dims["personal"] = 0
-    assert final_score(dims, WEIGHTS) == 65  # 只扣掉 personal 的 35%
+    assert final_score(dims, WEIGHTS) == 80  # 只扣掉 personal 的 20%
 
 
 def test_judge_paper_fallback_on_bad_json():
@@ -85,7 +85,7 @@ def test_judge_paper_fallback_on_bad_json():
 
 
 def test_rank_items_sorts_by_final_score_and_assigns_by_threshold():
-    # 阈值定级：High 65 ≥ 60 → Must Read；Genomics 32 ≥ 20 → Important；Low 10 → Reference
+    # 阈值定级：High 70 ≥ 60 → Must Read；Genomics 50 ≥ 20 → Important；Low 19 → Reference
     today = date(2026, 7, 22)
     d = today.isoformat()
     items = [
@@ -117,8 +117,8 @@ def test_rank_items_llm_failure_keeps_pipeline_alive():
 
     items = [{"paper": _paper("Genomics paper"), "analysis": {}}]
     ranked = rank_items(items, USER, BadLLM(), {}, WEIGHTS, THRESHOLDS)
-    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级（42 分 → Important）
-    assert ranked[0]["score"] == 42
+    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级（39 分 → Important）
+    assert ranked[0]["score"] == 39
     assert ranked[0]["reason"] == ""
     assert ranked[0]["category"] == "Important"
 
@@ -129,7 +129,7 @@ def test_load_ranker_weights_defaults_and_override(tmp_path):
     path.write_text(yaml.dump({"ranker": {"weights": {"personal": 50}}}), encoding="utf-8")
     weights = load_ranker_weights(path)
     assert weights["personal"] == 50
-    assert weights["lab"] == 25  # 未覆盖字段回退默认
+    assert weights["lab"] == 20  # 未覆盖字段回退默认
 
 
 def test_load_ranker_thresholds_defaults_and_override(tmp_path):

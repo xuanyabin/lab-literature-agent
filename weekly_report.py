@@ -3,6 +3,7 @@
 流程：遍历 config/users/ 下所有 active 用户，逐人从 SQLite 聚合最近 N 天
       推荐记录（recommendations ⋈ papers ⋈ paper_news_summary，不重新检索分析）——
       分布统计（定级 / 期刊分层 / Top 期刊 / 高频关键词，纯数据）
+      + 阅读趋势（窗口内反馈正/中/负分桶 + 当前有效学习词 Top）
       → LLM 周度趋势总结（仅基于 Must Read / Important 的一句话新闻）
       → HTML 周报邮件。
 
@@ -11,6 +12,7 @@
     python weekly_report.py --dry-run       # 不发邮件，HTML 写入 logs/
     python weekly_report.py --user user001  # 只对指定用户执行（调试用）
     python weekly_report.py --days 7        # 回溯天数（默认 7）
+    python weekly_report.py --days 30       # 月报：近 30 天阅读趋势 + 领域文献总结
 """
 
 import argparse
@@ -20,12 +22,13 @@ from datetime import date, timedelta
 
 from dotenv import load_dotenv
 
-from database.db import connect, get_week_recommendations
+from database.db import connect, get_feedback_since, get_week_recommendations
+from feedback.vocab import load_active_terms
 from mailer.sender import send_email
 from mailer.weekly_builder import build_weekly_html
 from main import LOG_DIR, USERS_DIR, load_user, load_users
 from processing.llm import LLMClient
-from processing.weekly_stats import compute_stats
+from processing.weekly_stats import compute_reading_trends, compute_stats
 from processing.weekly_summary_generator import generate_weekly_summary
 from recommendation.scorer import load_journal_tiers
 
@@ -39,13 +42,17 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     since = (date.today() - timedelta(days=args.days)).isoformat()
     conn = connect()
     rows = get_week_recommendations(conn, user["email"], since)
-    conn.close()
     if not rows:
+        conn.close()
         log.info("最近 %d 天无推荐记录，跳过", args.days)
         return
     log.info("聚合 %s ~ %s 推荐记录：%d 篇", since, today, len(rows))
+    feedback_rows = get_feedback_since(conn, user["email"], since)
+    active_terms = load_active_terms(conn, user["email"])
+    conn.close()
 
     stats = compute_stats(rows, load_journal_tiers())
+    trends = compute_reading_trends(feedback_rows, active_terms)
 
     try:
         trend_summary = generate_weekly_summary(rows, LLMClient())
@@ -53,7 +60,7 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
         log.exception("周度趋势总结生成失败，报告中该部分置空")
         trend_summary = ""
 
-    html = build_weekly_html(user["name"], since, today, rows, trend_summary, stats)
+    html = build_weekly_html(user["name"], since, today, rows, trend_summary, stats, trends)
 
     if args.dry_run:
         out = LOG_DIR / f"weekly_{today}_{slug}.html"

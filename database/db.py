@@ -283,6 +283,17 @@ def save_feedback(conn: sqlite3.Connection, user_email: str, paper_id: int,
     return cur.rowcount > 0
 
 
+def get_feedback_since(conn: sqlite3.Connection, user_email: str,
+                       since_date: str) -> list[sqlite3.Row]:
+    """该用户 since_date 以来的反馈记录（按时间升序），供周/月报阅读趋势统计。"""
+    return conn.execute(
+        """SELECT value, created_time FROM feedback
+           WHERE user_email = ? AND created_time >= ?
+           ORDER BY created_time""",
+        (user_email, since_date),
+    ).fetchall()
+
+
 def get_unprocessed_feedback(conn: sqlite3.Connection, user_email: str) -> list[sqlite3.Row]:
     """该用户尚未进入学习闭环的反馈，附带论文标题与摘要（按时间升序）。"""
     return conn.execute(

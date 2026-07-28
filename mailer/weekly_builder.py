@@ -67,8 +67,25 @@ def _stats_rows(stats):
     return "".join(lines)
 
 
-def build_weekly_html(user_name, week_start, week_end, rows, trend_summary, stats):
-    """rows 为 get_week_recommendations 结果；trend_summary 为 LLM 周度总结（可为空）。"""
+def _trends_rows(trends):
+    """阅读趋势块：窗口内反馈正/中/负分布 + 当前有效学习词 Top（复用 stats-table 样式）。"""
+    fb = trends["feedback"]
+    lines = [
+        '<tr><td class="stats-label">反馈分布</td>'
+        f'<td>共 {fb["total"]} 条'
+        f'（正向 {fb["positive"]} / 中性 {fb["neutral"]} / 负向 {fb["negative"]}）</td></tr>'
+    ]
+    if trends["top_terms"]:
+        terms = "、".join(
+            f"{escape(term)}（{weight:.2f}）" for term, weight in trends["top_terms"]
+        )
+        lines.append(f'<tr><td class="stats-label">学习热词</td><td>{terms}</td></tr>')
+    return "".join(lines)
+
+
+def build_weekly_html(user_name, week_start, week_end, rows, trend_summary, stats, trends):
+    """rows 为 get_week_recommendations 结果；trend_summary 为 LLM 周度总结（可为空）；
+    trends 为 compute_reading_trends 的阅读趋势统计。"""
     context = {
         "week_start": escape(week_start),
         "week_end": escape(week_end),
@@ -77,6 +94,7 @@ def build_weekly_html(user_name, week_start, week_end, rows, trend_summary, stat
         "trend_summary": escape(trend_summary)
         or "本周高价值论文较少，未生成趋势总结。",
         "stats_rows": _stats_rows(stats),
+        "trends_rows": _trends_rows(trends),
         "paper_rows": _paper_rows(rows),
     }
     return render("weekly_digest.html", context)

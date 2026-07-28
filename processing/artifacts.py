@@ -16,7 +16,7 @@ from database.db import (
 from processing.analyzer import EMPTY_ANALYSIS, analyze_paper
 from processing.llm import BudgetExhaustedError
 from processing.paper_news_generator import generate_summary
-from processing.translator import translate_paper
+from processing.translator import EMPTY_TRANSLATION, translate_paper
 from sources.paper import Paper
 
 
@@ -25,10 +25,16 @@ def _analysis_nonempty(analysis: dict) -> bool:
     return any(analysis.get(k) for k in ("problem", "solution", "finding", "methods", "organisms"))
 
 
+def _translation_nonempty(translation: dict) -> bool:
+    """四段摘要（背景/方法/结果/意义）任一非空才算有效缓存，否则重新调 LLM。"""
+    return any(translation.get(k) for k in ("background", "methods", "results", "significance"))
+
+
 def ensure_artifacts(papers: list[Paper], llm, conn: sqlite3.Connection,
                      persist: bool, show_translation: bool,
                      log: logging.Logger) -> dict:
-    """返回 {dedup_key: {"paper_id", "analysis", "news", "title_zh", "abstract_zh"}}。
+    """返回 {dedup_key: {"paper_id", "analysis", "news", "title_zh",
+    "background", "methods", "results", "significance"}}。
 
     persist 时论文入库取 paper_id 并把新生成的产物写回缓存；dry-run（persist=False）
     只按 dedup_key 查已有 id（可能为 None），不写库。
@@ -64,28 +70,30 @@ def ensure_artifacts(papers: list[Paper], llm, conn: sqlite3.Connection,
                 log.warning("新闻摘要生成失败，回退为空：%s", paper.title[:60], exc_info=True)
                 news = ""
 
-        translation = {"title_zh": "", "abstract_zh": ""}
+        translation = dict(EMPTY_TRANSLATION)
         if show_translation and paper.abstract:
             cached = get_translation(conn, paper_id) if paper_id is not None else None
-            if cached and (cached["title_zh"] or cached["abstract_zh"]):
+            if cached and _translation_nonempty(cached):
                 translation = cached
             else:
                 try:
                     translation = translate_paper(paper, llm)
                     if persist and paper_id is not None:
-                        save_translation(conn, paper_id,
-                                         translation["title_zh"], translation["abstract_zh"])
+                        save_translation(conn, paper_id, translation)
                 except BudgetExhaustedError:
                     raise
                 except Exception:
                     log.warning("翻译失败，回退为空：%s", paper.title[:60], exc_info=True)
-                    translation = {"title_zh": "", "abstract_zh": ""}
+                    translation = dict(EMPTY_TRANSLATION)
 
         artifacts[key] = {
             "paper_id": paper_id,
             "analysis": analysis,
             "news": news,
             "title_zh": translation.get("title_zh", ""),
-            "abstract_zh": translation.get("abstract_zh", ""),
+            "background": translation.get("background", ""),
+            "methods": translation.get("methods", ""),
+            "results": translation.get("results", ""),
+            "significance": translation.get("significance", ""),
         }
     return artifacts

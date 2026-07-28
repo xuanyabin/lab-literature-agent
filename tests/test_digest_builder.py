@@ -18,7 +18,10 @@ def make_item():
         "analysis": {},
         "news": "为解决X问题，作者利用Y方法，发现Z机制。",
         "title_zh": "中文标题",
-        "abstract_zh": "中文摘要内容",
+        "background": "背景内容",
+        "methods": "方法内容",
+        "results": "结果内容",
+        "significance": "意义内容",
         "category": "Must Read",
     }
 
@@ -37,7 +40,8 @@ def test_digest_contains_three_parts():
 
 def test_digest_contains_full_card_fields():
     html = build([make_item()])
-    for token in ("轩亚冰", "Must Read", "中文标题", "中文摘要内容", "Zhang Wei",
+    for token in ("轩亚冰", "Must Read", "中文标题", "背景内容", "方法内容",
+                  "结果内容", "意义内容", "Zhang Wei",
                   "Nature Communications", "10.1038/x", "snRNA-seq",
                   "为解决X问题", "https://pubmed.ncbi.nlm.nih.gov/40123456/"):
         assert token in html
@@ -53,7 +57,26 @@ def test_digest_escapes_html():
 def test_translation_hidden_when_config_off():
     html = build([make_item()], config={"show_translation": False})
     assert "中文标题" not in html
-    assert "中文摘要内容" not in html
+    assert "背景内容" not in html
+    # 关闭翻译时回退为英文摘要
+    assert "Abstract with &lt;tags&gt;." in html
+
+
+def test_four_sections_shown_and_english_abstract_hidden():
+    html = build([make_item()])
+    for label in ("背景", "研究方法", "研究结果", "研究意义"):
+        assert f'<span class="abs-label">{label}</span>' in html
+    # 开启翻译时只展示中文摘要，不再显示英文摘要
+    assert "Abstract with" not in html
+
+
+def test_empty_section_not_rendered():
+    item = {**make_item(), "background": "", "results": ""}
+    html = build([item])
+    assert '<span class="abs-label">背景</span>' not in html
+    assert '<span class="abs-label">研究结果</span>' not in html
+    assert '<span class="abs-label">研究方法</span>' in html
+    assert '<span class="abs-label">研究意义</span>' in html
 
 
 def test_keywords_and_doi_hidden_when_config_off():
@@ -103,3 +126,28 @@ def test_feedback_links_absent_without_paper_id_or_feedback_email():
     html = build_digest_html("轩亚冰", "2025-07-22", [item], "总结。", {},
                              user_email="a@x.com")
     assert "mailto:" not in html
+
+
+OVERVIEW = {"days": 1, "pool_total": 132, "matched": 27,
+            "pushed": 8, "must_read": 2, "important": 3, "reference": 3}
+
+
+def test_overview_block_rendered_yesterday():
+    html = build_digest_html("轩亚冰", "2025-07-22", [make_item()], "总结。", None,
+                             overview=OVERVIEW)
+    assert "昨日全库新增 132 篇" in html
+    assert "命中您的关键词 27 篇" in html
+    assert "本次推送 8 篇（必读 2 · 重要 3 · 参考 3）" in html
+
+
+def test_overview_block_rendered_multi_days():
+    html = build_digest_html("轩亚冰", "2025-07-22", [make_item()], "总结。", None,
+                             overview={**OVERVIEW, "days": 3})
+    assert "过去 3 天全库新增 132 篇" in html
+    assert "昨日全库新增" not in html  # 多日时不使用"昨日"措辞
+
+
+def test_overview_block_absent_when_none():
+    html = build([make_item()])
+    assert 'class="overview"' not in html
+    assert "全库新增" not in html

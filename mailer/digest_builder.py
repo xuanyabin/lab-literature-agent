@@ -37,6 +37,14 @@ _FEEDBACK_CHOICES = [
     ("收藏", "save"),
 ]
 
+# 中文四段结构化摘要：item 键 → 卡片小标签（为空的段不渲染）
+_SECTION_LABELS = [
+    ("background", "背景"),
+    ("methods", "研究方法"),
+    ("results", "研究结果"),
+    ("significance", "研究意义"),
+]
+
 
 def load_email_config(path: Path = DEFAULT_EMAIL_CONFIG) -> dict:
     """读取 config/email.yaml，缺省字段回退到默认值。"""
@@ -46,19 +54,37 @@ def load_email_config(path: Path = DEFAULT_EMAIL_CONFIG) -> dict:
 
 def build_digest_html(user_name: str, digest_date: str, items: list[dict],
                       daily_summary: str, config: dict | None = None,
-                      user_email: str = "") -> str:
-    """items: [{"paper": Paper, "analysis": dict, "news": str,
-               "title_zh": str, "abstract_zh": str, "category": str}, ...]（按推荐排序）"""
+                      user_email: str = "", overview: dict | None = None) -> str:
+    """items: [{"paper": Paper, "analysis": dict, "news": str, "title_zh": str,
+               "background": str, "methods": str, "results": str,
+               "significance": str, "category": str}, ...]（按推荐排序）
+    overview: {"days", "pool_total", "matched", "pushed", "must_read",
+               "important", "reference"}，为 None 时不渲染开头总览块。"""
     cfg = {**_DEFAULT_CONFIG, **(config or {})}
     context = {
         "user_name": escape(user_name),
         "date": escape(digest_date),
         "count": str(len(items)),
+        "overview_block": _overview_block(overview) if overview else "",
         "news_items": "\n".join(_news_row(i, it) for i, it in enumerate(items, 1)),
         "paper_cards": "\n".join(_paper_card(i, it, cfg, user_email) for i, it in enumerate(items, 1)),
         "daily_summary": escape(daily_summary) if daily_summary else "（今日价值总结生成失败，请查看上方论文列表。）",
     }
     return render("daily_digest.html", context)
+
+
+def _overview_block(overview: dict) -> str:
+    """日报开头总览：全库新增 / 关键词命中 / 本次推送（含定级分布）。"""
+    days = overview.get("days", 1)
+    span = "昨日" if days == 1 else f"过去 {days} 天"
+    text = (
+        f"{span}全库新增 {overview.get('pool_total', 0)} 篇 · "
+        f"命中您的关键词 {overview.get('matched', 0)} 篇 · "
+        f"本次推送 {overview.get('pushed', 0)} 篇"
+        f"（必读 {overview.get('must_read', 0)} · 重要 {overview.get('important', 0)} · "
+        f"参考 {overview.get('reference', 0)}）"
+    )
+    return f'<div class="overview">{escape(text)}</div>'
 
 
 def _badge(category: str) -> str:
@@ -113,8 +139,12 @@ def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "") -> str:
         rows.append(_feedback_row(user_email, it["paper_id"], cfg))
     if it.get("reason"):
         rows.append(f'<div class="reason"><span class="abs-label">推荐理由</span>{escape(it["reason"])}</div>')
-    rows.append(f'<div class="abstract"><span class="abs-label">Abstract</span>{escape(p.abstract or "（无摘要）")}</div>')
-    if cfg["show_translation"] and it.get("abstract_zh"):
-        rows.append(f'<div class="abstract"><span class="abs-label">中文摘要</span>{escape(it["abstract_zh"])}</div>')
+    if cfg["show_translation"]:
+        # 只展示中文四段结构化摘要（为空的段不渲染），不再显示英文摘要
+        for key, label in _SECTION_LABELS:
+            if it.get(key):
+                rows.append(f'<div class="abstract"><span class="abs-label">{label}</span>{escape(it[key])}</div>')
+    else:
+        rows.append(f'<div class="abstract"><span class="abs-label">Abstract</span>{escape(p.abstract or "（无摘要）")}</div>')
     body = "\n      ".join(rows)
     return f'    <div class="card">\n      {body}\n    </div>'

@@ -84,8 +84,13 @@ def apply_lab_profile(user: dict, lab: dict) -> dict:
 
 def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
             args: argparse.Namespace, email_cfg: dict, scoring_cfg: dict,
-            llm: LLMClient, conn, log: logging.Logger) -> None:
-    """单用户投递：从全局产物取本用户 shortlist → 个性化精排定级 → 价值总结 → 生成并投递邮件。"""
+            llm: LLMClient, conn, log: logging.Logger,
+            pool_total: int = 0, matched: int = 0) -> None:
+    """单用户投递：从全局产物取本用户 shortlist → 个性化精排定级 → 价值总结 → 生成并投递邮件。
+
+    pool_total 为当日全局池总新文献数，matched 为该用户粗筛 score>0 的篇数
+    （已见去重之前），两者汇入邮件开头总览块。
+    """
     if not shortlist:
         log.info("用户 %s 今日无新论文", slug)
         return
@@ -99,7 +104,10 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
             "analysis": a["analysis"],
             "news": a["news"],
             "title_zh": a["title_zh"],
-            "abstract_zh": a["abstract_zh"],
+            "background": a["background"],
+            "methods": a["methods"],
+            "results": a["results"],
+            "significance": a["significance"],
         })
 
     log.info("个性化精排：六维加权 Final Score + 生成推荐理由")
@@ -109,6 +117,15 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
     n_important = sum(1 for it in items if it["category"] == "Important")
     log.info("精排定级：Must Read %d / Important %d / Reference %d",
              n_must, n_important, len(items) - n_must - n_important)
+    overview = {
+        "days": args.days,
+        "pool_total": pool_total,
+        "matched": matched,
+        "pushed": len(items),
+        "must_read": n_must,
+        "important": n_important,
+        "reference": len(items) - n_must - n_important,
+    }
 
     today = date.today().isoformat()
     if not args.dry_run:  # dry-run 不写库，避免把未发送的论文标记为已发
@@ -120,7 +137,7 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
     daily_summary = generate_daily_summary(items, llm)
 
     html = build_digest_html(user["name"], today, items, daily_summary, email_cfg,
-                             user_email=user["email"])
+                             user_email=user["email"], overview=overview)
 
     if args.dry_run:
         out = LOG_DIR / f"digest_{today}_{slug}.html"
@@ -194,8 +211,10 @@ def main() -> int:
     # 每用户本地粗筛 + 跨天去重（语义与逐人检索时代完全一致，只是池子共享）
     scoring_cfg = load_scoring_config()
     shortlists: dict[str, list] = {}
+    matched_counts: dict[str, int] = {}
     for slug, u in prepared:
         scored = rank_papers(pool, u, scoring_cfg)
+        matched_counts[slug] = sum(1 for s, _ in scored if s > 0)
         if scored:
             log.info("用户 %s 规则粗筛：候选分数区间 %d–%d", slug, scored[-1][0], scored[0][0])
         seen = get_seen_keys(conn, u["email"])
@@ -219,7 +238,8 @@ def main() -> int:
     for slug, u in prepared:
         try:
             deliver(slug, u, shortlists[slug], artifacts, args, email_cfg,
-                    scoring_cfg, llm, conn, log)
+                    scoring_cfg, llm, conn, log,
+                    pool_total=len(pool), matched=matched_counts[slug])
         except Exception:
             failed.append(slug)
             log.exception("用户 %s 流程失败，继续下一个用户", slug)

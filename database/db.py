@@ -48,7 +48,10 @@ CREATE TABLE IF NOT EXISTS paper_news_summary (
 CREATE TABLE IF NOT EXISTS paper_translation (
     paper_id INTEGER PRIMARY KEY REFERENCES papers(id),
     title_zh TEXT,
-    abstract_zh TEXT,
+    background TEXT,
+    methods TEXT,
+    results TEXT,
+    significance TEXT,
     created_time TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS recommendations (
@@ -87,7 +90,22 @@ def connect(db_path: Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     conn.executescript(_SCHEMA)
+    _migrate_translation_table(conn)
     return conn
+
+
+# paper_translation 应有的翻译列（四段结构化摘要，B6 起替代旧 abstract_zh）
+_TRANSLATION_COLUMNS = ("title_zh", "background", "methods", "results", "significance")
+
+
+def _migrate_translation_table(conn: sqlite3.Connection) -> None:
+    """旧库已存在早期 paper_translation（仅 title_zh/abstract_zh）时，缺列用
+    ALTER TABLE 补齐；旧 abstract_zh 列保留不管。"""
+    existing = {row["name"] for row in conn.execute("PRAGMA table_info(paper_translation)")}
+    for name in _TRANSLATION_COLUMNS:
+        if name not in existing:
+            conn.execute(f"ALTER TABLE paper_translation ADD COLUMN {name} TEXT")
+    conn.commit()
 
 
 def dedup_key(paper: Paper) -> str:
@@ -185,26 +203,36 @@ def get_news_summary(conn: sqlite3.Connection, paper_id: int) -> str | None:
     return row["summary"] if row else None
 
 
-def save_translation(conn: sqlite3.Connection, paper_id: int,
-                     title_zh: str, abstract_zh: str) -> None:
+def save_translation(conn: sqlite3.Connection, paper_id: int, translation: dict) -> None:
+    """写入中文翻译与四段摘要 {"title_zh", "background", "methods",
+    "results", "significance"}（INSERT OR REPLACE 幂等覆盖）。"""
     conn.execute(
         """INSERT OR REPLACE INTO paper_translation
-           (paper_id, title_zh, abstract_zh, created_time)
-           VALUES (?, ?, ?, ?)""",
-        (paper_id, title_zh, abstract_zh, datetime.now(timezone.utc).isoformat()),
+           (paper_id, title_zh, background, methods, results, significance, created_time)
+           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+        (
+            paper_id,
+            translation.get("title_zh", ""),
+            translation.get("background", ""),
+            translation.get("methods", ""),
+            translation.get("results", ""),
+            translation.get("significance", ""),
+            datetime.now(timezone.utc).isoformat(),
+        ),
     )
     conn.commit()
 
 
 def get_translation(conn: sqlite3.Connection, paper_id: int) -> dict | None:
-    """读取已缓存的中文翻译 {"title_zh", "abstract_zh"}；无行返回 None。"""
+    """读取已缓存的中文翻译与四段摘要（五字段 dict）；无行返回 None。"""
     row = conn.execute(
-        "SELECT title_zh, abstract_zh FROM paper_translation WHERE paper_id = ?",
+        """SELECT title_zh, background, methods, results, significance
+           FROM paper_translation WHERE paper_id = ?""",
         (paper_id,),
     ).fetchone()
     if not row:
         return None
-    return {"title_zh": row["title_zh"] or "", "abstract_zh": row["abstract_zh"] or ""}
+    return {key: row[key] or "" for key in _TRANSLATION_COLUMNS}
 
 
 def save_recommendation(conn: sqlite3.Connection, user_email: str, paper_id: int,

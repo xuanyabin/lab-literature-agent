@@ -20,7 +20,7 @@ from processing.llm import BudgetExhaustedError
 from sources.paper import Paper
 
 ANALYSIS_JSON = '{"problem":"P","solution":"S","finding":"F","methods":["m"],"organisms":["o"]}'
-TRANSLATION_JSON = '{"title_zh":"题","abstract_zh":"摘"}'
+TRANSLATION_JSON = '{"title_zh":"题","background":"背","methods":"方","results":"结","significance":"义"}'
 LOG = logging.getLogger("test.artifacts")
 
 
@@ -62,7 +62,10 @@ class TestEnsureArtifacts:
         assert entry["analysis"]["problem"] == "P"
         assert entry["news"] == "news text"
         assert entry["title_zh"] == "题"
-        assert entry["abstract_zh"] == "摘"
+        assert entry["background"] == "背"
+        assert entry["methods"] == "方"
+        assert entry["results"] == "结"
+        assert entry["significance"] == "义"
         assert entry["paper_id"] is not None
 
         # 第二次：全部命中缓存，不再调 LLM
@@ -72,6 +75,7 @@ class TestEnsureArtifacts:
         assert art2[KEY]["analysis"]["problem"] == "P"
         assert art2[KEY]["news"] == "news text"
         assert art2[KEY]["title_zh"] == "题"
+        assert art2[KEY]["background"] == "背"
 
     def test_per_paper_exception_falls_back(self, conn):
         llm = FakeLLM([ValueError("a"), ValueError("b"), ValueError("c")])
@@ -80,7 +84,8 @@ class TestEnsureArtifacts:
         assert entry["analysis"] == EMPTY_ANALYSIS
         assert entry["news"] == ""
         assert entry["title_zh"] == ""
-        assert entry["abstract_zh"] == ""
+        assert entry["background"] == ""
+        assert entry["significance"] == ""
         # 瞬时失败不写缓存
         assert get_analysis(conn, entry["paper_id"]) is None
         assert get_news_summary(conn, entry["paper_id"]) is None
@@ -96,7 +101,10 @@ class TestEnsureArtifacts:
         art = ensure_artifacts([_paper()], llm, conn, False, False, LOG)
         assert llm.calls == 2
         assert art[KEY]["title_zh"] == ""
-        assert art[KEY]["abstract_zh"] == ""
+        assert art[KEY]["background"] == ""
+        assert art[KEY]["methods"] == ""
+        assert art[KEY]["results"] == ""
+        assert art[KEY]["significance"] == ""
 
     def test_dry_run_reads_but_does_not_write(self, conn):
         # 预置缓存：papers 行 + analysis

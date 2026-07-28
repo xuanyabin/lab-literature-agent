@@ -1,3 +1,5 @@
+import sqlite3
+
 import pytest
 
 from database.db import (
@@ -110,11 +112,37 @@ def test_get_news_summary_roundtrip(conn):
 def test_translation_roundtrip_and_replace(conn):
     pid = save_paper(conn, _paper())
     assert get_translation(conn, pid) is None
-    save_translation(conn, pid, "题", "摘")
-    assert get_translation(conn, pid) == {"title_zh": "题", "abstract_zh": "摘"}
-    save_translation(conn, pid, "题2", "摘2")  # INSERT OR REPLACE 覆盖
-    assert get_translation(conn, pid) == {"title_zh": "题2", "abstract_zh": "摘2"}
+    t1 = {"title_zh": "题", "background": "背", "methods": "方",
+          "results": "结", "significance": "义"}
+    save_translation(conn, pid, t1)
+    assert get_translation(conn, pid) == t1
+    t2 = {"title_zh": "题2", "background": "背2", "methods": "方2",
+          "results": "结2", "significance": "义2"}
+    save_translation(conn, pid, t2)  # INSERT OR REPLACE 覆盖
+    assert get_translation(conn, pid) == t2
     count = conn.execute(
         "SELECT COUNT(*) AS c FROM paper_translation WHERE paper_id = ?", (pid,)
     ).fetchone()["c"]
     assert count == 1
+
+
+def test_translation_table_migration_adds_columns(tmp_path):
+    # 旧形库（仅 title_zh/abstract_zh）重连后应补齐四段列，旧 abstract_zh 列保留
+    db = tmp_path / "old.db"
+    raw = sqlite3.connect(db)
+    raw.execute("""CREATE TABLE paper_translation (
+                       paper_id INTEGER PRIMARY KEY REFERENCES papers(id),
+                       title_zh TEXT, abstract_zh TEXT, created_time TEXT NOT NULL)""")
+    raw.execute("INSERT INTO paper_translation VALUES (1, '题', '旧摘', '2026-07-01')")
+    raw.commit()
+    raw.close()
+
+    c = connect(db)
+    row = c.execute("SELECT * FROM paper_translation WHERE paper_id = 1").fetchone()
+    assert row["abstract_zh"] == "旧摘"      # 旧列留着不管
+    assert row["background"] is None         # 新列已补齐
+    t = {"title_zh": "题2", "background": "背", "methods": "方",
+         "results": "结", "significance": "义"}
+    save_translation(c, 1, t)                # 新接口在旧库上可读写
+    assert get_translation(c, 1) == t
+    c.close()

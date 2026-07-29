@@ -40,7 +40,7 @@ from mailer.digest_builder import build_digest_html, load_email_config
 from mailer.sender import send_email
 from processing.artifacts import ensure_artifacts
 from processing.daily_summary_generator import generate_daily_summary
-from processing.llm import LLMClient
+from processing.llm import BudgetExhaustedError, LLMClient
 from processing.term_expander import apply_auto_terms, refresh_auto_terms
 from recommendation.ranker import load_ranker_thresholds, load_ranker_weights, rank_items
 from recommendation.scorer import load_scoring_config, rank_papers
@@ -134,7 +134,14 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
             save_recommendation(conn, user["email"], it["paper_id"], it["category"], it["score"], today)
 
     log.info("生成今日价值总结")
-    daily_summary = generate_daily_summary(items, llm)
+    try:
+        daily_summary = generate_daily_summary(items, llm)
+    except BudgetExhaustedError:
+        raise  # 预算耗尽快速失败：不发空壳邮件
+    except Exception:
+        # 总结是锦上添花，失败不应阻断发信（模板对空总结有占位文案）
+        log.warning("今日价值总结生成失败，邮件照常发送", exc_info=True)
+        daily_summary = ""
 
     html = build_digest_html(user["name"], today, items, daily_summary, email_cfg,
                              user_email=user["email"], overview=overview)

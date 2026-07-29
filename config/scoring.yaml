@@ -16,17 +16,18 @@ frequency_cap: 3        # 每个检索词的频次加分封顶
 # Phase 4 个性化精排：六维权重（各维度 0-100，按权重加权平均为 Final Score）
 ranker:
   weights:
-    personal: 20   # 个人相关度（LLM 语义判断）
+    personal: 30   # 个人相关度（LLM 语义判断）
     lab: 20        # 实验室方向相关度
     journal: 30    # 期刊影响力（journals.yaml 分层；期刊因素只在此体现）
     novelty: 10    # 新颖性（LLM 语义判断）
     method: 10     # 方法相关度
-    recency: 10    # 时效性
+    recency: 0     # 时效性（2026-07-29 起权重归零让位 personal；维度仍计算，调回即可恢复）
   # 重要性按 Final Score 绝对阈值定级（宁缺毋滥：当日全部低分则没有 Must Read）
   thresholds:
     must_read: 75  # Final Score ≥ 75 → Must Read
     important: 60  # Final Score ≥ 60 → Important；其余 Reference
-    push_floor: 40 # Final Score < 40 的论文不进邮件（推送下限；删掉本行则全量推送）
+    push_floor: 30 # Final Score < 30 的论文不进邮件（推送下限；删掉本行则全量推送）。
+                   # 2026-07-29 随 recency 权重归零从 40 下调：不相关 T0 顶刊现为 journal 30 分（原 40），30 保持其露面机会
 
 # 顶刊直采通道（sources/top_journals.py）：绕过关键词召回，按 journals.yaml
 # 刊名直抓最新论文并入全局池，解决顶刊漏召回（CNS 与实验室词表弱相关时进不了候选）

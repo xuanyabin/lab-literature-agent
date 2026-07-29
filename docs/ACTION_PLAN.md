@@ -139,16 +139,17 @@ LLM 主题聚类分簇（按词表哈希缓存 7 天）→ 逐簇一条扁平 OR
 | 维度 | 权重 | 计算方式 |
 |---|---|---|
 | journal 期刊影响力 | 30 | journals.yaml 分层：T0=100 / T1=70 / 未分层=30（刊名规范化后精确匹配） |
-| personal 个人相关度 | 20 | LLM 依据个人画像语义判断（异常回退 50） |
+| personal 个人相关度 | 30 | LLM 依据个人画像语义判断（异常回退 50；2026-07-29 起原 recency 的 10 分并入本维度） |
 | lab 实验室方向 | 20 | lab_topics 命中 0/1/≥2 个 → 0/50/100 |
 | method 方法相关度 | 10 | 个人 methods 命中 0/1/≥2 个 → 0/50/100 |
 | novelty 新颖性 | 10 | LLM 依据 AI 分析判断（异常回退 50） |
-| recency 时效性 | 10 | 当天~1 天=100 / 2 天=80 / 3 天=60 / 周内=40 / 更早=20 / 日期无法解析=50 |
+| recency 时效性 | 0 | 当天~1 天=100 / 2 天=80 / 3 天=60 / 周内=40 / 更早=20 / 日期无法解析=50（权重归零，维度仍计算，调回即可恢复） |
 
 **定级**：Final Score ≥75 → Must Read；≥60 → Important；其余 Reference。
 绝对阈值、宁缺毋滥——当日全部低分则可以没有 Must Read，不按固定配额凑数（V4 替代旧配额定级）。
-**推送下限（批 7）**：Final Score < `thresholds.push_floor`（默认 40）的论文不进邮件——
-不相关小刊论文被挡掉，不相关 T0 顶刊（journal 30 + recency 10 ≈ 40+）仍可以 Reference 露面；
+**推送下限（批 7）**：Final Score < `thresholds.push_floor`（默认 30）的论文不进邮件——
+不相关小刊论文被挡掉，不相关 T0 顶刊（journal 30 分）仍可以 Reference 露面
+（2026-07-29 随 recency 权重归零从 40 下调：顶刊原 journal 30 + recency 10 = 40，现仅 30）；
 删掉该行则恢复全量推送。
 **合并封顶**：关键词通道 top-N 与顶刊通道补入候选合并精排后，按下限过滤再按 Final Score
 降序截断到 `--limit`（默认 15）——两通道凭分数竞争，CNS 高分自然挤掉关键词通道低分论文。
@@ -383,12 +384,13 @@ From 伪造校验（回信通道）与 HMAC token 校验（HTTP 通道）。
 | ⭐2 | 负 | 该篇命中的学习词 ×0.5 |
 | ⭐1 | 强负 | 该篇命中的学习词 ×0.25，审计标注；同词累计 2 次 ⭐1 进人工排除候选 |
 
-**决策 3 · 精排六维权重**：journal 30 / personal 20 / lab 20 / method 10 / novelty 10 / recency 10
+**决策 3 · 精排六维权重**：journal 30 / personal 30 / lab 20 / method 10 / novelty 10 / recency 0
 （合计 100，结构不变只改 `config/scoring.yaml` ranker.weights，并对齐 `ranker.py` 默认值）。
-口径说明：**已按六维数值落地**（`ed34425` + `fbd8b2c`，2026-07-28）。
-分组标签"规则 40（lab+method）/ LLM 20（personal+novelty）"与六维数值
-（实为规则 30 / LLM 30）存在 10 分差异，以六个数字为准；后续若要严格 30/40/20/10 四桶
-（lab 30 / method 10 / personal 10 / novelty 10），只改 `config/scoring.yaml` 一行权重即可。
+口径说明：2026-07-28 按六维数值落地（`ed34425` + `fbd8b2c`）时
+分组标签"规则 40（lab+method）/ LLM 20（personal+novelty）"与六维数值存在 10 分差异；
+2026-07-29 用户决策把 recency 的 10 分并入 personal（personal 20→30、recency 10→0，
+维度仍计算、权重归零），现为规则 60（journal 30+lab 20+method 10）/ LLM 40（personal 30+novelty 10）。
+副作用与处理：不相关 T0 顶刊得分 40→30，`thresholds.push_floor` 同步 40→30 以保住"CNS 露面"。
 
 **决策 4 · 节假日静态表**：
 
@@ -412,7 +414,8 @@ holidays: ["2026-01-01", "2026-02-16", "..."]
 | 批 3 产品功能 | B6 中文四段结构化摘要（`fbc94ef`）→ B7 邮件开头总览（同 `fbc94ef`）→ B1 权重落地（`ed34425`+`fbd8b2c`）→ B5 节假日静态表（`aa5074d`）→ B3 月报·30 天阅读趋势+领域总结（`0d161e9`）→ B2+B4 五星反馈与关键词回信语法（`6b61269`） | ✅ 已完成（2026-07-28，195 passed） |
 | 批 5 检索与反馈 | 检索改扁平 OR：簇内全部关键词等权、命中任一词即召回，去掉"物种 AND 其余词"分组与严格/宽松降级重试（`global_pool.py` / `biorxiv.py` 全局路径；`pubmed.py` 逐人路径留作遗留不在主流水线）；反馈合并为日报末尾 Part 4 一封批量邮件（编号填 ⭐1–⭐5，编号经 recommendations 展示序映射；旧逐篇格式兼容收集） | ✅ 已完成（2026-07-29，207 passed） |
 | 批 6 邮件内五星反馈 | 撤销决策 1 零入站端口约束，引入 HTTP 反馈服务：日报每张卡片内嵌 ⭐1–⭐5 链接（`feedback/server.py` /fb 点星即落库、浏览器显示"已反馈"页+关键词表单；/kw 独立关键词入口；`feedback/tokens.py` HMAC 签名防伪造）；未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 回退批 5 批量回信；服务随 run_daily.sh 自动拉起 | ✅ 已完成（2026-07-29，219 passed） |
-| 批 7 召回与推送质量 | 顶刊直采通道（`sources/top_journals.py`：按 journals.yaml 分层刊名 `"<刊名>"[jour]` 逐刊直抓 PubMed 并入全局池，绕过关键词召回解决全局池零 CNS；`global_pool.fetch_global_pool` 新增 journal_channel 参数；main.py top-N 后按刊名补入通道候选，每用户上限 max_per_user=10）+ 推送下限（`ranker.thresholds.push_floor=40`：低分论文不进邮件，过滤后为空则当日跳过发信）；配置均在 scoring.yaml `journal_channel` / `ranker.thresholds` | ✅ 已完成（2026-07-29，225 passed） |
+| 批 7 召回与推送质量 | 顶刊直采通道（`sources/top_journals.py`：按 journals.yaml 分层刊名 `"<刊名>"[jour]` 逐刊直抓 PubMed 并入全局池，绕过关键词召回解决全局池零 CNS；`global_pool.fetch_global_pool` 新增 journal_channel 参数；main.py top-N 后按刊名补入通道候选，每用户上限 max_per_user=10）+ 推送下限（`ranker.thresholds.push_floor`：低分论文不进邮件，过滤后为空则当日跳过发信）；配置均在 scoring.yaml `journal_channel` / `ranker.thresholds` | ✅ 已完成（2026-07-29，225 passed） |
+| 批 8 精排权重调整 | recency 权重 10→0 并入 personal（20→30）：journal 30 / personal 30 / lab 20 / method 10 / novelty 10 / recency 0；push_floor 随顶刊得分变化 40→30（不相关 T0 顶刊现仅 journal 30 分，保持露面机会）；recency 维度仍计算，配置调回即恢复 | ✅ 已完成（2026-07-29） |
 
 ### 12.3 批 4 候选（第 11 节 P1/P2 余项）
 

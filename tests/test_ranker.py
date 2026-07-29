@@ -24,7 +24,7 @@ USER = {
     "aliases": {"honeybee": ["Apis mellifera"]},
 }
 
-WEIGHTS = {"personal": 20, "lab": 20, "journal": 30, "novelty": 10, "method": 10, "recency": 10}
+WEIGHTS = {"personal": 30, "lab": 20, "journal": 30, "novelty": 10, "method": 10, "recency": 0}
 THRESHOLDS = {"must_read": 60, "important": 20}
 JOURNAL_TIERS = {"nature": "t0", "plos one": "t1"}
 
@@ -72,7 +72,7 @@ def test_final_score_weighted_average():
     dims = {"personal": 100, "lab": 100, "journal": 100, "novelty": 100, "method": 100, "recency": 100}
     assert final_score(dims, WEIGHTS) == 100
     dims["personal"] = 0
-    assert final_score(dims, WEIGHTS) == 80  # 只扣掉 personal 的 20%
+    assert final_score(dims, WEIGHTS) == 70  # 只扣掉 personal 的 30%
 
 
 def test_judge_paper_fallback_on_bad_json():
@@ -85,7 +85,7 @@ def test_judge_paper_fallback_on_bad_json():
 
 
 def test_rank_items_sorts_by_final_score_and_assigns_by_threshold():
-    # 阈值定级：High 70 ≥ 60 → Must Read；Genomics 50 ≥ 20 → Important；Low 19 → Reference
+    # 阈值定级：High 70 ≥ 60 → Must Read；Genomics 40 ≥ 20 → Important；Low 9 → Reference
     today = date(2026, 7, 22)
     d = today.isoformat()
     items = [
@@ -111,17 +111,17 @@ def test_rank_items_all_low_scores_no_must_read():
 
 
 def test_rank_items_push_floor_filters_low_scores():
-    # 推送下限：低分小刊（19 分）被过滤，不相关顶刊（40 分）保留露面
+    # 推送下限：低分小刊（9 分）被过滤，不相关顶刊（30 分）保留露面
     today = date(2026, 7, 22)
     d = today.isoformat()
-    thresholds = {**THRESHOLDS, "push_floor": 40}
+    thresholds = {**THRESHOLDS, "push_floor": 30}
     items = [
         {"paper": _paper("Low paper", journal="Obscure", date_str=d), "analysis": {}},
         {"paper": _paper("Low paper in Nature", journal="Nature", date_str=d), "analysis": {}},
     ]
     ranked = rank_items(items, USER, FakeLLM(), JOURNAL_TIERS, WEIGHTS, thresholds, today)
     assert [it["paper"].title for it in ranked] == ["Low paper in Nature"]
-    assert ranked[0]["score"] == 40
+    assert ranked[0]["score"] == 30
 
 
 def test_rank_items_llm_failure_keeps_pipeline_alive():

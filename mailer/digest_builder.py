@@ -1,9 +1,13 @@
-"""组装每日文献情报邮件的各段内容（总览 / 新闻摘要 / 详细卡片 / 价值总结 / 一键反馈），渲染交给 template_renderer。
+"""组装每日文献情报邮件的各段内容（总览 / 新闻摘要 / 详细卡片 / 价值总结 / 反馈入口），渲染交给 template_renderer。
 
-反馈（B6 起）：整封邮件只带一个"一键反馈"mailto 链接（Part 4），回信主题
-带 [FB] token 与日期，正文按编号标注 1-5 星、以 "+" 开头的行是新增关键词，
-由 python -m feedback 收集学习。仅当调用方提供 user_email、config 含
-feedback_email 且 items 非空时渲染。
+反馈（两种模式，按配置自动切换）：
+- HTTP 模式（config 含 feedback_base_url 与 feedback_secret）：每张卡片底部内嵌
+  ⭐1-5 星级链接，接收人点击即由 feedback/server.py 落库并显示"已反馈"页；
+  Part 4 收窄为一个"新增关注关键词"入口（/kw 表单）。链接带 HMAC token 防伪造。
+- 回退模式（未配置 base_url/secret）：整封邮件一个"一键反馈"mailto（Part 4），
+  回信主题带 [FB] token 与日期，正文按编号标注 1-5 星、以 "+" 开头的行是新增关键词，
+  由 python -m feedback 收集学习。
+两种模式都要求调用方提供 user_email 且 items 非空。
 """
 
 from pathlib import Path
@@ -11,6 +15,7 @@ from urllib.parse import quote
 
 import yaml
 
+from feedback.tokens import make_token
 from mailer.template_renderer import escape, render
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,6 +27,8 @@ _DEFAULT_CONFIG = {
     "show_keywords": True,
     "show_doi": True,
     "feedback_email": "",
+    "feedback_base_url": "",
+    "feedback_secret": "",
 }
 
 _CATEGORY_CLASS = {
@@ -61,7 +68,7 @@ def build_digest_html(user_name: str, digest_date: str, items: list[dict],
         "count": str(len(items)),
         "overview_block": _overview_block(overview) if overview else "",
         "news_items": "\n".join(_news_row(i, it) for i, it in enumerate(items, 1)),
-        "paper_cards": "\n".join(_paper_card(i, it, cfg) for i, it in enumerate(items, 1)),
+        "paper_cards": "\n".join(_paper_card(i, it, cfg, user_email) for i, it in enumerate(items, 1)),
         "daily_summary": escape(daily_summary) if daily_summary else "（今日价值总结生成失败，请查看上方论文列表。）",
         "feedback_block": _feedback_block(user_email, digest_date, len(items), cfg),
     }
@@ -100,13 +107,26 @@ def _news_row(i: int, it: dict) -> str:
       </tr>"""
 
 
-def _feedback_block(user_email: str, digest_date: str, count: int, cfg: dict) -> str:
-    """Part 4 一键反馈：整封邮件只带一个 mailto，回信按编号标注星级（替代逐篇五个链接）。
+def _http_mode(cfg: dict) -> bool:
+    """配置了 feedback_base_url + feedback_secret 时走 HTTP 五星反馈服务。"""
+    return bool(cfg.get("feedback_base_url") and cfg.get("feedback_secret"))
 
-    回信主题 [FB] u=<用户邮箱> d=<日期>，正文预填编号行与 + 关键词行，
-    由 feedback/collector 解析：编号经 recommendations 表映射回论文。
-    """
-    if not user_email or not cfg["feedback_email"] or count <= 0:
+
+def _feedback_block(user_email: str, digest_date: str, count: int, cfg: dict) -> str:
+    """Part 4 反馈入口：HTTP 模式收窄为关键词表单链接；回退模式为批量标注 mailto。"""
+    if not user_email or count <= 0:
+        return ""
+    if _http_mode(cfg):
+        base = cfg["feedback_base_url"].rstrip("/")
+        token = make_token(cfg["feedback_secret"], user_email, "kw")
+        href = f"{base}/kw?u={quote(user_email)}&t={token}"
+        return f"""    <h2>Part 4 · 反馈与关键词</h2>
+    <p class="section-sub">在每张卡片下方点 ⭐ 即完成反馈（无需回信）</p>
+    <div class="feedback-box">
+      有希望我们持续跟踪的新方向？<br>
+      <a class="feedback-btn" href="{href}">新增关注关键词</a>
+    </div>"""
+    if not cfg["feedback_email"]:
         return ""
     subject = quote(f"[FB] u={user_email} d={digest_date}")
     lines = [
@@ -129,7 +149,27 @@ def _feedback_block(user_email: str, digest_date: str, count: int, cfg: dict) ->
     </div>"""
 
 
-def _paper_card(i: int, it: dict, cfg: dict) -> str:
+_RATING_LABELS = {1: "完全不相关", 2: "不太相关", 3: "一般", 4: "比较重要", 5: "非常重要"}
+
+
+def _star_row(user_email: str, paper_id, cfg: dict) -> str:
+    """卡片底部 ⭐1-5 反馈链接（HTTP 模式专用）；缺配置或 paper_id 时不渲染。"""
+    if not (_http_mode(cfg) and user_email and paper_id):
+        return ""
+    base = cfg["feedback_base_url"].rstrip("/")
+    secret = cfg["feedback_secret"]
+    pid = str(paper_id)
+    links = []
+    for n in (1, 2, 3, 4, 5):
+        token = make_token(secret, user_email, pid, str(n))
+        href = f"{base}/fb?u={quote(user_email)}&p={pid}&v={n}&t={token}"
+        links.append(f'<a class="star" href="{href}" title="{_RATING_LABELS[n]}">⭐{n}</a>')
+    return ('<div class="stars"><span class="abs-label">重要性反馈</span>'
+            + " ".join(links)
+            + '<span class="stars-hint">点击即提交 · ⭐1 完全不相关 – ⭐5 非常重要</span></div>')
+
+
+def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "") -> str:
     p = it["paper"]
     head = f'Rank {i} {_badge(it.get("category", "Reference"))}'
     if it.get("score") is not None:
@@ -157,5 +197,8 @@ def _paper_card(i: int, it: dict, cfg: dict) -> str:
                 rows.append(f'<div class="abstract"><span class="abs-label">{label}</span>{escape(it[key])}</div>')
     else:
         rows.append(f'<div class="abstract"><span class="abs-label">Abstract</span>{escape(p.abstract or "（无摘要）")}</div>')
+    star = _star_row(user_email, it.get("paper_id"), cfg)
+    if star:
+        rows.append(star)
     body = "\n      ".join(rows)
     return f'    <div class="card">\n      {body}\n    </div>'

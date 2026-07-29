@@ -1,3 +1,7 @@
+import re
+from urllib.parse import parse_qs, urlparse
+
+from feedback.tokens import check_token
 from mailer.digest_builder import build_digest_html
 from sources.paper import Paper
 
@@ -155,3 +159,51 @@ def test_overview_block_absent_when_none():
     html = build([make_item()])
     assert 'class="overview"' not in html
     assert "全库新增" not in html
+
+
+HTTP_CFG = {"feedback_base_url": "http://10.0.0.2:8710", "feedback_secret": "s3cret"}
+
+
+def _build_http(items, user_email="a@x.com", config=None):
+    cfg = {**HTTP_CFG, **(config or {})}
+    return build_digest_html("轩亚冰", "2025-07-22", items, "总结。", cfg,
+                             user_email=user_email)
+
+
+def test_http_mode_star_links_in_each_card():
+    item = {**make_item(), "paper_id": 42}
+    html = _build_http([item])
+    assert 'class="stars"' in html
+    hrefs = re.findall(r'href="([^"]*/fb\?[^"]+)"', html)
+    assert len(hrefs) == 5
+    for n, href in enumerate(hrefs, 1):
+        q = parse_qs(urlparse(href).query)
+        assert q["u"] == ["a@x.com"] and q["p"] == ["42"] and q["v"] == [str(n)]
+        assert check_token("s3cret", q["t"][0], "a@x.com", "42", str(n))
+    # HTTP 模式不再出现批量 mailto 反馈
+    assert "mailto:" not in html
+    assert "一键标注" not in html
+
+
+def test_http_mode_part4_keyword_entry():
+    item = {**make_item(), "paper_id": 42}
+    html = _build_http([item])
+    assert "新增关注关键词" in html
+    href = re.search(r'href="([^"]*/kw\?[^"]+)"', html).group(1)
+    q = parse_qs(urlparse(href).query)
+    assert q["u"] == ["a@x.com"]
+    assert check_token("s3cret", q["t"][0], "a@x.com", "kw")
+
+
+def test_http_mode_no_paper_id_no_stars():
+    html = _build_http([make_item()])  # dry-run 情形：item 无 paper_id
+    assert 'class="stars"' not in html
+    assert "/fb?" not in html
+    assert "新增关注关键词" in html  # Part 4 关键词入口仍渲染
+
+
+def test_mailto_fallback_when_secret_missing():
+    # 只有 base_url 没有 secret：回退批量 mailto（_build_with_feedback 带 feedback_email）
+    html = _build_with_feedback([make_item()], config={"feedback_base_url": "http://10.0.0.2:8710"})
+    assert html.count("mailto:") == 1
+    assert 'class="stars"' not in html

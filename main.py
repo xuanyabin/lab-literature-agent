@@ -5,13 +5,17 @@
       （config/users/auto_terms/<slug>.yaml：LLM 扩展词仅用于召回、等权，
       缓存缺失/用户 yaml 更新/超 7 天时自动刷新，失败沿用旧缓存）；
       然后全局合并检索一次（sources/global_pool.py：全用户词表合并 → LLM 主题
-      聚类分簇检索 PubMed + bioRxiv 全局过滤，拼成当日全局池）→ 每用户本地规则
+      聚类分簇检索 PubMed + bioRxiv 全局过滤，可选并入顶刊直采通道
+      sources/top_journals.py——按 journals.yaml 刊名直抓绕过关键词召回，
+      拼成当日全局池）→ 每用户本地规则
       粗筛等权打分选出候选（实验室公共方向词叠加个人词表；期刊因素只在精排
-      journal 维度体现，粗筛不再按期刊加分）→ 按用户跨天去重 → top-N；
+      journal 维度体现，粗筛不再按期刊加分；顶刊通道论文按刊名补入候选，
+      每用户每日上限见 scoring.yaml 的 journal_channel）→ 按用户跨天去重 → top-N；
       各用户 shortlist 求并集，并集只做一次 LLM 处理（分析/新闻摘要/翻译，
       SQLite 全局表缓存复用，同一篇论文全实验室只处理一次）→ 每用户个性化精排
       （六维加权 Final Score + AI 推荐理由，按 Final Score 绝对阈值定级
-      Must Read / Important / Reference，宁缺毋滥）→ 每日价值总结 → HTML 邮件
+      Must Read / Important / Reference，低于 push_floor 推送下限的不进邮件，
+      宁缺毋滥）→ 每日价值总结 → HTML 邮件
       （卡片内嵌 ⭐1-5 反馈链接，由 python -m feedback.server 收集；
       未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 时回退为批量回信标注，
       由 python -m feedback 收集学习）；
@@ -45,8 +49,9 @@ from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import BudgetExhaustedError, LLMClient
 from processing.term_expander import apply_auto_terms, refresh_auto_terms
 from recommendation.ranker import load_ranker_thresholds, load_ranker_weights, rank_items
-from recommendation.scorer import load_scoring_config, rank_papers
+from recommendation.scorer import _normalize_journal, load_scoring_config, rank_papers
 from sources.global_pool import fetch_global_pool
+from sources.top_journals import load_journal_names
 
 BASE_DIR = Path(__file__).resolve().parent
 LOG_DIR = BASE_DIR / "logs"
@@ -115,6 +120,9 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
     log.info("个性化精排：六维加权 Final Score + 生成推荐理由")
     items = rank_items(items, user, llm, scoring_cfg["journal_tiers"],
                        load_ranker_weights(), load_ranker_thresholds())
+    if not items:  # 推送下限过滤后为空：宁缺毋滥，今日不发
+        log.info("用户 %s 无达到推送下限的论文，跳过今日邮件", slug)
+        return
     n_must = sum(1 for it in items if it["category"] == "Must Read")
     n_important = sum(1 for it in items if it["category"] == "Important")
     log.info("精排定级：Must Read %d / Important %d / Reference %d",
@@ -212,8 +220,15 @@ def main() -> int:
                      slug, len(auto["expansion"]), len(auto["feedback_added"]))
         prepared.append((slug, u))
 
-    # 全局合并检索一次：全用户词表聚类分簇 → PubMed + bioRxiv 全局池
-    pool = fetch_global_pool([u for _, u in prepared], llm, days=args.days)
+    # 全局合并检索一次：全用户词表聚类分簇 → PubMed + bioRxiv 全局池（可选并入顶刊直采）
+    scoring_cfg = load_scoring_config()
+    channel_cfg = scoring_cfg.get("journal_channel") or {}
+    channel_names = load_journal_names(tiers=tuple(channel_cfg.get("tiers") or ("t0",))) \
+        if channel_cfg.get("enabled") else []
+    pool = fetch_global_pool(
+        [u for _, u in prepared], llm, days=args.days,
+        journal_channel={"names": channel_names,
+                         "retmax_per_journal": channel_cfg.get("retmax_per_journal", 20)})
     log.info("全局池：%d 篇（去重后）", len(pool))
     if not pool:
         log.info("全局池为空，今日无新文献")
@@ -221,7 +236,10 @@ def main() -> int:
         return 0
 
     # 每用户本地粗筛 + 跨天去重（语义与逐人检索时代完全一致，只是池子共享）
-    scoring_cfg = load_scoring_config()
+    channel_tiers = set(channel_cfg.get("tiers") or ()) if channel_names else set()
+    channel_journals = {name for name, tier in scoring_cfg["journal_tiers"].items()
+                        if tier in channel_tiers}
+    channel_max = int(channel_cfg.get("max_per_user", 10))
     shortlists: dict[str, list] = {}
     matched_counts: dict[str, int] = {}
     for slug, u in prepared:
@@ -234,7 +252,21 @@ def main() -> int:
         if len(fresh) < len(scored):
             log.info("用户 %s 跨天去重：%d 篇已在历史邮件中出现过，跳过",
                      slug, len(scored) - len(fresh))
-        shortlists[slug] = fresh[:args.limit]
+        shortlist = fresh[:args.limit]
+        if channel_journals:  # 顶刊通道：绕过关键词得分，按粗筛排序补入通道论文
+            picked = {dedup_key(p) for _, p in shortlist}
+            extras = []
+            for s, p in fresh:
+                if len(extras) >= channel_max:
+                    break
+                if _normalize_journal(p.journal) in channel_journals \
+                        and dedup_key(p) not in picked:
+                    picked.add(dedup_key(p))
+                    extras.append((s, p))
+            if extras:
+                log.info("用户 %s 顶刊通道：额外 %d 篇进入精排", slug, len(extras))
+                shortlist += extras
+        shortlists[slug] = shortlist
 
     # 各用户 shortlist 求并集，LLM 产物全局只做一次（带 SQLite 缓存复用）
     union: dict[str, object] = {}

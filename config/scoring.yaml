@@ -26,6 +26,15 @@ ranker:
   thresholds:
     must_read: 75  # Final Score ≥ 75 → Must Read
     important: 60  # Final Score ≥ 60 → Important；其余 Reference
+    push_floor: 40 # Final Score < 40 的论文不进邮件（推送下限；删掉本行则全量推送）
+
+# 顶刊直采通道（sources/top_journals.py）：绕过关键词召回，按 journals.yaml
+# 刊名直抓最新论文并入全局池，解决顶刊漏召回（CNS 与实验室词表弱相关时进不了候选）
+journal_channel:
+  enabled: true        # 总开关
+  tiers: [t0]          # 参与直采的分层（t0 / t1）
+  max_per_user: 10     # 每用户每天最多额外进入精排的通道论文数（控制 LLM 成本）
+  retmax_per_journal: 20  # 每刊每次最多抓取篇数
 
 # Phase 5 反馈学习词表：由反馈闭环自动维护（与用户手配词表分离），改这里调行为
 learned:

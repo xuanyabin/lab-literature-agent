@@ -5,7 +5,9 @@
 > 状态：批 1–3、批 5 全部落地并提交；批 6（2026-07-29）：邮件卡片内嵌 ⭐1–⭐5 五星反馈链接
 > （HTTP 反馈服务 `feedback/server.py` 点星即记录、浏览器显示"已反馈"，HMAC token 防伪造；
 > 未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 时自动回退为批量回信标注）。
-> 测试基线：219 passed（2026-07-29 复跑验证）。
+> 批 7（2026-07-29）：顶刊直采通道（`sources/top_journals.py`，按 journals.yaml 刊名直抓
+> 绕过关键词召回，解决全局池零 CNS）+ 推送下限（`ranker.thresholds.push_floor`，低分论文不进邮件）。
+> 测试基线：225 passed（2026-07-29 复跑验证）。
 
 ---
 
@@ -26,10 +28,12 @@
 ```
 采集层 sources/                     排序层 recommendation/            LLM 处理层 processing/
   global_pool.py（全局摄取层）──→     scorer.py（等权规则粗筛）──→      artifacts.py（全局产物层）
-    全用户词表合并 → LLM 主题         ranker.py（六维精排+定级）          analyzer.py（结构化分析）
-    聚类分簇检索 → 当日全局池                                       paper_news_generator.py（新闻摘要）
-  pubmed.py（遗留逐人路径，不在主流水线）                        translator.py（中文四段摘要）
-  biorxiv.py（全局扁平 OR 过滤为主）                             daily_summary_generator.py（每日总结）
+    全用户词表合并 → LLM 主题         ranker.py（六维精排+定级          analyzer.py（结构化分析）
+    聚类分簇检索 → 当日全局池          +push_floor 推送下限）          paper_news_generator.py（新闻摘要）
+  top_journals.py（顶刊直采通道，                               translator.py（中文四段摘要）
+    按刊名直抓绕过关键词召回）                                  daily_summary_generator.py（每日总结）
+  pubmed.py（遗留逐人路径，不在主流水线）
+  biorxiv.py（全局扁平 OR 过滤为主）
        │                              │
        ▼                              ▼
               database/db.py（SQLite：papers / paper_analysis / paper_news_summary
@@ -64,12 +68,13 @@
 |---|---|
 | `main.py` | 每日流水线总入口（三阶段，详见第 5 节）：逐人词表准备 → 全局池一次检索 → 每用户本地粗筛取 top-N → shortlist 并集一次 LLM 处理 → 每用户精排发信；参数 `--user` / `--days`（默认 1）/ `--limit`（默认取 email.yaml 的 daily_paper_number=15）/ `--dry-run`（不发信不写库，HTML 落 `logs/`）；单用户失败 try/except 隔离继续，任一用户失败整体返回 1 |
 | `weekly_report.py` | 周报/月报入口：`--user` / `--days 7`（月报 `--days 30`）/ `--dry-run`；聚合 SQLite 窗口内推荐 → 统计 + 阅读趋势 → LLM 趋势总结 → 四段式邮件 |
-| `sources/global_pool.py` | 全局摄取层：全用户检索词（aliases 展开 + 有效学习词）合并去重 → LLM 主题聚类分簇（`prompts/topic_clustering.txt`，按词表哈希缓存 7 天，失败沿用旧缓存、无缓存回退单簇）→ 逐簇扁平 OR PubMed 检索（簇内关键词等权、命中任一词即召回，无 AND 分组）合并去重 + bioRxiv 全局过滤 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）、查询式永不带 NOT |
+| `sources/global_pool.py` | 全局摄取层：全用户检索词（aliases 展开 + 有效学习词）合并去重 → LLM 主题聚类分簇（`prompts/topic_clustering.txt`，按词表哈希缓存 7 天，失败沿用旧缓存、无缓存回退单簇）→ 逐簇扁平 OR PubMed 检索（簇内关键词等权、命中任一词即召回，无 AND 分组）合并去重 + bioRxiv 全局过滤 + （可选）顶刊直采通道合并 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）、查询式永不带 NOT |
+| `sources/top_journals.py` | 顶刊直采通道（批 7）：`load_journal_names` 从 journals.yaml 按分层读原始刊名；`fetch_top_journals` 逐刊 `"<刊名>"[jour]` 直抓 PubMed 最近论文（单刊失败跳过、刊间 sleep 0.4s），绕过关键词召回解决顶刊漏召回（实测全局池零 CNS）；开关与参数见 scoring.yaml `journal_channel` |
 | `sources/pubmed.py` | **遗留逐人路径（不在主流水线，仅测试/调试）**。PubMed 采集（NCBI E-utilities）。`build_queries` 返回（严格， 宽松）两条查询：严格=物种组 OR 与其余全部检索词 OR 做 AND；宽松=全部词扁平 OR；严格命中 <5 篇自动降级宽松；两端都附加 exclude 词的 NOT 排除；aliases 与有效学习词先并入检索词；429 限流指数退避（5s/10s/20s） |
 | `sources/biorxiv.py` | bioRxiv 采集：无服务端检索，按日期区间拉全量后本地过滤——主流水线 `fetch_recent_global` 用全局词表扁平 OR（等权、命中任一词即保留）；逐人 `fetch_recent`（严格/宽松降级）为遗留路径，仅测试/调试 |
 | `sources/paper.py` | Paper 数据类 + `expand_with_aliases`（检索词并入 aliases 变体）+ `dedupe`（DOI 优先、规范化标题兜底） |
 | `recommendation/scorer.py` | 三层漏斗第 2 层：零成本等权关键词粗筛 + tie-break；exclude 命中直接剔除；期刊分层只在此加载（供精排用），**粗筛不按期刊加分**（V4）；叠加 learned 词加分（单篇封顶 6） |
-| `recommendation/ranker.py` | 三层漏斗第 3 层：六维 0-100 加权 Final Score + AI 中文推荐理由；按绝对阈值定级（≥75 Must Read / ≥60 Important / 其余 Reference，宁缺毋滥不凑配额）；LLM 异常回退中性分 50 |
+| `recommendation/ranker.py` | 三层漏斗第 3 层：六维 0-100 加权 Final Score + AI 中文推荐理由；按绝对阈值定级（≥75 Must Read / ≥60 Important / 其余 Reference，宁缺毋滥不凑配额）；`thresholds.push_floor` 推送下限——低于该分的论文直接不进邮件（批 7）；LLM 异常回退中性分 50 |
 | `processing/artifacts.py` | 全局产物层：各用户 shortlist 并集的 AI 分析 / 新闻摘要 / 中文四段摘要一次生成、全用户复用——优先读 SQLite 全局缓存，未命中才调 LLM 并写回；LLM 日预算耗尽快速失败（向上传播），其余异常逐篇回退空产物不丢篇 |
 | `processing/term_expander.py` | V4 召回增强核心：每日 `refresh_auto_terms` 按需刷新 LLM 扩展词缓存、`apply_auto_terms` 并入用户配置副本；`add_feedback_terms` 把回信 `+关键词` 追加进 auto_terms 的 feedback_added（B4，见第 9 节）；另保留离线人工审核工具模式（见第 8 节） |
 | `processing/llm.py` | LLMClient：读 `config/model.yaml`（provider openai / model gpt-5.4 / temperature 0.2），`OPENAI_API_KEY` 与可选 `OPENAI_BASE_URL` 来自 `.env`；temperature 参数被网关拒绝时自动去参重试；护栏：timeout 60s / max_tokens 2000 / 可重试错误（429·连接·超时·5xx）5s/10s/20s 退避重试 3 次 / daily_budget 1000（跨进程日预算，记录 `logs/.llm_usage.json`，≤0 不限） |
@@ -89,12 +94,12 @@
 | `config/users/auto_terms/<slug>.yaml` | V4 自动词表缓存（自动维护勿手改，已 gitignore）：expansion（每词 ≤5 个别名）+ feedback_added（反馈确认新词） |
 | `config/holidays.yaml` + `scheduler/holiday.py` | 中国法定节假日静态表（每年初按国务院放假安排手工维护一次）；`backfill_days`：当日在表内返回 0（跳过），否则返回 1+当日之前连续节假日天数（上限 10，供节后合并补发）；CLI `python -m scheduler.holiday` 打印该整数 |
 | `config/lab.yaml` | 实验室公共方向 topics + aliases，`apply_lab_profile` 并入每个用户（个人配置优先） |
-| `config/scoring.yaml` | 全部打分行为开关：粗筛等权/tie-break、ranker 六维权重与定级阈值、learned 学习护栏（含 negative_factor_weak/strong，详见第 4、9 节） |
+| `config/scoring.yaml` | 全部打分行为开关：粗筛等权/tie-break、ranker 六维权重与定级阈值（含 push_floor 推送下限）、journal_channel 顶刊直采通道开关（enabled/tiers/max_per_user/retmax_per_journal）、learned 学习护栏（含 negative_factor_weak/strong，详见第 4、9 节） |
 | `config/journals.yaml` | 期刊分层 T0（CNS 正刊+顶级子刊 22 本）/ T1（综合强刊、基因组、进化生态、昆虫领域强刊）；仅用于精排 journal 维度与周报统计 |
 | `config/email.yaml` | daily_paper_number 15 / show_translation / show_keywords / show_doi（`feedback_email`、`feedback_base_url`、`feedback_secret` 非 yaml 键，由 main.py 运行时从 `.env` 的 DIGEST_FROM_EMAIL / FEEDBACK_BASE_URL / FEEDBACK_SECRET 注入） |
 | `prompts/` | 9 个 prompt 文件：paper_analysis / paper_news_summary / paper_translation / daily_value_summary / recommendation_reason / feedback_term_extraction / term_expansion / topic_clustering / weekly_report |
 | `run_daily.sh` / `run_weekly.sh` / `run_monthly.sh` | cron 入口脚本（日报/周报/月报），均前置节假日判断（当日节假日记日志跳过；日报节后经 `--days` 合并补发）；run_daily.sh 另会先确保 feedback/server.py 反馈服务已在后台运行（pgrep 检查，未运行则 nohup 拉起，缺 FEEDBACK_SECRET 时进程自行退出不影响主流水线）；日志 `logs/pipeline.log`、`logs/cron.log`、`logs/feedback_server.log` |
-| `tests/` | 219 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
+| `tests/` | 225 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
 
 ---
 
@@ -104,7 +109,11 @@
 **主路径（全局摄取层 `global_pool.py`）**：全用户检索词（aliases 展开 + 有效学习词）合并去重 →
 LLM 主题聚类分簇（按词表哈希缓存 7 天）→ 逐簇一条扁平 OR PubMed 查询
 （簇内全部关键词等权、命中任一词即召回，无 AND、不按物种分组、无降级重试）合并去重
-\+ bioRxiv 按日期全量拉取后全局词表扁平 OR 过滤 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）。
+\+ bioRxiv 按日期全量拉取后全局词表扁平 OR 过滤
+\+ **顶刊直采通道（`top_journals.py`，批 7）**：按 journals.yaml 指定分层刊名逐刊 `"<刊名>"[jour]`
+直抓 PubMed 最近论文并入池中——绕过关键词召回，解决顶刊与实验室词表弱相关时进不了候选池的问题
+（scoring.yaml `journal_channel.enabled` 开关，`tiers`/`retmax_per_journal` 可调）
+→ 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）。
 **遗留逐人路径（`pubmed.py`，不在主流水线，仅测试/调试）**：严格查询（物种 OR）AND（其余词 OR），
 命中不足 5 篇降级为全词扁平 OR；exclude 词在查询端 NOT 排除。
 两源合并按 DOI/标题去重（PubMed 已发表版优先）。
@@ -121,6 +130,8 @@ LLM 主题聚类分簇（按词表哈希缓存 7 天）→ 逐簇一条扁平 OR
 | exclude 命中 | 剔除 | 直接淘汰 |
 
 粗筛只负责排序选出 top-N（默认 15）候选，**不定级、不含期刊因素**。
+顶刊通道论文关键词得分常为 0，由 main.py 在 top-N 之后按刊名补入候选
+（每用户每日上限 `journal_channel.max_per_user`，默认 10），是否推送交由精排决定。
 
 ### 第 3 层：个性化精排（`ranker.py`）
 六维各 0-100，按权重加权为 Final Score（0-100）：
@@ -136,6 +147,9 @@ LLM 主题聚类分簇（按词表哈希缓存 7 天）→ 逐簇一条扁平 OR
 
 **定级**：Final Score ≥75 → Must Read；≥60 → Important；其余 Reference。
 绝对阈值、宁缺毋滥——当日全部低分则可以没有 Must Read，不按固定配额凑数（V4 替代旧配额定级）。
+**推送下限（批 7）**：Final Score < `thresholds.push_floor`（默认 40）的论文不进邮件——
+不相关小刊论文被挡掉，不相关 T0 顶刊（journal 30 + recency 10 ≈ 40+）仍可以 Reference 露面；
+删掉该行则恢复全量推送。
 同时 LLM 生成一句中文推荐理由展示在卡片上。
 
 ---
@@ -157,13 +171,16 @@ python main.py --days "$DAYS"                   # 再三阶段执行：
 阶段二 · 全局摄取一次（sources/global_pool.py）
   4. 全用户词表合并去重 → LLM 主题聚类分簇（7 天缓存）
   5. 逐簇扁平 OR PubMed 检索 + bioRxiv 全局过滤 → 合并去重成当日全局池
+     （journal_channel.enabled 时并入顶刊直采通道：按 journals.yaml 刊名逐刊直抓）
 
 阶段三 · 逐用户分发
   6. 每用户本地规则粗筛等权打分（lab_topics 叠加个人词表；期刊不参与）
-  7. 跨天去重：该用户历史已发论文（recommendations 表）跳过；取 top-N（默认 15）
+  7. 跨天去重：该用户历史已发论文（recommendations 表）跳过；取 top-N（默认 15）；
+     顶刊通道论文按刊名补入候选（每用户上限 journal_channel.max_per_user，默认 10）
   8. 各用户 shortlist 求并集，并集只做一次 LLM 处理
      （结构化分析 → 新闻摘要 → 中文四段摘要；SQLite 全局缓存复用，同篇全实验室只算一次）
-  9. 每用户六维精排 + 生成推荐理由 → 按绝对阈值定级
+  9. 每用户六维精排 + 生成推荐理由 → 按绝对阈值定级 → push_floor 推送下限过滤
+     （过滤后为空则当日跳过发信，宁缺毋滥）
   10. 入库 SQLite（论文/分析/摘要/翻译全局共享，推荐记录按用户隔离）
   11. 生成今日价值总结 → 渲染总览块+四段式 HTML → SMTP 发送
      主题：Daily Literature Intelligence Report · <日期>
@@ -329,7 +346,7 @@ journal_fallback 低相关兜底退役、LLM 自动扩展词每日缓存。
 | 4 | ~~`main()` 恒返回 0，流水线失败 cron 无感知（静默失败）~~ | P0 | **已修**（2026-07-28）：`main.py` 与 `weekly_report.py` 任一用户失败返回 1 |
 | 5 | 关键词为子串匹配无词边界（如 "ant" 误中 "plant"）；learned 词入库未净化 | P1 | 待修 |
 | 6 | 无 users 表（email 字符串为身份键）；SQLite 未开 WAL/busy_timeout、无 schema 版本 | P1 | 待修 |
-| 7 | 召回纯关键词、无语义检索层（无 embedding）；新用户冷启动依赖手写词表 | P1 | 待修（语义通道+RRF 融合；批 2 的 LLM 主题聚类分簇检索已部分缓解召回盲区） |
+| 7 | 召回纯关键词、无语义检索层（无 embedding）；新用户冷启动依赖手写词表 | P1 | 待修（语义通道+RRF 融合；批 2 的 LLM 主题聚类分簇检索已部分缓解召回盲区，批 7 顶刊直采通道解决顶刊漏召回） |
 | 8 | 死结构：~~`scheduler/` 空目录~~、`schedule` 死依赖、`.env.example` 的 `OPENAI_MODEL` 死配置、依赖未钉版本 | P1 | 部分已清（2026-07-28，批 3）：`scheduler/` 已由节假日模块启用；其余三项待清理 |
 | 9 | 反馈深度不足：`reason` 文本未分析、`already_read` 未作弱信号、排序权重静态不学习 | P2 | 待演进 |
 | 10 | 数据源仅 PubMed+bioRxiv；N/C/S RSS、arXiv 未接入；测试全 mock 无集成测试 | P2 | 待演进 |
@@ -392,6 +409,7 @@ holidays: ["2026-01-01", "2026-02-16", "..."]
 | 批 3 产品功能 | B6 中文四段结构化摘要（`fbc94ef`）→ B7 邮件开头总览（同 `fbc94ef`）→ B1 权重落地（`ed34425`+`fbd8b2c`）→ B5 节假日静态表（`aa5074d`）→ B3 月报·30 天阅读趋势+领域总结（`0d161e9`）→ B2+B4 五星反馈与关键词回信语法（`6b61269`） | ✅ 已完成（2026-07-28，195 passed） |
 | 批 5 检索与反馈 | 检索改扁平 OR：簇内全部关键词等权、命中任一词即召回，去掉"物种 AND 其余词"分组与严格/宽松降级重试（`global_pool.py` / `biorxiv.py` 全局路径；`pubmed.py` 逐人路径留作遗留不在主流水线）；反馈合并为日报末尾 Part 4 一封批量邮件（编号填 ⭐1–⭐5，编号经 recommendations 展示序映射；旧逐篇格式兼容收集） | ✅ 已完成（2026-07-29，207 passed） |
 | 批 6 邮件内五星反馈 | 撤销决策 1 零入站端口约束，引入 HTTP 反馈服务：日报每张卡片内嵌 ⭐1–⭐5 链接（`feedback/server.py` /fb 点星即落库、浏览器显示"已反馈"页+关键词表单；/kw 独立关键词入口；`feedback/tokens.py` HMAC 签名防伪造）；未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 回退批 5 批量回信；服务随 run_daily.sh 自动拉起 | ✅ 已完成（2026-07-29，219 passed） |
+| 批 7 召回与推送质量 | 顶刊直采通道（`sources/top_journals.py`：按 journals.yaml 分层刊名 `"<刊名>"[jour]` 逐刊直抓 PubMed 并入全局池，绕过关键词召回解决全局池零 CNS；`global_pool.fetch_global_pool` 新增 journal_channel 参数；main.py top-N 后按刊名补入通道候选，每用户上限 max_per_user=10）+ 推送下限（`ranker.thresholds.push_floor=40`：低分论文不进邮件，过滤后为空则当日跳过发信）；配置均在 scoring.yaml `journal_channel` / `ranker.thresholds` | ✅ 已完成（2026-07-29，225 passed） |
 
 ### 12.3 批 4 候选（第 11 节 P1/P2 余项）
 

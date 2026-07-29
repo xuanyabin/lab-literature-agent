@@ -166,3 +166,41 @@ def test_fetch_global_pubmed_cluster_error_continues(monkeypatch):
                 {"topic": "好簇", "species": [], "terms": ["good"]}]
     papers = gp.fetch_global_pubmed(clusters, days=1)
     assert [p.doi for p in papers] == ["10.1/9"]  # 单簇异常不影响其余簇
+
+
+# ---------- fetch_global_pool 顶刊通道 ----------
+
+def test_fetch_global_pool_merges_journal_channel(monkeypatch):
+    monkeypatch.setattr(gp.pubmed, "search_pmids", lambda *_a, **_k: ["1"])
+    monkeypatch.setattr(gp.pubmed, "fetch_by_pmids",
+                        lambda pmids: [_paper(f"10.1/{i}") for i in pmids])
+    monkeypatch.setattr(gp.biorxiv, "fetch_recent_global", lambda *_a, **_k: [])
+    monkeypatch.setattr(gp, "cluster_terms", lambda terms, llm: [
+        {"topic": "全部", "species": terms["species"], "terms": terms["others"]}])
+    monkeypatch.setattr(gp.time, "sleep", lambda _: None)
+
+    def fake_top(names, days, retmax):
+        assert names == ["Nature"]
+        return [_paper("10.1/1"), _paper("10.9/top")]  # 10.1/1 与关键词池撞 DOI
+
+    monkeypatch.setattr(gp.top_journals, "fetch_top_journals", fake_top)
+    users = [{"species": ["Apis"], "research_interest": [], "keywords": [], "methods": []}]
+    papers = gp.fetch_global_pool(users, FakeLLM(), days=1,
+                                  journal_channel={"names": ["Nature"], "retmax_per_journal": 5})
+    # 撞 DOI 时关键词池版本优先，顶刊新论文并入
+    assert [p.doi for p in papers] == ["10.1/1", "10.9/top"]
+
+
+def test_fetch_global_pool_without_journal_channel(monkeypatch):
+    monkeypatch.setattr(gp.pubmed, "search_pmids", lambda *_a, **_k: ["1"])
+    monkeypatch.setattr(gp.pubmed, "fetch_by_pmids",
+                        lambda pmids: [_paper(f"10.1/{i}") for i in pmids])
+    monkeypatch.setattr(gp.biorxiv, "fetch_recent_global", lambda *_a, **_k: [])
+    monkeypatch.setattr(gp, "cluster_terms", lambda terms, llm: [
+        {"topic": "全部", "species": terms["species"], "terms": terms["others"]}])
+    monkeypatch.setattr(gp.time, "sleep", lambda _: None)
+    monkeypatch.setattr(gp.top_journals, "fetch_top_journals",
+                        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("不应调用")))
+    users = [{"species": ["Apis"], "research_interest": [], "keywords": [], "methods": []}]
+    papers = gp.fetch_global_pool(users, FakeLLM(), days=1)
+    assert [p.doi for p in papers] == ["10.1/1"]

@@ -5,7 +5,9 @@
 cluster_terms 调 LLM 按研究主题聚成若干簇（结果按词表哈希缓存 7 天，
 LLM 失败沿用旧缓存，无缓存回退单簇），fetch_global_pubmed 逐簇检索后
 合并去重，与 bioRxiv 全局过滤结果一起构成当日全局池。exclude 词不进全局
-检索（各用户粗筛时各自剔除），查询式永不带 NOT。
+检索（各用户粗筛时各自剔除），查询式永不带 NOT。可选顶刊直采通道
+（sources/top_journals.py）：按 journals.yaml 刊名绕过关键词召回直抓
+最新论文并入池中，解决顶刊漏召回。
 """
 
 import hashlib
@@ -17,7 +19,7 @@ from pathlib import Path
 import yaml
 
 from processing.llm import load_prompt
-from sources import biorxiv, pubmed
+from sources import biorxiv, pubmed, top_journals
 from sources.paper import Paper, expand_with_aliases
 
 logger = logging.getLogger(__name__)
@@ -186,16 +188,31 @@ def fetch_global_pubmed(clusters: list[dict], days: int, retmax: int = 100) -> l
     return pubmed.dedupe(papers)
 
 
-def fetch_global_pool(prepared_users: list[dict], llm, days: int) -> list[Paper]:
-    """全局池入口：合并词表 → 主题聚类 → PubMed 分簇检索 + bioRxiv 全局过滤 → 去重。"""
+def fetch_global_pool(prepared_users: list[dict], llm, days: int,
+                      journal_channel: dict | None = None) -> list[Paper]:
+    """全局池入口：合并词表 → 主题聚类 → PubMed 分簇检索 + bioRxiv 全局过滤
+    → （可选）顶刊直采通道合并 → 去重。
+
+    journal_channel: {"names": [刊名...], "retmax_per_journal": N}，
+    刊名来自 journals.yaml（top_journals.load_journal_names），按刊直抓绕过
+    关键词召回；为 None 或 names 为空时不启用。
+    """
     terms = collect_global_terms(prepared_users)
-    if not terms["species"] and not terms["others"]:
-        logger.info("全局词表为空，本次运行无检索词")
-        return []
-    logger.info("全局检索词：物种 %d 个、其余 %d 个", len(terms["species"]), len(terms["others"]))
-    clusters = cluster_terms(terms, llm)
-    papers = fetch_global_pubmed(clusters, days)
-    logger.info("PubMed 全局池 %d 篇（去重后）", len(papers))
-    preprints = biorxiv.fetch_recent_global(terms["species"], terms["others"], days)
-    logger.info("bioRxiv 全局池 %d 篇（本地过滤后）", len(preprints))
-    return pubmed.dedupe(papers + preprints)  # PubMed 在前，撞 DOI/标题时已发表版优先
+    papers: list[Paper] = []
+    if terms["species"] or terms["others"]:
+        logger.info("全局检索词：物种 %d 个、其余 %d 个", len(terms["species"]), len(terms["others"]))
+        clusters = cluster_terms(terms, llm)
+        papers = fetch_global_pubmed(clusters, days)
+        logger.info("PubMed 全局池 %d 篇（去重后）", len(papers))
+        preprints = biorxiv.fetch_recent_global(terms["species"], terms["others"], days)
+        logger.info("bioRxiv 全局池 %d 篇（本地过滤后）", len(preprints))
+        papers += preprints
+    else:
+        logger.info("全局词表为空，跳过关键词检索")
+    if journal_channel and journal_channel.get("names"):
+        top = top_journals.fetch_top_journals(
+            journal_channel["names"], days,
+            journal_channel.get("retmax_per_journal", 20))
+        logger.info("顶刊通道全局池 %d 篇", len(top))
+        papers += top
+    return pubmed.dedupe(papers)  # 关键词池在前，撞 DOI/标题时关键词池版本优先

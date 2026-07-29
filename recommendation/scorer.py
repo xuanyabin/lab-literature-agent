@@ -44,6 +44,7 @@ def load_scoring_config(path: Path = DEFAULT_SCORING_CONFIG,
         "frequency_bonus": cfg.get("frequency_bonus", 1),
         "frequency_cap": cfg.get("frequency_cap", 3),
         "journal_tiers": load_journal_tiers(journals_path),
+        "journal_channel": cfg.get("journal_channel") or {},
         "learned_score_cap": (cfg.get("learned") or {}).get(
             "score_cap", DEFAULT_LEARNED_CONFIG["score_cap"]),
     }

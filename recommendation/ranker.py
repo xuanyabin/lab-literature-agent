@@ -14,7 +14,8 @@
 个人相关度/新颖性回退中性分 50，保证流水线不中断（日预算耗尽除外：
 BudgetExhaustedError 直接向上传播，快速失败不发空壳邮件）。重要性按 Final Score
 绝对阈值定级（ranker.thresholds，宁缺毋滥：当日全部低分则可以没有
-Must Read）；不再按固定配额凑数。
+Must Read）；不再按固定配额凑数。thresholds 可配 push_floor 推送下限：
+低于该分的论文直接不进邮件，进一步贯彻宁缺毋滥。
 """
 
 import json
@@ -169,6 +170,8 @@ def rank_items(items: list[dict], user: dict, llm, journal_tiers: dict,
 
     每个 item 增加 "score"（0-100）、"reason"（推荐理由）、"category" 字段。
     定级宁缺毋滥：当日全部低分则没有 Must Read / Important，不凑配额。
+    thresholds 含 push_floor 时，Final Score 低于该值的论文被过滤不进邮件
+    （可能返回空列表，调用方应跳过发信）。
     """
     scored = []
     for it in items:
@@ -194,4 +197,11 @@ def rank_items(items: list[dict], user: dict, llm, journal_tiers: dict,
     scored.sort(key=lambda x: -x[0])
     for score, it in scored:
         it["category"] = _category_of(score, thresholds)
-    return [it for _, it in scored]
+    items = [it for _, it in scored]
+    floor = thresholds.get("push_floor")
+    if floor is not None:  # 推送下限：低分论文不进邮件（宁缺毋滥）
+        kept = [it for it in items if it["score"] >= floor]
+        if len(kept) < len(items):
+            logger.info("推送下限 %d：过滤 %d 篇低分论文", floor, len(items) - len(kept))
+        items = kept
+    return items

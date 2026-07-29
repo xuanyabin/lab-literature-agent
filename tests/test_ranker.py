@@ -110,6 +110,20 @@ def test_rank_items_all_low_scores_no_must_read():
     assert [it["category"] for it in ranked] == ["Reference"] * 3
 
 
+def test_rank_items_push_floor_filters_low_scores():
+    # 推送下限：低分小刊（19 分）被过滤，不相关顶刊（40 分）保留露面
+    today = date(2026, 7, 22)
+    d = today.isoformat()
+    thresholds = {**THRESHOLDS, "push_floor": 40}
+    items = [
+        {"paper": _paper("Low paper", journal="Obscure", date_str=d), "analysis": {}},
+        {"paper": _paper("Low paper in Nature", journal="Nature", date_str=d), "analysis": {}},
+    ]
+    ranked = rank_items(items, USER, FakeLLM(), JOURNAL_TIERS, WEIGHTS, thresholds, today)
+    assert [it["paper"].title for it in ranked] == ["Low paper in Nature"]
+    assert ranked[0]["score"] == 40
+
+
 def test_rank_items_llm_failure_keeps_pipeline_alive():
     class BadLLM:
         def complete(self, prompt):

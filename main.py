@@ -15,7 +15,7 @@
       SQLite 全局表缓存复用，同一篇论文全实验室只处理一次）→ 每用户个性化精排
       （六维加权 Final Score + AI 推荐理由，按 Final Score 绝对阈值定级
       Must Read / Important / Reference，低于 push_floor 推送下限的不进邮件，
-      宁缺毋滥）→ 每日价值总结 → HTML 邮件
+      超过 --limit 时按 Final Score 截断封顶，宁缺毋滥）→ 每日价值总结 → HTML 邮件
       （卡片内嵌 ⭐1-5 反馈链接，由 python -m feedback.server 收集；
       未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 时回退为批量回信标注，
       由 python -m feedback 收集学习）；
@@ -123,6 +123,10 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
     if not items:  # 推送下限过滤后为空：宁缺毋滥，今日不发
         log.info("用户 %s 无达到推送下限的论文，跳过今日邮件", slug)
         return
+    if len(items) > args.limit:  # 合并封顶：关键词通道与顶刊通道凭 Final Score 竞争
+        log.info("超过每日上限 %d 篇，按 Final Score 截断（%d → %d）",
+                 args.limit, len(items), args.limit)
+        items = items[:args.limit]
     n_must = sum(1 for it in items if it["category"] == "Must Read")
     n_important = sum(1 for it in items if it["category"] == "Important")
     log.info("精排定级：Must Read %d / Important %d / Reference %d",

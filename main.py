@@ -12,8 +12,10 @@
       journal 维度体现，粗筛不再按期刊加分；顶刊通道论文按刊名补入候选，
       每用户每日上限见 scoring.yaml 的 journal_channel）→ 按用户跨天去重 → top-N；
       各用户 shortlist 求并集，并集只做一次 LLM 处理（分析/新闻摘要/翻译，
-      SQLite 全局表缓存复用，同一篇论文全实验室只处理一次）→ 每用户个性化精排
-      （六维加权 Final Score + AI 推荐理由，按 Final Score 绝对阈值定级
+      SQLite 全局表缓存复用，同一篇论文全实验室只处理一次；未命中缓存的论文按
+      model.yaml max_workers 并发调 LLM）→ 每用户个性化精排
+      （六维加权 Final Score + AI 推荐理由；LLM 判断按 scoring.yaml ranker.batch_size
+      分批一次调用评判多篇、批次间并发；按 Final Score 绝对阈值定级
       Must Read / Important / Reference，低于 push_floor 推送下限的不进邮件，
       超过 --limit 时按 Final Score 截断封顶，宁缺毋滥）→ 每日价值总结 → HTML 邮件
       （卡片内嵌 ⭐1-5 反馈链接，由 python -m feedback.server 收集；
@@ -48,7 +50,9 @@ from processing.artifacts import ensure_artifacts
 from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import BudgetExhaustedError, LLMClient
 from processing.term_expander import apply_auto_terms, refresh_auto_terms
-from recommendation.ranker import load_ranker_thresholds, load_ranker_weights, rank_items
+from recommendation.ranker import (
+    load_ranker_batch_size, load_ranker_thresholds, load_ranker_weights, rank_items,
+)
 from recommendation.scorer import _normalize_journal, load_scoring_config, rank_papers
 from sources.global_pool import fetch_global_pool
 from sources.top_journals import load_journal_names
@@ -117,9 +121,12 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
             "significance": a["significance"],
         })
 
-    log.info("个性化精排：六维加权 Final Score + 生成推荐理由")
+    log.info("个性化精排：六维加权 Final Score + 生成推荐理由（批量 %d 篇/次）",
+             load_ranker_batch_size())
     items = rank_items(items, user, llm, scoring_cfg["journal_tiers"],
-                       load_ranker_weights(), load_ranker_thresholds())
+                       load_ranker_weights(), load_ranker_thresholds(),
+                       batch_size=load_ranker_batch_size(),
+                       max_workers=llm.max_workers)
     if not items:  # 推送下限过滤后为空：宁缺毋滥，今日不发
         log.info("用户 %s 无达到推送下限的论文，跳过今日邮件", slug)
         return
@@ -280,7 +287,8 @@ def main() -> int:
     log.info("各用户 shortlist 并集 %d 篇，进入全局 AI 处理", len(union))
     artifacts = ensure_artifacts(list(union.values()), llm, conn,
                                  persist=not args.dry_run,
-                                 show_translation=email_cfg["show_translation"], log=log)
+                                 show_translation=email_cfg["show_translation"], log=log,
+                                 max_workers=llm.max_workers)
 
     failed = []
     for slug, u in prepared:
@@ -292,6 +300,7 @@ def main() -> int:
             failed.append(slug)
             log.exception("用户 %s 流程失败，继续下一个用户", slug)
     conn.close()
+    log.info("LLM 今日用量：%s", llm.get_usage())
     if failed:
         log.error("以下用户流程失败：%s", ", ".join(failed))
         return 1

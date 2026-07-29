@@ -12,8 +12,13 @@ from openai import APIStatusError, RateLimitError
 from processing.llm import LLMClient, _is_retryable
 
 
-def _resp(text="ok"):
-    return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=text))])
+def _resp(text="ok", usage=None):
+    """usage: (prompt_tokens, completion_tokens) 或 None（模拟网关缺 usage 字段）。"""
+    ns = SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=text))])
+    if usage is not None:
+        ns.usage = SimpleNamespace(prompt_tokens=usage[0], completion_tokens=usage[1],
+                                   total_tokens=usage[0] + usage[1])
+    return ns
 
 
 def _status_error(status, message="boom"):
@@ -153,7 +158,8 @@ def test_budget_counts_and_resets_across_days(tmp_path):
     c.complete("p1")
     c.complete("p2")
     data = json.loads(usage.read_text())
-    assert data == {"date": date.today().isoformat(), "calls": 2}  # 跨日清零后重新计数
+    assert data == {"date": date.today().isoformat(), "calls": 2,
+                    "prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}  # 跨日清零后重新计数
 
 
 def test_budget_zero_unlimited_and_no_usage_file(tmp_path):
@@ -170,3 +176,34 @@ def test_corrupted_usage_file_treated_as_zero(tmp_path):
     usage.write_text("{not json")
     c = _client([_resp()], daily_budget=1, usage_path=usage)
     assert c.complete("p") == "ok"  # 损坏文件按 0 计，不阻断调用
+
+
+def test_token_usage_accumulates(tmp_path):
+    """响应带 usage 字段时累计 token；缺字段按 0 计。"""
+    usage = tmp_path / ".llm_usage.json"
+    c = _client([_resp(usage=(100, 20)), _resp(usage=(50, 10)), _resp()],
+                daily_budget=10, usage_path=usage)
+    c.complete("p1")
+    c.complete("p2")
+    c.complete("p3")
+    data = json.loads(usage.read_text())
+    assert data["calls"] == 3
+    assert data["prompt_tokens"] == 150
+    assert data["completion_tokens"] == 30
+    assert data["total_tokens"] == 180
+    assert c.get_usage()["total_tokens"] == 180
+
+
+def test_usage_recording_thread_safe(tmp_path):
+    """并发调用下用量计数不丢失（类级锁保护读写）。"""
+    import threading
+    usage = tmp_path / ".llm_usage.json"
+    c = _client([_resp(usage=(10, 5))] * 20, daily_budget=100, usage_path=usage)
+    threads = [threading.Thread(target=c.complete, args=("p",)) for _ in range(20)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    data = json.loads(usage.read_text())
+    assert data["calls"] == 20
+    assert data["total_tokens"] == 300

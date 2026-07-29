@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import threading
 import time
 from datetime import date
 from pathlib import Path
@@ -46,9 +47,17 @@ class LLMClient:
       timeout      单次请求超时（默认 60s）
       max_tokens   单次最大输出 token（默认 2000）
       max_retries  可重试错误按 5s/10s/20s 指数退避重试（默认 3 次）
+      max_workers  LLM 并发线程数（默认 8；供产物生成/精排批处理读取，
+                   complete() 本身无状态、可安全并发调用）
       daily_budget 跨进程日调用预算（默认 1000，≤0 不限；用量记在 logs/.llm_usage.json，
                    跨日自动清零；预算耗尽后 complete() 直接抛错，避免费用失控）
+
+    用量文件同时累计 token 消耗（响应 usage 字段，网关缺字段时按 0 计）：
+      {"date", "calls", "prompt_tokens", "completion_tokens", "total_tokens"}
+    并发调用下用量读写由类级锁保护（类级：同一用量文件跨实例也安全）。
     """
+
+    _usage_lock = threading.Lock()
 
     def __init__(self, config_path: Path = DEFAULT_MODEL_CONFIG,
                  usage_path: Path = DEFAULT_USAGE_PATH):
@@ -59,6 +68,7 @@ class LLMClient:
         self.timeout = cfg.get("timeout", 60)
         self.max_tokens = cfg.get("max_tokens", 2000)
         self.max_retries = cfg.get("max_retries", 3)
+        self.max_workers = int(cfg.get("max_workers", 8))
         self.daily_budget = cfg.get("daily_budget", 1000)
         self.usage_path = Path(usage_path)
 
@@ -98,7 +108,7 @@ class LLMClient:
                     del kwargs["temperature"]
                 else:
                     raise
-        self._record_call()
+        self._record_call(resp)
         return (resp.choices[0].message.content or "").strip()
 
     def _create(self, **kwargs):
@@ -117,25 +127,44 @@ class LLMClient:
     def _check_budget(self) -> None:
         if self.daily_budget <= 0:
             return
-        used = self._usage().get("calls", 0)
+        with self._usage_lock:
+            used = self._usage().get("calls", 0)
         if used >= self.daily_budget:
             raise BudgetExhaustedError(
                 f"LLM 日预算已用完（{used}/{self.daily_budget}），次日自动重置；"
                 f"如需继续请调大 config/model.yaml 的 daily_budget")
 
-    def _record_call(self) -> None:
+    def _record_call(self, resp) -> None:
+        """累计调用次数与 token 消耗（响应 usage 字段，缺失按 0 计）；并发下由锁保护。"""
         if self.daily_budget <= 0:
             return
-        usage = self._usage()
-        usage["calls"] = usage.get("calls", 0) + 1
-        try:
-            self.usage_path.parent.mkdir(parents=True, exist_ok=True)
-            self.usage_path.write_text(json.dumps(usage), encoding="utf-8")
-        except OSError:
-            logger.warning("LLM 用量记录写入失败：%s", self.usage_path, exc_info=True)
+        usage = getattr(resp, "usage", None)
+        prompt_tokens = getattr(usage, "prompt_tokens", 0) or 0
+        completion_tokens = getattr(usage, "completion_tokens", 0) or 0
+        total_tokens = getattr(usage, "total_tokens", 0) or (prompt_tokens + completion_tokens)
+        with self._usage_lock:
+            data = self._usage()
+            data["calls"] = data.get("calls", 0) + 1
+            data["prompt_tokens"] = data.get("prompt_tokens", 0) + prompt_tokens
+            data["completion_tokens"] = data.get("completion_tokens", 0) + completion_tokens
+            data["total_tokens"] = data.get("total_tokens", 0) + total_tokens
+            try:
+                self.usage_path.parent.mkdir(parents=True, exist_ok=True)
+                self.usage_path.write_text(json.dumps(data), encoding="utf-8")
+            except OSError:
+                logger.warning("LLM 用量记录写入失败：%s", self.usage_path, exc_info=True)
+
+    def get_usage(self) -> dict:
+        """今日用量（含 token 累计），供流水线结束时汇报；字段缺省补 0。"""
+        with self._usage_lock:
+            data = self._usage()
+        return {"date": data["date"], "calls": data.get("calls", 0),
+                "prompt_tokens": data.get("prompt_tokens", 0),
+                "completion_tokens": data.get("completion_tokens", 0),
+                "total_tokens": data.get("total_tokens", 0)}
 
     def _usage(self) -> dict:
-        """读取今日用量 {"date", "calls"}；跨日自动清零，文件缺失/损坏按 0 计。"""
+        """读取今日用量 {"date", "calls", token 累计}；跨日自动清零，文件缺失/损坏按 0 计。"""
         today = date.today().isoformat()
         try:
             data = json.loads(self.usage_path.read_text(encoding="utf-8"))

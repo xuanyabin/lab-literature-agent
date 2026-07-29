@@ -7,7 +7,10 @@
 > 未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 时自动回退为批量回信标注）。
 > 批 7（2026-07-29）：顶刊直采通道（`sources/top_journals.py`，按 journals.yaml 刊名直抓
 > 绕过关键词召回，解决全局池零 CNS）+ 推送下限（`ranker.thresholds.push_floor`，低分论文不进邮件）。
-> 测试基线：225 passed（2026-07-29 复跑验证）。
+> 批 11（2026-07-29）：性能改造——LLM 并发（model.yaml `max_workers=8`，产物生成与精排批次并行）、
+> 精排批处理（scoring.yaml `ranker.batch_size=5`，一次 LLM 调用评判多篇）、token 计量
+> （`logs/.llm_usage.json` 累计 prompt/completion/total tokens，流水线结束打用量日志）。
+> 测试基线：237 passed（2026-07-29 复跑验证）。
 
 ---
 
@@ -74,10 +77,10 @@
 | `sources/biorxiv.py` | bioRxiv 采集：无服务端检索，按日期区间拉全量后本地过滤——主流水线 `fetch_recent_global` 用全局词表扁平 OR（等权、命中任一词即保留）；逐人 `fetch_recent`（严格/宽松降级）为遗留路径，仅测试/调试。抓取窗口向前多覆盖一天（bioRxiv 按美东时间发布，北京时间当天只有零星篇数），重叠由跨天去重兜底 |
 | `sources/paper.py` | Paper 数据类 + `expand_with_aliases`（检索词并入 aliases 变体）+ `dedupe`（DOI 优先、规范化标题兜底） |
 | `recommendation/scorer.py` | 三层漏斗第 2 层：零成本等权关键词粗筛 + tie-break；exclude 命中直接剔除；期刊分层只在此加载（供精排用），**粗筛不按期刊加分**（V4）；叠加 learned 词加分（单篇封顶 6） |
-| `recommendation/ranker.py` | 三层漏斗第 3 层：六维 0-100 加权 Final Score + AI 中文推荐理由；按绝对阈值定级（≥75 Must Read / ≥60 Important / 其余 Reference，宁缺毋滥不凑配额）；`thresholds.push_floor` 推送下限——低于该分的论文直接不进邮件（批 7）；LLM 异常回退中性分 50 |
-| `processing/artifacts.py` | 全局产物层：各用户 shortlist 并集的 AI 分析 / 新闻摘要 / 中文四段摘要一次生成、全用户复用——优先读 SQLite 全局缓存，未命中才调 LLM 并写回；LLM 日预算耗尽快速失败（向上传播），其余异常逐篇回退空产物不丢篇 |
+| `recommendation/ranker.py` | 三层漏斗第 3 层：六维 0-100 加权 Final Score + AI 中文推荐理由；按绝对阈值定级（≥75 Must Read / ≥60 Important / 其余 Reference，宁缺毋滥不凑配额）；`thresholds.push_floor` 推送下限——低于该分的论文直接不进邮件（批 7）；LLM 异常回退中性分 50；LLM 判断批处理执行——`ranker.batch_size`（默认 5）篇一次调用（prompt `recommendation_reason_batch.txt`，整批非法或数量不符整批回退中性分、单条非法仅该条回退），批次间按 `max_workers` 并发（批 11） |
+| `processing/artifacts.py` | 全局产物层：各用户 shortlist 并集的 AI 分析 / 新闻摘要 / 中文四段摘要一次生成、全用户复用——优先读 SQLite 全局缓存，未命中才调 LLM 并写回；未命中论文按 model.yaml `max_workers` 并发调 LLM（worker 只调 LLM，SQLite 读写全留主线程，批 11）；LLM 日预算耗尽快速失败（向上传播），其余异常逐篇回退空产物不丢篇 |
 | `processing/term_expander.py` | V4 召回增强核心：每日 `refresh_auto_terms` 按需刷新 LLM 扩展词缓存、`apply_auto_terms` 并入用户配置副本；`add_feedback_terms` 把回信 `+关键词` 追加进 auto_terms 的 feedback_added（B4，见第 9 节）；另保留离线人工审核工具模式（见第 8 节） |
-| `processing/llm.py` | LLMClient：读 `config/model.yaml`（provider openai / model gpt-5.4 / temperature 0.2），`OPENAI_API_KEY` 与可选 `OPENAI_BASE_URL` 来自 `.env`；temperature 参数被网关拒绝时自动去参重试；护栏：timeout 60s / max_tokens 2000 / 可重试错误（429·连接·超时·5xx）5s/10s/20s 退避重试 3 次 / daily_budget 1000（跨进程日预算，记录 `logs/.llm_usage.json`，≤0 不限） |
+| `processing/llm.py` | LLMClient：读 `config/model.yaml`（provider openai / model gpt-5.4 / temperature 0.2），`OPENAI_API_KEY` 与可选 `OPENAI_BASE_URL` 来自 `.env`；temperature 参数被网关拒绝时自动去参重试；护栏：timeout 60s / max_tokens 2000 / 可重试错误（429·连接·超时·5xx）5s/10s/20s 退避重试 3 次 / max_workers 8（LLM 并发线程数，complete() 无状态可安全并发，批 11）/ daily_budget 1000（跨进程日预算，记录 `logs/.llm_usage.json`，≤0 不限）；用量文件同时累计 token 消耗（`{"date","calls","prompt_tokens","completion_tokens","total_tokens"}`，类级锁保护并发读写），`get_usage()` 供流水线结束汇报（批 11） |
 | `processing/analyzer.py` | 论文结构化分析（problem / solution / finding / methods / organisms），prompt `paper_analysis.txt` |
 | `processing/paper_news_generator.py` | 一句话新闻摘要（解决什么问题→什么方法→什么创新→什么结果） |
 | `processing/translator.py` | 标题中译 + 中文四段结构化摘要（背景/研究方法/研究结果/研究意义，prompt `paper_translation.txt`；由 email.yaml `show_translation` 控制，开启时邮件只展示中文四段摘要） |
@@ -94,12 +97,12 @@
 | `config/users/auto_terms/<slug>.yaml` | V4 自动词表缓存（自动维护勿手改，已 gitignore）：expansion（每词 ≤5 个别名）+ feedback_added（反馈确认新词） |
 | `config/holidays.yaml` + `scheduler/holiday.py` | 中国法定节假日静态表（每年初按国务院放假安排手工维护一次）；`backfill_days`：当日在表内返回 0（跳过），否则返回 1+当日之前连续节假日天数（上限 10，供节后合并补发）；CLI `python -m scheduler.holiday` 打印该整数 |
 | `config/lab.yaml` | 实验室公共方向 topics + aliases，`apply_lab_profile` 并入每个用户（个人配置优先） |
-| `config/scoring.yaml` | 全部打分行为开关：粗筛等权/tie-break、ranker 六维权重与定级阈值（含 push_floor 推送下限）、journal_channel 顶刊直采通道开关（enabled/tiers/max_per_user/retmax_per_journal）、learned 学习护栏（含 negative_factor_weak/strong，详见第 4、9 节） |
+| `config/scoring.yaml` | 全部打分行为开关：粗筛等权/tie-break、ranker 六维权重与定级阈值（含 push_floor 推送下限、batch_size 精排批处理大小）、journal_channel 顶刊直采通道开关（enabled/tiers/max_per_user/retmax_per_journal）、learned 学习护栏（含 negative_factor_weak/strong，详见第 4、9 节） |
 | `config/journals.yaml` | 期刊分层 T0（CNS 正刊+顶级子刊 22 本）/ T1（综合强刊、基因组、进化生态、昆虫领域强刊）；仅用于精排 journal 维度与周报统计 |
 | `config/email.yaml` | daily_paper_number 15 / show_translation / show_keywords / show_doi（`feedback_email`、`feedback_base_url`、`feedback_secret` 非 yaml 键，由 main.py 运行时从 `.env` 的 DIGEST_FROM_EMAIL / FEEDBACK_BASE_URL / FEEDBACK_SECRET 注入） |
-| `prompts/` | 9 个 prompt 文件：paper_analysis / paper_news_summary / paper_translation / daily_value_summary / recommendation_reason / feedback_term_extraction / term_expansion / topic_clustering / weekly_report |
+| `prompts/` | 10 个 prompt 文件：paper_analysis / paper_news_summary / paper_translation / daily_value_summary / recommendation_reason / recommendation_reason_batch（精排批处理，批 11）/ feedback_term_extraction / term_expansion / topic_clustering / weekly_report |
 | `run_daily.sh` / `run_weekly.sh` / `run_monthly.sh` | cron 入口脚本（日报/周报/月报），均前置节假日判断（当日节假日记日志跳过；日报节后经 `--days` 合并补发）；run_daily.sh 另会先确保 feedback/server.py 反馈服务已在后台运行（pgrep 检查，未运行则 nohup 拉起，缺 FEEDBACK_SECRET 时进程自行退出不影响主流水线）；日志 `logs/pipeline.log`、`logs/cron.log`、`logs/feedback_server.log` |
-| `tests/` | 225 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
+| `tests/` | 237 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
 
 ---
 
@@ -154,6 +157,10 @@ LLM 主题聚类分簇（按词表哈希缓存 7 天）→ 逐簇一条扁平 OR
 **合并封顶**：关键词通道 top-N 与顶刊通道补入候选合并精排后，按下限过滤再按 Final Score
 降序截断到 `--limit`（默认 15）——两通道凭分数竞争，CNS 高分自然挤掉关键词通道低分论文。
 同时 LLM 生成一句中文推荐理由展示在卡片上。
+**批处理与并发（批 11）**：LLM 相关度/新颖性/理由判断按 `ranker.batch_size`（默认 5）篇合为
+一次调用（输出 JSON 数组逐篇解析；整批非法或数量不符时整批回退中性分 50，单条非法仅该条回退），
+批次间按 model.yaml `max_workers`（默认 8）并发——精排 LLM 调用量约为篇数 ÷ batch_size，
+15 篇约 3 次。
 
 ---
 
@@ -181,8 +188,10 @@ python main.py --days "$DAYS"                   # 再三阶段执行：
   7. 跨天去重：该用户历史已发论文（recommendations 表）跳过；取 top-N（默认 15）；
      顶刊通道论文按刊名补入候选（每用户上限 journal_channel.max_per_user，默认 10）
   8. 各用户 shortlist 求并集，并集只做一次 LLM 处理
-     （结构化分析 → 新闻摘要 → 中文四段摘要；SQLite 全局缓存复用，同篇全实验室只算一次）
-  9. 每用户六维精排 + 生成推荐理由 → 按绝对阈值定级 → push_floor 推送下限过滤
+     （结构化分析 → 新闻摘要 → 中文四段摘要；SQLite 全局缓存复用，同篇全实验室只算一次；
+     缓存未命中论文按 model.yaml max_workers 并发调 LLM）
+  9. 每用户六维精排 + 生成推荐理由（LLM 判断按 ranker.batch_size 篇一批、批次间并发）
+     → 按绝对阈值定级 → push_floor 推送下限过滤
      → 按 Final Score 截断封顶 --limit（默认 15，关键词通道与顶刊通道凭分数竞争）；
      过滤后为空则当日跳过发信，宁缺毋滥
   10. 入库 SQLite（论文/分析/摘要/翻译全局共享，推荐记录按用户隔离）
@@ -306,7 +315,7 @@ collector 按非法值忽略；周报阅读趋势统计通过 `normalize_feedbac
 ```bash
 cd ~/lab-literature-inteligence
 
-.venv/bin/python -m pytest tests/ -q        # 全量测试（当前 219 passed）
+.venv/bin/python -m pytest tests/ -q        # 全量测试（当前 237 passed）
 .venv/bin/python main.py --dry-run          # 全用户试跑：不发信，HTML 落 logs/
 .venv/bin/python main.py --user user001 --days 3   # 单用户调试，回溯 3 天
 .venv/bin/python weekly_report.py --dry-run        # 周报预览
@@ -421,6 +430,7 @@ holidays: ["2026-01-01", "2026-02-16", "..."]
 | 批 8 精排权重调整 | recency 权重 10→0 并入 personal（20→30）：journal 30 / personal 30 / lab 20 / method 10 / novelty 10 / recency 0；push_floor 随顶刊得分变化 40→30（不相关 T0 顶刊现仅 journal 30 分，保持露面机会）；recency 维度仍计算，配置调回即恢复 | ✅ 已完成（2026-07-29） |
 | 批 9 bioRxiv 窗口修复 | bioRxiv 按日期区间全量拉取，抓取窗口向前多覆盖一天，修复预印本时间分布导致新文长期捞不到、推送零 bioRxiv（`855728a`） | ✅ 已完成（2026-07-29，225 passed） |
 | 批 10 日报卡片合并 | Part 1 新闻摘要表与 Part 2 详情卡片合并：每篇一张卡片，默认可见区为徽标/得分/标题链接/一句话新闻概要/期刊日期，`<details>` 折叠作者、DOI、关键词、推荐理由与中文四段摘要（不支持的客户端默认全展开）；⭐ 反馈留在折叠区外不展开即可点；价值总结与反馈入口顺延为 Part 2 / Part 3 | ✅ 已完成（2026-07-29，227 passed） |
+| 批 11 性能改造 | 并发 + 批处理 + token 计量：① `artifacts.py` 产物生成线程池并发（model.yaml `max_workers=8`，worker 只调 LLM，SQLite 读写留主线程）；② `ranker.py` 精排批处理（scoring.yaml `ranker.batch_size=5`，`judge_batch` 一次调用评判多篇、批次间并发，整批非法/数量不符整批回退中性分、单条非法仅该条回退，prompt `recommendation_reason_batch.txt`）；③ `llm.py` 用量文件累计 prompt/completion/total tokens（类级锁保护并发读写），`main.py` 结束打 `get_usage()` 用量日志 | ✅ 已完成（2026-07-29，237 passed） |
 
 ### 12.3 批 4 候选（第 11 节 P1/P2 余项）
 

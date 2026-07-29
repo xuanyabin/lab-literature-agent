@@ -1,6 +1,7 @@
-"""processing/artifacts.py — ensure_artifacts 生成/缓存复用/降级。"""
+"""processing/artifacts.py — ensure_artifacts 生成/缓存复用/降级/并发。"""
 
 import logging
+import threading
 
 import pytest
 
@@ -35,6 +36,25 @@ class FakeLLM:
         if isinstance(resp, Exception):
             raise resp
         return resp
+
+
+class ConcurrentFakeLLM:
+    """线程安全、对所有 prompt 返回同一 JSON（同时是合法 analysis 与 translation）。"""
+
+    UNIVERSAL = ('{"problem":"P","solution":"S","finding":"F","methods":"m","organisms":["o"],'
+                 '"title_zh":"题","background":"背","results":"结","significance":"义"}')
+
+    def __init__(self, response=UNIVERSAL):
+        self._response = response
+        self.calls = 0
+        self._lock = threading.Lock()
+
+    def complete(self, prompt):
+        with self._lock:
+            self.calls += 1
+        if isinstance(self._response, Exception):
+            raise self._response
+        return self._response
 
 
 @pytest.fixture
@@ -133,3 +153,24 @@ class TestEnsureArtifacts:
     def test_dedup_key_matches_db(self):
         # 确认测试用的 KEY 常量与 db.dedup_key 规则一致
         assert dedup_key(_paper()) == KEY
+
+    def test_concurrent_generation_multiple_papers(self, conn):
+        papers = [_paper(doi=f"10.1/{i}") for i in range(3)]
+        llm = ConcurrentFakeLLM()
+        art = ensure_artifacts(papers, llm, conn, True, True, LOG, max_workers=4)
+        assert llm.calls == 9  # 3 篇 × 3 产物
+        for i in range(3):
+            entry = art[f"doi:10.1/{i}"]
+            assert entry["analysis"]["problem"] == "P"
+            assert entry["news"]
+            assert entry["title_zh"] == "题"
+            assert entry["background"] == "背"
+        llm2 = ConcurrentFakeLLM()  # 第二遍全部命中缓存
+        ensure_artifacts(papers, llm2, conn, True, True, LOG, max_workers=4)
+        assert llm2.calls == 0
+
+    def test_budget_exhausted_propagates_concurrent(self, conn):
+        papers = [_paper(doi=f"10.1/{i}") for i in range(3)]
+        llm = ConcurrentFakeLLM(BudgetExhaustedError("budget"))
+        with pytest.raises(BudgetExhaustedError):
+            ensure_artifacts(papers, llm, conn, True, True, LOG, max_workers=4)

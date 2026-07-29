@@ -3,10 +3,12 @@ from datetime import date, timedelta
 import yaml
 
 from recommendation.ranker import (
+    _parse_judgments,
     final_score,
     journal_influence,
     judge_paper,
     lab_relevance,
+    load_ranker_batch_size,
     load_ranker_thresholds,
     load_ranker_weights,
     method_relevance,
@@ -30,12 +32,23 @@ JOURNAL_TIERS = {"nature": "t0", "plos one": "t1"}
 
 
 class FakeLLM:
-    """按标题返回不同评分的假 LLM，用于验证精排逻辑。"""
+    """批处理感知的假 LLM：解析 prompt 中的"标题："行，逐篇返回评分数组。"""
+
+    def __init__(self):
+        self.calls = 0
 
     def complete(self, prompt: str) -> str:
-        if "High paper" in prompt:
-            return '{"personal_relevance": 100, "novelty": 100, "reason": "高相关"}'
-        return '{"personal_relevance": 0, "novelty": 0, "reason": "低相关"}'
+        import json
+        self.calls += 1
+        titles = [line.split("：", 1)[1] for line in prompt.splitlines()
+                  if line.startswith("标题：")]
+        out = [
+            {"personal_relevance": 100 if "High" in t else 0,
+             "novelty": 100 if "High" in t else 0,
+             "reason": "高相关" if "High" in t else "低相关"}
+            for t in titles
+        ]
+        return json.dumps(out, ensure_ascii=False)
 
 
 def _paper(title, abstract="", journal="", date_str=""):
@@ -153,3 +166,81 @@ def test_load_ranker_thresholds_defaults_and_override(tmp_path):
     thresholds = load_ranker_thresholds(path)
     assert thresholds["must_read"] == 80
     assert thresholds["important"] == 60  # 未覆盖字段回退默认
+
+
+def test_load_ranker_batch_size_defaults_and_override(tmp_path):
+    assert load_ranker_batch_size(tmp_path / "missing.yaml") == 5  # 文件缺失用默认
+    path = tmp_path / "scoring.yaml"
+    path.write_text(yaml.dump({"ranker": {"batch_size": 3}}), encoding="utf-8")
+    assert load_ranker_batch_size(path) == 3
+    path.write_text(yaml.dump({"ranker": {"batch_size": 0}}), encoding="utf-8")
+    assert load_ranker_batch_size(path) == 1  # 下限 1
+    path.write_text(yaml.dump({"ranker": {"batch_size": "abc"}}), encoding="utf-8")
+    assert load_ranker_batch_size(path) == 5  # 非法值回退默认
+
+
+def test_parse_judgments_valid_array():
+    raw = '[{"personal_relevance": 85, "novelty": 70, "reason": "r1"},' \
+          ' {"personal_relevance": 10, "novelty": 20, "reason": "r2"}]'
+    out = _parse_judgments(raw, 2)
+    assert out[0] == {"personal_relevance": 85, "novelty": 70, "reason": "r1"}
+    assert out[1]["personal_relevance"] == 10
+
+
+def test_parse_judgments_item_fallback_and_clamp():
+    # 单条非法只影响该条；合法条照常解析且分数裁剪到 0-100
+    raw = '[{"personal_relevance": 250, "novelty": -5, "reason": "r"}, {"bad": 1}]'
+    out = _parse_judgments(raw, 2)
+    assert out[0] == {"personal_relevance": 100, "novelty": 0, "reason": "r"}
+    assert out[1] == {"personal_relevance": 50, "novelty": 50, "reason": ""}
+
+
+def test_parse_judgments_invalid_or_length_mismatch_all_neutral():
+    neutral = {"personal_relevance": 50, "novelty": 50, "reason": ""}
+    assert _parse_judgments("not json", 2) == [neutral, neutral]
+    assert _parse_judgments('[{"personal_relevance": 1, "novelty": 1}]', 2) == [neutral, neutral]
+    # 单个对象在 n=1 时可接受
+    assert _parse_judgments('{"personal_relevance": 88, "novelty": 66, "reason": "x"}', 1) == \
+        [{"personal_relevance": 88, "novelty": 66, "reason": "x"}]
+
+
+def test_rank_items_batches_llm_calls():
+    # 3 篇按 batch_size=2 分 2 批：LLM 只调 2 次，分数与定级不变
+    today = date(2026, 7, 22)
+    d = today.isoformat()
+    items = [
+        {"paper": _paper("Low paper", journal="Obscure", date_str=d), "analysis": {}},
+        {"paper": _paper("High paper", journal="Nature", date_str=d), "analysis": {}},
+        {"paper": _paper("Genomics paper", journal="Nature", date_str=d), "analysis": {}},
+    ]
+    llm = FakeLLM()
+    ranked = rank_items(items, USER, llm, JOURNAL_TIERS, WEIGHTS, THRESHOLDS, today,
+                        batch_size=2, max_workers=1)
+    assert llm.calls == 2
+    assert [it["paper"].title for it in ranked] == ["High paper", "Genomics paper", "Low paper"]
+    assert ranked[0]["reason"] == "高相关"
+
+
+def test_rank_items_batch_failure_falls_back_per_batch():
+    # 一批输出非法时整批回退中性分，其余批不受影响
+    class FlakyLLM:
+        def __init__(self):
+            self.calls = 0
+
+        def complete(self, prompt):
+            self.calls += 1
+            if "High paper" in prompt:
+                return '{"personal_relevance": 100, "novelty": 100, "reason": "高相关"}'
+            return "not json"
+
+    today = date(2026, 7, 22)
+    d = today.isoformat()
+    items = [
+        {"paper": _paper("Low paper", journal="Obscure", date_str=d), "analysis": {}},
+        {"paper": _paper("High paper", journal="Nature", date_str=d), "analysis": {}},
+    ]
+    ranked = rank_items(items, USER, FlakyLLM(), JOURNAL_TIERS, WEIGHTS, THRESHOLDS, today,
+                        batch_size=1, max_workers=1)
+    assert ranked[0]["paper"].title == "High paper"  # 合法批正常
+    # 非法批回退中性分（personal/novelty 各 50）：30*0.3+50*0.3+50*0.1+0*0.2+0*0.1=29
+    assert ranked[1]["score"] == 29

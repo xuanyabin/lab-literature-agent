@@ -16,10 +16,15 @@ BudgetExhaustedError 直接向上传播，快速失败不发空壳邮件）。�
 绝对阈值定级（ranker.thresholds，宁缺毋滥：当日全部低分则可以没有
 Must Read）；不再按固定配额凑数。thresholds 可配 push_floor 推送下限：
 低于该分的论文直接不进邮件，进一步贯彻宁缺毋滥。
+
+LLM 判断按批处理执行（ranker.batch_size，默认每批 5 篇一次调用，prompt
+prompts/recommendation_reason_batch.txt），批次之间可并发（max_workers）；
+整批输出解析失败时整批回退中性分，不逐篇重试。
 """
 
 import json
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from pathlib import Path
 
@@ -45,6 +50,7 @@ DEFAULT_RANKER_WEIGHTS = {
     "novelty": 10, "method": 10, "recency": 0,
 }
 DEFAULT_RANKER_THRESHOLDS = {"must_read": 75, "important": 60}
+DEFAULT_BATCH_SIZE = 5  # 精排批处理：一次 LLM 调用评判的论文数
 
 _NEUTRAL_JUDGMENT = {"personal_relevance": 50, "novelty": 50, "reason": ""}
 
@@ -67,6 +73,18 @@ def load_ranker_thresholds(path: Path = DEFAULT_SCORING_CONFIG) -> dict:
     cfg = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
     thresholds = (cfg.get("ranker") or {}).get("thresholds") or {}
     return {**DEFAULT_RANKER_THRESHOLDS, **thresholds}
+
+
+def load_ranker_batch_size(path: Path = DEFAULT_SCORING_CONFIG) -> int:
+    """读取 scoring.yaml 的 ranker.batch_size（一次 LLM 调用评判的论文数），缺省 5，下限 1。"""
+    p = Path(path)
+    if not p.exists():
+        return DEFAULT_BATCH_SIZE
+    cfg = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+    try:
+        return max(1, int((cfg.get("ranker") or {}).get("batch_size", DEFAULT_BATCH_SIZE)))
+    except (TypeError, ValueError):
+        return DEFAULT_BATCH_SIZE
 
 
 def _category_of(score: int, thresholds: dict) -> str:
@@ -147,42 +165,125 @@ def judge_paper(paper: Paper, analysis: dict, user: dict, llm) -> dict:
     return _parse_judgment(llm.complete(prompt))
 
 
-def _parse_judgment(raw: str) -> dict:
-    text = raw.strip()
-    if text.startswith("```"):
-        lines = text.splitlines()
-        text = "\n".join(lines[1:-1] if lines[-1].startswith("```") else lines[1:])
+def _profile_kwargs(user: dict) -> dict:
+    return {
+        "interests": ", ".join(user.get("research_interest") or []) or "（无）",
+        "keywords": ", ".join(user.get("keywords") or []) or "（无）",
+        "species": ", ".join(user.get("species") or []) or "（无）",
+        "methods": ", ".join(user.get("methods") or []) or "（无）",
+    }
+
+
+def _papers_block(batch: list[dict]) -> str:
+    """批处理 prompt 的论文区块：编号 + 标题/摘要/AI 分析，供模型按序输出数组。"""
+    blocks = []
+    for i, it in enumerate(batch, 1):
+        paper, analysis = it["paper"], it["analysis"]
+        blocks.append(
+            f"论文 {i}\n"
+            f"标题：{paper.title}\n"
+            f"摘要：{paper.abstract or '（无摘要）'}\n"
+            f"AI 分析的科学问题：{analysis.get('problem', '')}\n"
+            f"AI 分析的核心发现：{analysis.get('finding', '')}"
+        )
+    return "\n\n".join(blocks)
+
+
+def judge_batch(batch: list[dict], user: dict, llm) -> list[dict]:
+    """一次 LLM 调用评判一批论文，返回与 batch 等长的 judgment 列表。
+
+    只捕获输出解析问题（整批回退中性分）；LLM 调用异常向上抛，
+    由 _judge_batch_safe 决定回退或传播（BudgetExhaustedError）。
+    """
+    prompt = load_prompt("recommendation_reason_batch").safe_substitute(
+        **_profile_kwargs(user), papers=_papers_block(batch))
+    return _parse_judgments(llm.complete(prompt), len(batch))
+
+
+def _judge_batch_safe(batch: list[dict], user: dict, llm) -> list[dict]:
+    """judge_batch 的护栏版：非预算异常整批回退中性分，不逐篇重试。"""
     try:
-        data = json.loads(text)
+        return judge_batch(batch, user, llm)
+    except BudgetExhaustedError:
+        raise  # 日预算耗尽：快速失败，不发空壳邮件
+    except Exception:
+        logger.warning("精排批量判断失败，整批回退中性分", exc_info=True)
+        return [dict(_NEUTRAL_JUDGMENT) for _ in batch]
+
+
+def _parse_one(data) -> dict:
+    """单条 judgment 校验归一化；非法回退中性分。"""
+    try:
         return {
             "personal_relevance": max(0, min(100, int(data["personal_relevance"]))),
             "novelty": max(0, min(100, int(data["novelty"]))),
             "reason": str(data.get("reason", "")).strip(),
         }
-    except (json.JSONDecodeError, KeyError, TypeError, ValueError):
-        logger.warning("精排输出不是合法 JSON，回退中性分：%.100s", raw)
+    except (KeyError, TypeError, ValueError):
         return dict(_NEUTRAL_JUDGMENT)
 
 
+def _strip_code_fence(raw: str) -> str:
+    text = raw.strip()
+    if text.startswith("```"):
+        lines = text.splitlines()
+        text = "\n".join(lines[1:-1] if lines[-1].startswith("```") else lines[1:])
+    return text
+
+
+def _parse_judgments(raw: str, n: int) -> list[dict]:
+    """解析批量输出（JSON 数组，长度须等于 n）；整体非法时整批回退中性分。"""
+    try:
+        data = json.loads(_strip_code_fence(raw))
+    except json.JSONDecodeError:
+        logger.warning("精排批量输出不是合法 JSON，整批回退中性分：%.100s", raw)
+        return [dict(_NEUTRAL_JUDGMENT) for _ in range(n)]
+    if isinstance(data, dict):  # 模型偶尔只返回单个对象
+        data = [data]
+    if not isinstance(data, list) or len(data) != n:
+        logger.warning("精排批量输出条数不符（期望 %d 实得 %s），整批回退中性分",
+                       n, len(data) if isinstance(data, list) else type(data).__name__)
+        return [dict(_NEUTRAL_JUDGMENT) for _ in range(n)]
+    return [_parse_one(item) for item in data]
+
+
+def _parse_judgment(raw: str) -> dict:
+    """单篇输出解析（judge_paper 用）：复用批量解析，n=1，非法回退中性分。"""
+    return _parse_judgments(raw, 1)[0]
+
+
 def rank_items(items: list[dict], user: dict, llm, journal_tiers: dict,
-               weights: dict, thresholds: dict, today: date | None = None) -> list[dict]:
+               weights: dict, thresholds: dict, today: date | None = None,
+               batch_size: int = DEFAULT_BATCH_SIZE, max_workers: int = 8) -> list[dict]:
     """对 AI 处理完的 items 计算 Final Score，按分数降序重排并按绝对阈值定级。
 
     每个 item 增加 "score"（0-100）、"reason"（推荐理由）、"category" 字段。
     定级宁缺毋滥：当日全部低分则没有 Must Read / Important，不凑配额。
     thresholds 含 push_floor 时，Final Score 低于该值的论文被过滤不进邮件
     （可能返回空列表，调用方应跳过发信）。
+
+    LLM 判断按 batch_size 分批一次调用评判多篇，批次间按 max_workers 并发；
+    批次异常整批回退中性分（BudgetExhaustedError 上抛，快速失败）。
     """
+    judgments: list[dict | None] = [None] * len(items)
+    batches = [(start, items[start:start + batch_size])
+               for start in range(0, len(items), batch_size)]
+    if len(batches) > 1 and max_workers > 1:
+        with ThreadPoolExecutor(max_workers=min(max_workers, len(batches))) as pool:
+            futures = {pool.submit(_judge_batch_safe, batch, user, llm): start
+                       for start, batch in batches}
+            for fut in as_completed(futures):
+                start = futures[fut]
+                result = fut.result()  # BudgetExhaustedError 在此上抛
+                judgments[start:start + len(result)] = result
+    else:
+        for start, batch in batches:
+            result = _judge_batch_safe(batch, user, llm)
+            judgments[start:start + len(result)] = result
+
     scored = []
-    for it in items:
-        paper, analysis = it["paper"], it["analysis"]
-        try:
-            judgment = judge_paper(paper, analysis, user, llm)
-        except BudgetExhaustedError:
-            raise  # 日预算耗尽：快速失败，不发空壳邮件
-        except Exception:
-            logger.warning("精排 LLM 判断失败，回退中性分：%s", paper.title[:60], exc_info=True)
-            judgment = dict(_NEUTRAL_JUDGMENT)
+    for it, judgment in zip(items, judgments):
+        paper = it["paper"]
         dims = {
             "personal": judgment["personal_relevance"],
             "lab": lab_relevance(paper, user),

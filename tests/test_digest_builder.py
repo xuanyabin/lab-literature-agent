@@ -98,37 +98,38 @@ def test_reason_absent_when_empty():
     assert "推荐理由" not in html
 
 
-def _build_with_feedback(item, user_email="a@x.com", config=None):
+def _build_with_feedback(items, user_email="a@x.com", config=None):
     cfg = {"feedback_email": "bot@x.com", **(config or {})}
-    return build_digest_html("轩亚冰", "2025-07-22", [item], "总结。", cfg,
+    return build_digest_html("轩亚冰", "2025-07-22", items, "总结。", cfg,
                              user_email=user_email)
 
 
-def test_feedback_links_rendered_with_mailto_token():
-    item = {**make_item(), "paper_id": 7}
-    html = _build_with_feedback(item)
+def test_feedback_block_single_mailto_with_date_token():
+    html = _build_with_feedback([make_item()])
+    assert "一键反馈" in html
+    # 整封邮件只有一个反馈邮件链接（B6：批量反馈替代逐篇链接）
+    assert html.count("mailto:") == 1
     assert "mailto:bot@x.com?subject=" in html
-    # 主题经 URL 编码：[FB]→%5BFB%5D，=→%3D
-    assert "%5BFB%5D" in html and "p%3D7" in html
-    # 五星反馈链接（B2）：v=1..5，链接文字带中文语义标注
-    for v in ("1", "2", "3", "4", "5"):
-        assert f"v%3D{v}" in html
-    assert "⭐1 完全不相关" in html and "⭐5 非常重要" in html
+    # 主题经 URL 编码：[FB]→%5BFB%5D，=→%3D；批量格式带日期、不带论文 id
+    assert "%5BFB%5D" in html and "d%3D2025-07-22" in html
+    assert "p%3D" not in html
 
 
-def test_feedback_links_absent_without_user_email():
-    item = {**make_item(), "paper_id": 7}
-    html = _build_with_feedback(item, user_email="")
+def test_feedback_block_prefills_numbered_lines():
+    html = _build_with_feedback([make_item(), make_item()])
+    # 正文预填两位编号行（"01: " 经 URL 编码为 01%3A）
+    assert "01%3A" in html and "02%3A" in html
+
+
+def test_feedback_block_absent_without_user_email_or_feedback_email():
+    html = _build_with_feedback([make_item()], user_email="")
     assert "mailto:" not in html
-
-
-def test_feedback_links_absent_without_paper_id_or_feedback_email():
-    # dry-run 未入库（无 paper_id）或未配 feedback_email 时不渲染反馈行
-    assert "mailto:" not in _build_with_feedback(make_item())
-    item = {**make_item(), "paper_id": 7}
-    html = build_digest_html("轩亚冰", "2025-07-22", [item], "总结。", {},
+    assert "一键反馈" not in html
+    # 未配 feedback_email 时同样不渲染
+    html = build_digest_html("轩亚冰", "2025-07-22", [make_item()], "总结。", {},
                              user_email="a@x.com")
     assert "mailto:" not in html
+    assert "一键反馈" not in html
 
 
 OVERVIEW = {"days": 1, "pool_total": 132, "matched": 27,

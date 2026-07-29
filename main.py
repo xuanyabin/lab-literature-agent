@@ -12,7 +12,7 @@
       SQLite 全局表缓存复用，同一篇论文全实验室只处理一次）→ 每用户个性化精排
       （六维加权 Final Score + AI 推荐理由，按 Final Score 绝对阈值定级
       Must Read / Important / Reference，宁缺毋滥）→ 每日价值总结 → HTML 邮件
-      （卡片带反馈链接，回信由 python -m feedback 收集学习）；
+      （末尾带一键反馈入口，回信由 python -m feedback 收集学习）；
       论文与产物入库 SQLite，推荐记录写入 recommendations 表
       （用户之间去重互不影响）。LLM 日预算耗尽时快速失败，不发空壳邮件。
 

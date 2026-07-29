@@ -1,9 +1,10 @@
 # Lab Literature Intelligence 实验室文献情报系统 · 具体行动方案
 
-> 版本：V4（按当前工作区实际状态编写）· 更新日期：2026-07-28
+> 版本：V4（按当前工作区实际状态编写）· 更新日期：2026-07-29
 > 部署环境：macOS · 项目根目录 `~/lab-literature-inteligence` · Python 3.13，一律使用 `.venv/bin/python`
-> 状态：批 1–3 全部落地并提交（最新 commit `6b61269`，批 4 候选见第 12.3 节）。
-> 测试基线：195 passed（2026-07-28 复跑验证）。
+> 状态：批 1–3 全部落地并提交；批 5（2026-07-29）：检索扁平 OR（关键词等权、命中任一词即召回，
+> 不再按物种 AND 分组）+ 反馈合并为日报末尾一封批量邮件（编号填 ⭐1–⭐5，旧逐篇格式仍兼容收集）。
+> 测试基线：207 passed（2026-07-29 复跑验证）。
 
 ---
 
@@ -26,8 +27,8 @@
   global_pool.py（全局摄取层）──→     scorer.py（等权规则粗筛）──→      artifacts.py（全局产物层）
     全用户词表合并 → LLM 主题         ranker.py（六维精排+定级）          analyzer.py（结构化分析）
     聚类分簇检索 → 当日全局池                                       paper_news_generator.py（新闻摘要）
-  pubmed.py（严格/宽松降级）                                        translator.py（中文四段摘要）
-  biorxiv.py（全量+本地过滤）                                       daily_summary_generator.py（每日总结）
+  pubmed.py（遗留逐人路径，不在主流水线）                        translator.py（中文四段摘要）
+  biorxiv.py（全局扁平 OR 过滤为主）                             daily_summary_generator.py（每日总结）
        │                              │
        ▼                              ▼
               database/db.py（SQLite：papers / paper_analysis / paper_news_summary
@@ -36,7 +37,7 @@
         ┌───────────────────────────┼─────────────────────────────┐
         ▼                           ▼                             ▼
   mailer/digest_builder.py   weekly_report.py（周报/月报）       feedback/（学习闭环）
-  （总览块+三段式日报 HTML）  （统计+阅读趋势+趋势总结+清单）    collector.py  IMAP 收集 [FB] 回信
+  （总览块+四段式日报 HTML）  （统计+阅读趋势+趋势总结+清单）    collector.py  IMAP 收集 [FB] 回信
         │                                                     learner.py    五星反馈学习
         ▼                                                     vocab.py      半衰期衰减读取
   mailer/sender.py（SMTP 发信）
@@ -60,9 +61,9 @@
 |---|---|
 | `main.py` | 每日流水线总入口（三阶段，详见第 5 节）：逐人词表准备 → 全局池一次检索 → 每用户本地粗筛取 top-N → shortlist 并集一次 LLM 处理 → 每用户精排发信；参数 `--user` / `--days`（默认 1）/ `--limit`（默认取 email.yaml 的 daily_paper_number=15）/ `--dry-run`（不发信不写库，HTML 落 `logs/`）；单用户失败 try/except 隔离继续，任一用户失败整体返回 1 |
 | `weekly_report.py` | 周报/月报入口：`--user` / `--days 7`（月报 `--days 30`）/ `--dry-run`；聚合 SQLite 窗口内推荐 → 统计 + 阅读趋势 → LLM 趋势总结 → 四段式邮件 |
-| `sources/global_pool.py` | 全局摄取层：全用户检索词（aliases 展开 + 有效学习词）合并去重 → LLM 主题聚类分簇（`prompts/topic_clustering.txt`，按词表哈希缓存 7 天，失败沿用旧缓存、无缓存回退单簇）→ 逐簇 PubMed 检索合并去重 + bioRxiv 全局过滤 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）、查询式永不带 NOT |
-| `sources/pubmed.py` | PubMed 采集（NCBI E-utilities）。`build_queries` 返回（严格， 宽松）两条查询：严格=物种组 OR 与其余全部检索词 OR 做 AND；宽松=全部词扁平 OR；严格命中 <5 篇自动降级宽松；两端都附加 exclude 词的 NOT 排除；aliases 与有效学习词先并入检索词；429 限流指数退避（5s/10s/20s） |
-| `sources/biorxiv.py` | bioRxiv 采集：无服务端检索，按日期区间拉全量后本地用同一套词表语义过滤 |
+| `sources/global_pool.py` | 全局摄取层：全用户检索词（aliases 展开 + 有效学习词）合并去重 → LLM 主题聚类分簇（`prompts/topic_clustering.txt`，按词表哈希缓存 7 天，失败沿用旧缓存、无缓存回退单簇）→ 逐簇扁平 OR PubMed 检索（簇内关键词等权、命中任一词即召回，无 AND 分组）合并去重 + bioRxiv 全局过滤 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）、查询式永不带 NOT |
+| `sources/pubmed.py` | **遗留逐人路径（不在主流水线，仅测试/调试）**。PubMed 采集（NCBI E-utilities）。`build_queries` 返回（严格， 宽松）两条查询：严格=物种组 OR 与其余全部检索词 OR 做 AND；宽松=全部词扁平 OR；严格命中 <5 篇自动降级宽松；两端都附加 exclude 词的 NOT 排除；aliases 与有效学习词先并入检索词；429 限流指数退避（5s/10s/20s） |
+| `sources/biorxiv.py` | bioRxiv 采集：无服务端检索，按日期区间拉全量后本地过滤——主流水线 `fetch_recent_global` 用全局词表扁平 OR（等权、命中任一词即保留）；逐人 `fetch_recent`（严格/宽松降级）为遗留路径，仅测试/调试 |
 | `sources/paper.py` | Paper 数据类 + `expand_with_aliases`（检索词并入 aliases 变体）+ `dedupe`（DOI 优先、规范化标题兜底） |
 | `recommendation/scorer.py` | 三层漏斗第 2 层：零成本等权关键词粗筛 + tie-break；exclude 命中直接剔除；期刊分层只在此加载（供精排用），**粗筛不按期刊加分**（V4）；叠加 learned 词加分（单篇封顶 6） |
 | `recommendation/ranker.py` | 三层漏斗第 3 层：六维 0-100 加权 Final Score + AI 中文推荐理由；按绝对阈值定级（≥75 Must Read / ≥60 Important / 其余 Reference，宁缺毋滥不凑配额）；LLM 异常回退中性分 50 |
@@ -74,9 +75,9 @@
 | `processing/translator.py` | 标题中译 + 中文四段结构化摘要（背景/研究方法/研究结果/研究意义，prompt `paper_translation.txt`；由 email.yaml `show_translation` 控制，开启时邮件只展示中文四段摘要） |
 | `processing/daily_summary_generator.py` | 日报末尾"今日价值总结"（LLM 生成） |
 | `database/db.py` | SQLite（`literature_agent.db`）：papers（dedup_key UNIQUE，全局共享）、paper_analysis、paper_news_summary、paper_translation（四段摘要，全局共享）、recommendations（user_email+paper_id UNIQUE，sent_date/category/score）、feedback（UNIQUE(user,paper,value)，processed 标记）、learned_terms（weight/support/last_seen）；全部幂等写入 |
-| `mailer/digest_builder.py` | 日报 HTML（模板 `templates/daily_digest.html`）：开头总览块（窗口内全库新增/命中关键词/推送篇数与定级分布）+ 三段式；卡片展示中文四段结构化摘要，底部 ⭐1–⭐5 反馈 mailto 链接（主题带 `[FB]` token） |
+| `mailer/digest_builder.py` | 日报 HTML（模板 `templates/daily_digest.html`）：开头总览块（窗口内全库新增/命中关键词/推送篇数与定级分布）+ 四段式；卡片展示中文四段结构化摘要；Part 4 一键反馈——单个 mailto 按钮（主题 `[FB] u=<邮箱> d=<日期>`，正文预填当天编号行，按编号填 ⭐1–⭐5） |
 | `mailer/sender.py` | SMTP 发信：凭据全部来自 `.env`（SMTP_HOST/PORT/USER/PASSWORD/DIGEST_FROM_EMAIL），缺失即报错列出缺项；465 走 SSL，其余 starttls |
-| `feedback/collector.py` | IMAP 轮询发件箱，解析 `[FB] u=<邮箱> p=<id> v=<1..5>` 回信写 feedback 表并标记已读；From 防伪造校验（发件人须与主题标注用户一致）；正文 `+关键词` 行经 `add_feedback_terms` 入 auto_terms；需 `.env` 配 IMAP_HOST（IMAP_USER/PASSWORD 缺省回退 SMTP 配置） |
+| `feedback/collector.py` | IMAP 轮询发件箱，解析两种 `[FB]` 回信：批量格式 `u=<邮箱> d=<日期>`（正文编号行 `NN: 1-5`，编号经 recommendations 表按展示序映射回 paper_id）+ 旧逐篇格式 `u=<邮箱> p=<id> v=<1..5>`（向后兼容）；写 feedback 表并标记已读；From 防伪造校验（发件人须与主题标注用户一致）；正文 `+关键词` 行经 `add_feedback_terms` 入 auto_terms；需 `.env` 配 IMAP_HOST（IMAP_USER/PASSWORD 缺省回退 SMTP 配置） |
 | `feedback/learner.py` | 全自动学习四档映射：⭐4/5 LLM 提炼新词（≥2 篇支持才提权）、⭐3 只记录、⭐2 命中学习词 ×0.5、⭐1 ×0.25 且同词累计 2 次写 exclude_candidate 审计；审计 `logs/feedback_learning.log`（JSONL） |
 | `feedback/vocab.py` | 学习词读取侧：有效权重=原始权重×0.5^(天数/半衰期 30 天)，低于 0.3 失效；读取时计算不回写 |
 | `config/users/<slug>.yaml` | 个人画像：name/email/active + 四组检索词 + exclude + aliases；**新增成员只需加一个 yaml，不改代码** |
@@ -88,7 +89,7 @@
 | `config/email.yaml` | daily_paper_number 15 / show_translation / show_keywords / show_doi（`feedback_email` 非 yaml 键，由 main.py 运行时从 `.env` 的 DIGEST_FROM_EMAIL 注入，作 `[FB]` 回信收件箱） |
 | `prompts/` | 9 个 prompt 文件：paper_analysis / paper_news_summary / paper_translation / daily_value_summary / recommendation_reason / feedback_term_extraction / term_expansion / topic_clustering / weekly_report |
 | `run_daily.sh` / `run_weekly.sh` / `run_monthly.sh` | cron 入口脚本（日报/周报/月报），均前置节假日判断（当日节假日记日志跳过；日报节后经 `--days` 合并补发）；日志 `logs/pipeline.log`、`logs/cron.log` |
-| `tests/` | 195 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
+| `tests/` | 207 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
 
 ---
 
@@ -96,10 +97,11 @@
 
 ### 第 1 层：检索召回（sources/）
 **主路径（全局摄取层 `global_pool.py`）**：全用户检索词（aliases 展开 + 有效学习词）合并去重 →
-LLM 主题聚类分簇（按词表哈希缓存 7 天）→ 逐簇一条 PubMed 宽松查询合并去重
-\+ bioRxiv 按日期全量拉取后全局词表过滤 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）。
-**降级/单用户路径（`pubmed.py`）**：严格查询（物种 OR）AND（其余词 OR），命中不足 5 篇降级为全词扁平 OR；
-exclude 词在查询端 NOT 排除。
+LLM 主题聚类分簇（按词表哈希缓存 7 天）→ 逐簇一条扁平 OR PubMed 查询
+（簇内全部关键词等权、命中任一词即召回，无 AND、不按物种分组、无降级重试）合并去重
+\+ bioRxiv 按日期全量拉取后全局词表扁平 OR 过滤 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）。
+**遗留逐人路径（`pubmed.py`，不在主流水线，仅测试/调试）**：严格查询（物种 OR）AND（其余词 OR），
+命中不足 5 篇降级为全词扁平 OR；exclude 词在查询端 NOT 排除。
 两源合并按 DOI/标题去重（PubMed 已发表版优先）。
 
 ### 第 2 层：规则粗筛（`scorer.py` + `config/scoring.yaml`）
@@ -149,7 +151,7 @@ python main.py --days "$DAYS"                   # 再三阶段执行：
 
 阶段二 · 全局摄取一次（sources/global_pool.py）
   4. 全用户词表合并去重 → LLM 主题聚类分簇（7 天缓存）
-  5. 逐簇 PubMed 检索 + bioRxiv 全局过滤 → 合并去重成当日全局池
+  5. 逐簇扁平 OR PubMed 检索 + bioRxiv 全局过滤 → 合并去重成当日全局池
 
 阶段三 · 逐用户分发
   6. 每用户本地规则粗筛等权打分（lab_topics 叠加个人词表；期刊不参与）
@@ -158,7 +160,7 @@ python main.py --days "$DAYS"                   # 再三阶段执行：
      （结构化分析 → 新闻摘要 → 中文四段摘要；SQLite 全局缓存复用，同篇全实验室只算一次）
   9. 每用户六维精排 + 生成推荐理由 → 按绝对阈值定级
   10. 入库 SQLite（论文/分析/摘要/翻译全局共享，推荐记录按用户隔离）
-  11. 生成今日价值总结 → 渲染总览块+三段式 HTML → SMTP 发送
+  11. 生成今日价值总结 → 渲染总览块+四段式 HTML → SMTP 发送
      主题：Daily Literature Intelligence Report · <日期>
      dry-run：不发信不写库，HTML 写 logs/digest_<日期>_<用户>.html
 ```
@@ -184,22 +186,25 @@ weekly_report.py --days 30        # 月报（run_monthly.sh，cron 每月 1 日�
 
 ## 7. 邮件规格
 
-**日报（开头总览块 + 三段式）**：总览块（窗口内全库新增 X 篇 · 命中您的关键词 Y 篇 ·
+**日报（开头总览块 + 四段式）**：总览块（窗口内全库新增 X 篇 · 命中您的关键词 Y 篇 ·
 本次推送 Z 篇，附必读/重要/参考定级分布）；Part 1 今日论文新闻摘要表
 （一句话：问题→方法→创新→结果）；Part 2 详细卡片（定级徽标、Final Score、中英文标题、
 中文四段结构化摘要——背景/研究方法/研究结果/研究意义，`show_translation` 开启时只展示中文、
-不再显示英文摘要，关闭回退英文摘要；Keywords、DOI、AI 推荐理由、⭐1–⭐5 反馈链接）；
-Part 3 今日价值总结。
+不再显示英文摘要，关闭回退英文摘要；Keywords、DOI、AI 推荐理由）；
+Part 3 今日价值总结；Part 4 一键反馈（单个 mailto 按钮，一封回信评完全部，见下）。
 
 **周报/月报（四段式）**：Part 1 LLM 趋势总结；Part 2 分布统计（定级/期刊分层/Top 期刊/高频词）；
 Part 3 阅读趋势（窗口内反馈正/中/负分桶 + 当前有效学习词 Top）；Part 4 重点论文清单
-（周报/月报清单不带逐篇反馈按钮，反馈入口只在日报卡片）。
+（周报/月报清单不带反馈入口，反馈入口只在日报 Part 4）。
 
-**反馈链接**：mailto 回信，主题 `[FB] u=<用户邮箱> p=<论文id> v=<1..5>`
-（⭐1 完全不相关 / ⭐2 不太相关 / ⭐3 一般 / ⭐4 比较重要 / ⭐5 非常重要）；
-正文可自由填写原因（可选）；另起一行以 `+` 开头可新增检索词
+**反馈邮件（批量，一封评全部）**：日报 Part 4 单个 mailto 按钮，主题
+`[FB] u=<用户邮箱> d=<日期>`；正文预填当天全部编号行（`01:`–`NN:`，编号与卡片展示序一致），
+在想评的编号后填 1-5（⭐1 完全不相关 / ⭐2 不太相关 / ⭐3 一般 / ⭐4 比较重要 / ⭐5 非常重要），
+其余留空即可；collector 按编号经 recommendations 表（user_email + sent_date，按分数展示序）
+映射回 paper_id。正文其余行可自由填写原因（可选）；另起一行以 `+` 开头可新增检索词
 （如 `+CRISPR, 单细胞测序`，逗号兼容中英文），校验发件人后追加进该用户
 auto_terms 的 feedback_added，次日进检索（见第 9 节）。
+旧逐篇格式 `[FB] u=<邮箱> p=<id> v=<1..5>` 的回信 collector 仍兼容收集。
 
 **发信**：SMTP（凭据在 `.env`，不入库不入文档），465 SSL 或 starttls。
 
@@ -227,10 +232,12 @@ auto_terms 的 feedback_added，次日进检索（见第 9 节）。
 
 ## 9. 反馈学习闭环（全自动，五星制）
 
-1. 用户在日报卡片点 **⭐1–⭐5** → 邮件客户端生成 `[FB]` 回信草稿发出；
+1. 用户在日报末尾 Part 4 点 **一键反馈** → 邮件客户端生成 `[FB]` 回信草稿
+   （主题带 `d=<日期>`，正文预填当天全部编号行），在想评的编号后填 ⭐1–⭐5 发出；
    正文可填原因（非必填），另起一行 `+关键词` 可新增检索词。
 2. 每日流水线**之前** `python -m feedback`：IMAP 收取未读 `[FB]` 回信 →
    **校验发件人 From 与主题标注用户一致**（不符拒绝记录，防伪造污染他人词表）→
+   批量格式按编号经 recommendations 表映射回 paper_id（越界编号跳过并告警）→
    写 feedback 表（幂等：同人同篇同评级去重）→ 标记已读；
    校验通过后正文 `+关键词` 行经清洗去重追加到该用户 auto_terms 的 `feedback_added`，次日进检索。
    随后执行 `learner.learn_from_feedback`，按星级四档映射：
@@ -258,7 +265,7 @@ collector 按非法值忽略；周报阅读趋势统计通过 `normalize_feedbac
 ```bash
 cd ~/lab-literature-inteligence
 
-.venv/bin/python -m pytest tests/ -q        # 全量测试（当前 195 passed）
+.venv/bin/python -m pytest tests/ -q        # 全量测试（当前 207 passed）
 .venv/bin/python main.py --dry-run          # 全用户试跑：不发信，HTML 落 logs/
 .venv/bin/python main.py --user user001 --days 3   # 单用户调试，回溯 3 天
 .venv/bin/python weekly_report.py --dry-run        # 周报预览
@@ -316,7 +323,9 @@ journal_fallback 低相关兜底退役、LLM 自动扩展词每日缓存。
 安全攻击面仅剩 SMTP/IMAP/OPENAI 凭据（`.env` + gitignore）与已修复的 From 伪造校验。
 
 **决策 2 · 五星反馈**（替代 relevant / not_relevant / already_read / save 四键）：
-卡片底部 5 个链接 ⭐1–⭐5，主题 `[FB] u=<邮箱> p=<id> v=<1..5>`；
+日报末尾 Part 4 一键反馈——单个 mailto 按钮生成一封回信，主题 `[FB] u=<邮箱> d=<日期>`，
+正文预填当天编号行，按编号填 ⭐1–⭐5（批 5 起由逐篇 5 链接改为批量一封；
+旧逐篇 `p=<id> v=<1..5>` 格式 collector 仍兼容收集）；
 正文 `+关键词1, 关键词2` 语法保留（写入 `auto_terms` 的 `feedback_added`，次日进检索）。
 星级→学习信号映射（最小改动复用现有学习逻辑，参数进 `config/scoring.yaml` learned 节）：
 
@@ -354,6 +363,7 @@ holidays: ["2026-01-01", "2026-02-16", "..."]
 | 批 1 P0 修复 | #1 collector 防伪造、#3 LLMClient 护栏、#4 失败返回非 0 | ✅ 已完成（2026-07-28，`5113b0d`） |
 | 批 2 全局池 | 全局词表合并 → LLM 主题聚类（7 天缓存）→ 每簇一条 PubMed 查询合并全局池 → 按人本地粗筛分发；LLM 产物按并集 shortlist 只算一次并 SQLite 缓存复用（解决第 11 节 #2、#3 剩余子项） | ✅ 已完成（2026-07-28，`5113b0d`） |
 | 批 3 产品功能 | B6 中文四段结构化摘要（`fbc94ef`）→ B7 邮件开头总览（同 `fbc94ef`）→ B1 权重落地（`ed34425`+`fbd8b2c`）→ B5 节假日静态表（`aa5074d`）→ B3 月报·30 天阅读趋势+领域总结（`0d161e9`）→ B2+B4 五星反馈与关键词回信语法（`6b61269`） | ✅ 已完成（2026-07-28，195 passed） |
+| 批 5 检索与反馈 | 检索改扁平 OR：簇内全部关键词等权、命中任一词即召回，去掉"物种 AND 其余词"分组与严格/宽松降级重试（`global_pool.py` / `biorxiv.py` 全局路径；`pubmed.py` 逐人路径留作遗留不在主流水线）；反馈合并为日报末尾 Part 4 一封批量邮件（编号填 ⭐1–⭐5，编号经 recommendations 展示序映射；旧逐篇格式兼容收集） | ✅ 已完成（2026-07-29，207 passed） |
 
 ### 12.3 批 4 候选（第 11 节 P1/P2 余项）
 

@@ -4,8 +4,9 @@ import pytest
 
 from database.db import (
     connect, dedup_key, get_analysis, get_news_summary, get_paper_id,
-    get_seen_keys, get_translation, save_analysis, save_news_summary,
-    save_paper, save_recommendation, save_translation,
+    get_recommendation_paper_ids, get_seen_keys, get_translation,
+    save_analysis, save_news_summary, save_paper, save_recommendation,
+    save_translation,
 )
 from sources.paper import Paper
 
@@ -61,6 +62,22 @@ def test_save_recommendation_is_idempotent(conn):
     save_recommendation(conn, "a@x.com", pid, "Must Read", 9, "2026-07-22")
     count = conn.execute("SELECT COUNT(*) AS c FROM recommendations").fetchone()["c"]
     assert count == 1
+
+
+def test_get_recommendation_paper_ids_display_order(conn):
+    """按邮件展示顺序返回：分数降序，同分按写入顺序（id 升序）。"""
+    p1 = save_paper(conn, _paper(doi="10.1/a"))
+    p2 = save_paper(conn, _paper(doi="10.1/b"))
+    p3 = save_paper(conn, _paper(doi="10.1/c"))
+    # 写入顺序即展示顺序：p1(60) → p2(70) → p3(70)
+    save_recommendation(conn, "a@x.com", p1, "Reference", 60, "2026-07-28")
+    save_recommendation(conn, "a@x.com", p2, "Important", 70, "2026-07-28")
+    save_recommendation(conn, "a@x.com", p3, "Important", 70, "2026-07-28")
+    # 排序重算后应与展示顺序一致：70 分的 p2 在前，同分的 p3 按写入序随后
+    assert get_recommendation_paper_ids(conn, "a@x.com", "2026-07-28") == [p2, p3, p1]
+    # 其他日期/其他用户互不影响
+    assert get_recommendation_paper_ids(conn, "a@x.com", "2026-07-29") == []
+    assert get_recommendation_paper_ids(conn, "b@x.com", "2026-07-28") == []
 
 
 def test_save_analysis_roundtrip(conn):

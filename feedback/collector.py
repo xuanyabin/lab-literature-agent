@@ -1,13 +1,15 @@
 """反馈收集（Phase 5）：IMAP 轮询发件邮箱，解析用户的回信标注。
 
-邮件卡片上的反馈链接是 mailto：用户点击后生成回信草稿，主题带
-    [FB] u=<用户邮箱> p=<论文id> v=<1|2|3|4|5>（五星标注，B2 起替代旧四值；
-旧值回信与非法值一样被忽略）。正文可填原因；以 "+" 开头的行是新增检索词
-（B4，如 "+CRISPR, 单细胞测序"，逗号兼容中英文），解析后交给
-term_expander.add_feedback_terms 追加到该用户自动词表。本模块轮询收件箱中未读的
-"[FB]" 回信，解析后写入 feedback 表并标记已读；无法解析的回信
-记录日志后同样标记已读（避免毒消息反复重试）。回信主题中的用户标注
-可被任何人填写，因此记录前必须校验实际发件人与标注用户一致，防止
+支持两种回信格式，主题都带 [FB] tag：
+1. 批量反馈（B6 起，日报 Part 4 一键反馈）：`[FB] u=<用户邮箱> d=<日期>`，
+   正文按编号标注星级（如 "03: 5"，编号对应该日邮件里的论文顺序，
+   经 recommendations 表映射回 paper_id）；
+2. 逐篇反馈（旧版卡片链接，向后兼容）：`[FB] u=<用户邮箱> p=<论文id> v=<1-5>`。
+正文以 "+" 开头的行是新增检索词（B4，如 "+CRISPR, 单细胞测序"，逗号兼容
+中英文），解析后交给 term_expander.add_feedback_terms 追加到该用户自动词表。
+本模块轮询收件箱中未读的 "[FB]" 回信，解析后写入 feedback 表并标记已读；
+无法解析的回信记录日志后同样标记已读（避免毒消息反复重试）。回信主题中的
+用户标注可被任何人填写，因此记录前必须校验实际发件人与标注用户一致，防止
 伪造回信污染他人学习词表。
 
 IMAP 配置来自 .env：IMAP_HOST 必填（缺失时跳过收集并告警）；
@@ -24,7 +26,7 @@ import re
 
 from dotenv import load_dotenv
 
-from database.db import save_feedback
+from database.db import get_recommendation_paper_ids, save_feedback
 from processing.term_expander import add_feedback_terms
 
 logger = logging.getLogger(__name__)
@@ -33,6 +35,13 @@ SUBJECT_TAG = "[FB]"
 VALID_VALUES = {"1", "2", "3", "4", "5"}
 
 _TOKEN = re.compile(r"u=(?P<u>\S+)\s+p=(?P<p>\d+)\s+v=(?P<v>\w+)")
+_BATCH_TOKEN = re.compile(r"u=(?P<u>\S+)\s+d=(?P<d>\d{4}-\d{2}-\d{2})")
+# 批量反馈正文：编号行 "03: 5"（冒号兼容中文/顿号/点，"星"字可带可不带）
+_RATING_LINE = re.compile(r"^(\d{1,2})\s*[:：.、]?\s*([1-5])\s*星?\s*$")
+# 未填写的编号行（"03:"），不是打分行也不算理由文本
+_EMPTY_NUM_LINE = re.compile(r"^\d{1,2}\s*[:：.、]?\s*$")
+# 邮件模板自带的说明行，解析理由文本时排除
+_TEMPLATE_PREFIXES = ("请直接在编号后填", "如需新增关键词")
 
 
 def parse_feedback_message(msg: email.message.Message) -> dict | None:
@@ -48,6 +57,39 @@ def parse_feedback_message(msg: email.message.Message) -> dict | None:
         "paper_id": int(m.group("p")),
         "value": m.group("v"),
         "reason": _plain_body(msg),
+    }
+
+
+def parse_batch_feedback_message(msg: email.message.Message) -> dict | None:
+    """解析批量反馈回信（B6）：{user_email, date, ratings, reason}；主题不含批量 token 返回 None。
+
+    ratings 为 {编号: 星级字符串}（同一编号重复时以第一行为准）；
+    reason 为去掉打分行/空编号行/+关键词行/模板说明行后的剩余正文（限 500 字符）。
+    """
+    subject = str(email.header.make_header(email.header.decode_header(msg.get("Subject", ""))))
+    if SUBJECT_TAG not in subject:
+        return None
+    m = _BATCH_TOKEN.search(subject)
+    if not m:
+        return None
+    ratings: dict[int, str] = {}
+    reason_lines = []
+    for ln in _plain_text(msg).splitlines():
+        ln = ln.strip()
+        if not ln or ln.startswith(">"):
+            continue
+        rating = _RATING_LINE.match(ln)
+        if rating:
+            ratings.setdefault(int(rating.group(1)), rating.group(2))
+            continue
+        if _EMPTY_NUM_LINE.match(ln) or ln.startswith("+") or ln.startswith(_TEMPLATE_PREFIXES):
+            continue
+        reason_lines.append(ln)
+    return {
+        "user_email": m.group("u"),
+        "date": m.group("d"),
+        "ratings": ratings,
+        "reason": " ".join(reason_lines)[:500],
     }
 
 
@@ -108,26 +150,31 @@ def collect(conn, imap_factory=imaplib.IMAP4_SSL) -> int:
             _, fetched = client.fetch(msg_id, "(RFC822)")
             msg = email.message_from_bytes(fetched[0][1])
             parsed = parse_feedback_message(msg)
-            if parsed is None:
+            batch = parse_batch_feedback_message(msg) if parsed is None else None
+            if parsed is None and batch is None:
                 logger.warning("无法解析的反馈回信（msgid %s），标记已读跳过", msg_id.decode())
             else:
                 # 防伪造：回信主题中的用户标注可被任何人填写，必须与实际发件人一致
+                claimed = (parsed or batch)["user_email"]
                 sender = email.utils.parseaddr(msg.get("From", ""))[1].lower()
-                if sender != parsed["user_email"].lower():
+                if sender != claimed.lower():
                     logger.warning("反馈发件人 %s 与标注用户 %s 不符，拒绝记录",
-                                   sender or "(空)", parsed["user_email"])
+                                   sender or "(空)", claimed)
                 else:
                     # B4：发件人校验通过后，正文 "+关键词" 行追加到该用户自动词表
                     added_terms = parse_added_terms(msg)
                     if added_terms:
                         add_feedback_terms(sender, added_terms)
-                    exists = conn.execute("SELECT 1 FROM papers WHERE id = ?",
-                                          (parsed["paper_id"],)).fetchone()
-                    if not exists:
-                        logger.warning("反馈指向不存在的论文 id=%d，跳过", parsed["paper_id"])
-                    elif save_feedback(conn, parsed["user_email"], parsed["paper_id"],
-                                       parsed["value"], parsed["reason"]):
-                        recorded += 1
+                    if parsed is not None:
+                        exists = conn.execute("SELECT 1 FROM papers WHERE id = ?",
+                                              (parsed["paper_id"],)).fetchone()
+                        if not exists:
+                            logger.warning("反馈指向不存在的论文 id=%d，跳过", parsed["paper_id"])
+                        elif save_feedback(conn, parsed["user_email"], parsed["paper_id"],
+                                           parsed["value"], parsed["reason"]):
+                            recorded += 1
+                    else:
+                        recorded += _record_batch(conn, batch, msg_id)
             client.store(msg_id, "+FLAGS", "\\Seen")
         return recorded
     finally:
@@ -135,3 +182,22 @@ def collect(conn, imap_factory=imaplib.IMAP4_SSL) -> int:
             client.logout()
         except Exception:
             logger.debug("IMAP logout 失败（连接可能已断开）", exc_info=True)
+
+
+def _record_batch(conn, batch: dict, msg_id: bytes) -> int:
+    """把批量反馈的编号星级映射回论文并写入 feedback 表，返回新记录条数。"""
+    paper_ids = get_recommendation_paper_ids(conn, batch["user_email"], batch["date"])
+    if not paper_ids:
+        logger.warning("批量反馈（msgid %s）对应 %s 无推荐记录（用户 %s），跳过",
+                       msg_id.decode(), batch["date"], batch["user_email"])
+        return 0
+    recorded = 0
+    for idx, value in batch["ratings"].items():
+        if not 1 <= idx <= len(paper_ids):
+            logger.warning("批量反馈编号 %02d 超出 %s 推送范围（共 %d 篇），跳过",
+                           idx, batch["date"], len(paper_ids))
+            continue
+        if save_feedback(conn, batch["user_email"], paper_ids[idx - 1],
+                         value, batch["reason"]):
+            recorded += 1
+    return recorded

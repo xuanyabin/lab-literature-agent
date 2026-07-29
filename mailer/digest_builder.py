@@ -1,8 +1,9 @@
-"""组装每日文献情报邮件的三段内容（新闻摘要 / 详细卡片 / 价值总结），渲染交给 template_renderer。
+"""组装每日文献情报邮件的各段内容（总览 / 新闻摘要 / 详细卡片 / 价值总结 / 一键反馈），渲染交给 template_renderer。
 
-Phase 5 起论文卡片底部带反馈链接（B2 五星标注 ⭐1–⭐5）：mailto 回信，
-主题带 [FB] token，由 python -m feedback 收集学习。仅当调用方提供
-user_email、config 含 feedback_email 且 item 带 paper_id（已入库）时渲染。
+反馈（B6 起）：整封邮件只带一个"一键反馈"mailto 链接（Part 4），回信主题
+带 [FB] token 与日期，正文按编号标注 1-5 星、以 "+" 开头的行是新增关键词，
+由 python -m feedback 收集学习。仅当调用方提供 user_email、config 含
+feedback_email 且 items 非空时渲染。
 """
 
 from pathlib import Path
@@ -29,14 +30,6 @@ _CATEGORY_CLASS = {
     "Reference": "cat-reference",
     "Ignore": "cat-ignore",
 }
-
-_FEEDBACK_CHOICES = [
-    ("⭐1 完全不相关", "1"),
-    ("⭐2 不太相关", "2"),
-    ("⭐3 一般", "3"),
-    ("⭐4 比较重要", "4"),
-    ("⭐5 非常重要", "5"),
-]
 
 # 中文四段结构化摘要：item 键 → 卡片小标签（为空的段不渲染）
 _SECTION_LABELS = [
@@ -68,8 +61,9 @@ def build_digest_html(user_name: str, digest_date: str, items: list[dict],
         "count": str(len(items)),
         "overview_block": _overview_block(overview) if overview else "",
         "news_items": "\n".join(_news_row(i, it) for i, it in enumerate(items, 1)),
-        "paper_cards": "\n".join(_paper_card(i, it, cfg, user_email) for i, it in enumerate(items, 1)),
+        "paper_cards": "\n".join(_paper_card(i, it, cfg) for i, it in enumerate(items, 1)),
         "daily_summary": escape(daily_summary) if daily_summary else "（今日价值总结生成失败，请查看上方论文列表。）",
+        "feedback_block": _feedback_block(user_email, digest_date, len(items), cfg),
     }
     return render("daily_digest.html", context)
 
@@ -106,18 +100,36 @@ def _news_row(i: int, it: dict) -> str:
       </tr>"""
 
 
-def _feedback_row(user_email: str, paper_id: int, cfg: dict) -> str:
-    """卡片底部反馈链接：点击生成回信草稿，主题带 [FB] token 供 collector 解析。"""
-    links = []
-    for label, value in _FEEDBACK_CHOICES:
-        subject = quote(f"[FB] u={user_email} p={paper_id} v={value}")
-        body = quote("原因（可选）：")
-        href = f"mailto:{cfg['feedback_email']}?subject={subject}&body={body}"
-        links.append(f'<a href="{href}">{label}</a>')
-    return f'<div class="meta feedback">反馈：{" · ".join(links)}（点击后发送回信即可）</div>'
+def _feedback_block(user_email: str, digest_date: str, count: int, cfg: dict) -> str:
+    """Part 4 一键反馈：整封邮件只带一个 mailto，回信按编号标注星级（替代逐篇五个链接）。
+
+    回信主题 [FB] u=<用户邮箱> d=<日期>，正文预填编号行与 + 关键词行，
+    由 feedback/collector 解析：编号经 recommendations 表映射回论文。
+    """
+    if not user_email or not cfg["feedback_email"] or count <= 0:
+        return ""
+    subject = quote(f"[FB] u={user_email} d={digest_date}")
+    lines = [
+        "请直接在编号后填写 1-5 星评分（⭐1 完全不相关 – ⭐5 非常重要；只填想评的编号，其余留空）：",
+        "",
+    ]
+    lines += [f"{i:02d}: " for i in range(1, count + 1)]
+    lines += [
+        "",
+        "如需新增关键词，请在下方 + 号后填写（每行一个，可用逗号分隔）：",
+        "+",
+    ]
+    body = quote("\n".join(lines))
+    href = f"mailto:{cfg['feedback_email']}?subject={subject}&body={body}"
+    return f"""    <h2>Part 4 · 一键反馈</h2>
+    <p class="section-sub">只回一封邮件 · 按编号标注星级，帮助我们越推越准</p>
+    <div class="feedback-box">
+      点击下面的按钮打开反馈邮件草稿，在编号后填 1-5 星（只评想评的即可），发送即完成：<br>
+      <a class="feedback-btn" href="{href}">一键标注今日 {count} 篇论文</a>
+    </div>"""
 
 
-def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "") -> str:
+def _paper_card(i: int, it: dict, cfg: dict) -> str:
     p = it["paper"]
     head = f'Rank {i} {_badge(it.get("category", "Reference"))}'
     if it.get("score") is not None:
@@ -136,8 +148,6 @@ def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "") -> str:
     if cfg["show_keywords"]:
         keywords = "、".join(p.keywords) or "—"
         rows.append(f'<div class="meta">Keywords: {escape(keywords)}</div>')
-    if user_email and cfg["feedback_email"] and it.get("paper_id"):
-        rows.append(_feedback_row(user_email, it["paper_id"], cfg))
     if it.get("reason"):
         rows.append(f'<div class="reason"><span class="abs-label">推荐理由</span>{escape(it["reason"])}</div>')
     if cfg["show_translation"]:

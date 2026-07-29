@@ -270,6 +270,22 @@ def get_week_recommendations(conn: sqlite3.Connection, user_email: str,
     ).fetchall()
 
 
+def get_recommendation_paper_ids(conn: sqlite3.Connection, user_email: str,
+                                 sent_date: str) -> list[int]:
+    """该用户某日推送论文的 id 列表，按邮件展示顺序（分数降序，同分按写入顺序）。
+
+    供批量反馈把回信里的编号（01、02……）映射回论文：recommendations 按
+    展示序写入且 id 自增，此排序与邮件编号一一对应。
+    """
+    rows = conn.execute(
+        """SELECT paper_id FROM recommendations
+           WHERE user_email = ? AND sent_date = ?
+           ORDER BY score DESC, id ASC""",
+        (user_email, sent_date),
+    ).fetchall()
+    return [r[0] for r in rows]
+
+
 def save_feedback(conn: sqlite3.Connection, user_email: str, paper_id: int,
                   value: str, reason: str = "") -> bool:
     """记录一条用户标注（幂等：同一用户对同一论文的同一标注只记一次），返回是否为新插入。"""

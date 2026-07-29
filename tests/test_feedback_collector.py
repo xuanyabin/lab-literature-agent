@@ -4,8 +4,9 @@ from email.message import EmailMessage
 
 import pytest
 
-from database.db import connect, save_paper
-from feedback.collector import collect, parse_added_terms, parse_feedback_message
+from database.db import connect, save_paper, save_recommendation
+from feedback.collector import (collect, parse_added_terms,
+                                parse_batch_feedback_message, parse_feedback_message)
 from sources.paper import Paper
 
 
@@ -191,3 +192,91 @@ def test_collect_spoofed_sender_terms_rejected(conn, monkeypatch):
     recorded, _ = _run_collect(conn, msgs, monkeypatch)
     assert recorded == 0
     assert calls == []
+
+
+# ---------- 批量反馈（B6：一封邮件按编号标注星级） ----------
+
+def _save_recs(conn, user_email, sent_date, pid_scores):
+    """按 (paper_id, score) 写入推荐记录，模拟当日推送。"""
+    for pid, score in pid_scores:
+        save_recommendation(conn, user_email, pid, "Reference", score, sent_date)
+
+
+def _save_papers(conn, n):
+    return [save_paper(conn, Paper(title=f"t{i}", abstract="a", authors="", journal="",
+                                   date="2026-07-22", doi=f"10.1/{i}", url=""))
+            for i in range(n)]
+
+
+def test_parse_batch_valid():
+    msg = _msg("[FB] u=a@x.com d=2026-07-28",
+               "请直接在编号后填写 1-5 星评分（只填想评的编号，其余留空）：\n"
+               "01: 5\n02: \n03: 4星\n整体不错\n"
+               "如需新增关键词，请在下方 + 号后填写（每行一个，可用逗号分隔）：\n+\n")
+    parsed = parse_batch_feedback_message(msg)
+    assert parsed["user_email"] == "a@x.com" and parsed["date"] == "2026-07-28"
+    assert parsed["ratings"] == {1: "5", 3: "4"}  # 空编号行不解析
+    assert parsed["reason"] == "整体不错"  # 模板说明行/打分行/+行不进理由
+
+
+def test_parse_batch_invalid():
+    assert parse_batch_feedback_message(_msg("普通邮件主题")) is None
+    # 旧逐篇格式不匹配批量 token（由 parse_feedback_message 处理）
+    assert parse_batch_feedback_message(_msg("[FB] u=a@x.com p=1 v=5")) is None
+    assert parse_batch_feedback_message(_msg("[FB] u=a@x.com d=昨天")) is None
+
+
+def test_collect_batch_maps_numbers_to_papers(conn, monkeypatch):
+    ids = _save_papers(conn, 3)
+    # 展示顺序按分数降序：ids[2]=01 号、ids[0]=02 号、ids[1]=03 号
+    _save_recs(conn, "a@x.com", "2026-07-28",
+               [(ids[0], 60), (ids[1], 50), (ids[2], 70)])
+    msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 5\n03: 2\n")
+    recorded, fake = _run_collect(conn, [msg], monkeypatch)
+    assert recorded == 2
+    assert len(fake.seen) == 1
+    rows = {r["paper_id"]: r["value"]
+            for r in conn.execute("SELECT paper_id, value FROM feedback").fetchall()}
+    assert rows == {ids[2]: "5", ids[1]: "2"}
+
+
+def test_collect_batch_out_of_range_skipped(conn, monkeypatch, caplog):
+    ids = _save_papers(conn, 1)
+    _save_recs(conn, "a@x.com", "2026-07-28", [(ids[0], 60)])
+    msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 5\n09: 3\n")
+    with caplog.at_level("WARNING"):
+        recorded, _ = _run_collect(conn, [msg], monkeypatch)
+    assert recorded == 1  # 越界编号 09 跳过，合法编号 01 正常记录
+    assert "超出" in caplog.text
+
+
+def test_collect_batch_no_recommendations(conn, monkeypatch, caplog):
+    msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 5\n")
+    with caplog.at_level("WARNING"):
+        recorded, fake = _run_collect(conn, [msg], monkeypatch)
+    assert recorded == 0
+    assert "无推荐记录" in caplog.text
+    assert len(fake.seen) == 1  # 无法映射也标记已读，不反复重试
+
+
+def test_collect_batch_rejects_spoofed_sender(conn, monkeypatch):
+    ids = _save_papers(conn, 1)
+    _save_recs(conn, "a@x.com", "2026-07-28", [(ids[0], 60)])
+    msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 1\n",
+               sender="attacker@evil.com")
+    recorded, _ = _run_collect(conn, [msg], monkeypatch)
+    assert recorded == 0
+    assert conn.execute("SELECT COUNT(*) c FROM feedback").fetchone()["c"] == 0
+
+
+def test_collect_batch_plus_terms_still_work(conn, monkeypatch):
+    """批量回信中的 "+关键词" 行同样追加到自动词表（B4 与 B6 共存）。"""
+    ids = _save_papers(conn, 1)
+    _save_recs(conn, "a@x.com", "2026-07-28", [(ids[0], 60)])
+    calls = []
+    monkeypatch.setattr("feedback.collector.add_feedback_terms",
+                        lambda email, terms: calls.append((email, terms)))
+    msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 4\n+CRISPR\n+\n")
+    recorded, _ = _run_collect(conn, [msg], monkeypatch)
+    assert recorded == 1
+    assert calls == [("a@x.com", ["CRISPR"])]  # 单独的 "+" 解析为空，不产生词

@@ -1,12 +1,15 @@
 """反馈学习闭环（Phase 5 核心）：把用户标注转化为学习词表更新，全自动无人工审核。
 
-规则（spec 见 PROJECT.md Phase 5）：
-- 高分标注（relevant / save）→ LLM 从摘要提炼新词 → 同一新词在 ≥promote_support
-  篇高分论文中出现才提权（防漂移）；已有学习词被文本命中也累计支持并提权；
-- 低分标注（not_relevant）→ 只对命中的学习词降权（乘 negative_factor），
-  不触碰用户手配词表，也不写 exclude（避免单次误标误杀整个方向）；
-- 已读标注（already_read）只记录，不参与学习；
-- 所有词表变更写审计日志 logs/feedback_learning.log（JSON Lines），透明可回滚。
+规则（五星标注，B2 起替代旧四值；spec 见 PROJECT.md Phase 5）：
+- 正反馈（⭐4 / ⭐5）→ LLM 从摘要提炼新词 → 同一新词在 ≥promote_support
+  篇正反馈论文中出现才提权（防漂移）；已有学习词被文本命中也累计支持并提权；
+- 中性（⭐3）只记录，不参与学习；
+- 弱负反馈（⭐2）→ 只对命中的学习词降权（乘 negative_factor_weak）；
+- 强负反馈（⭐1）→ 命中的学习词乘 negative_factor_strong，且同一（用户, 词）
+  累计第 2 次强负时在审计日志追加 exclude_candidate 记录（人工排查线索，
+  不自动写 exclude，避免单次误标误杀整个方向）；累计次数扫描现有审计日志得到；
+- 均不触碰用户手配词表；所有词表变更写审计日志 logs/feedback_learning.log
+  （JSON Lines），透明可回滚。
 """
 
 import json
@@ -25,8 +28,11 @@ logger = logging.getLogger(__name__)
 BASE_DIR = Path(__file__).resolve().parent.parent
 AUDIT_LOG = BASE_DIR / "logs" / "feedback_learning.log"
 
-POSITIVE_VALUES = {"relevant", "save"}
-NEGATIVE_VALUES = {"not_relevant"}
+POSITIVE_VALUES = {"4", "5"}
+NEUTRAL_VALUES = {"3"}
+WEAK_NEGATIVE_VALUES = {"2"}
+STRONG_NEGATIVE_VALUES = {"1"}
+NEGATIVE_VALUES = WEAK_NEGATIVE_VALUES | STRONG_NEGATIVE_VALUES
 
 _TERM_FIELDS = ("research_interest", "keywords", "methods", "species")
 
@@ -128,18 +134,43 @@ def _learn_positive(conn, user: dict, row, cfg: dict, llm, today: str) -> None:
             _reinforce(conn, user_email, term, paper_id, value, cfg, today)
 
 
+def _strong_negative_count(user_email: str, term: str) -> int:
+    """扫描审计日志，统计同一（用户, 词）的强负（⭐1）降权事件累计次数（含刚写入的本次）。"""
+    if not AUDIT_LOG.exists():
+        return 0
+    count = 0
+    with AUDIT_LOG.open(encoding="utf-8") as f:
+        for line in f:
+            try:
+                rec = json.loads(line)
+            except json.JSONDecodeError:
+                continue  # 容忍损坏行，不中断学习闭环
+            if rec.get("action") == "downweight" and rec.get("user") == user_email \
+                    and rec.get("term") == term \
+                    and rec.get("feedback") in STRONG_NEGATIVE_VALUES:
+                count += 1
+    return count
+
+
 def _learn_negative(conn, row, cfg: dict) -> None:
-    """低分标注：只对论文文本命中的学习词降权，不写 exclude、不碰手配词表。"""
+    """负反馈：弱负（⭐2）命中的学习词 ×negative_factor_weak，强负（⭐1）×negative_factor_strong；
+    同一（用户, 词）强负累计第 2 次时追加 exclude_candidate 审计记录。不写 exclude、不碰手配词表。"""
     user_email, paper_id, value = row["user_email"], row["paper_id"], row["value"]
+    factor = cfg["negative_factor_strong"] if value in STRONG_NEGATIVE_VALUES \
+        else cfg["negative_factor_weak"]
     text = _paper_text(row)
     rows = conn.execute(
         "SELECT term, weight, support, last_seen FROM learned_terms WHERE user_email = ?",
         (user_email,)).fetchall()
     for r in rows:
         if r["weight"] > 0 and r["term"] in text:
-            weight = round(r["weight"] * cfg["negative_factor"], 4)
+            weight = round(r["weight"] * factor, 4)
             upsert_learned_term(conn, user_email, r["term"], weight, r["support"], r["last_seen"])
             _audit("downweight", user_email, r["term"], paper_id, weight, r["support"], value)
+            if value in STRONG_NEGATIVE_VALUES \
+                    and _strong_negative_count(user_email, r["term"]) == 2:
+                _audit("exclude_candidate", user_email, r["term"], paper_id,
+                       weight, r["support"], value)
 
 
 def learn_from_feedback(conn, user: dict, llm, cfg: dict,

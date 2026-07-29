@@ -70,13 +70,13 @@ def test_new_term_promoted_only_after_two_positive_papers(conn, tmp_path):
     p2 = _paper(conn, "Paper two", "about hearts", "10.1/b")
     today = __import__("datetime").date(2026, 7, 23)
 
-    save_feedback(conn, USER["email"], p1, "relevant")
+    save_feedback(conn, USER["email"], p1, "4")
     learner.learn_from_feedback(conn, USER, llm, CFG, today)
     row = get_learned_term(conn, USER["email"], "spatial transcriptomics")
     assert (row["support"], row["weight"]) == (1, 0.0)  # 候选：不提权
     assert load_active_terms(conn, USER["email"], CFG, today) == []
 
-    save_feedback(conn, USER["email"], p2, "save")
+    save_feedback(conn, USER["email"], p2, "5")
     learner.learn_from_feedback(conn, USER, llm, CFG, today)
     row = get_learned_term(conn, USER["email"], "spatial transcriptomics")
     assert (row["support"], row["weight"]) == (2, CFG["initial_weight"])
@@ -92,7 +92,7 @@ def test_existing_term_boosted_and_capped(conn):
     llm = StubLLM('["deep learning"]')
     for i in range(4):
         pid = _paper(conn, f"Paper {i}", "deep learning model", f"10.1/{i}")
-        save_feedback(conn, USER["email"], pid, "relevant")
+        save_feedback(conn, USER["email"], pid, "4")
         learner.learn_from_feedback(conn, USER, llm, cfg)
     row = get_learned_term(conn, USER["email"], "deep learning")
     assert row["support"] == 4
@@ -102,7 +102,7 @@ def test_existing_term_boosted_and_capped(conn):
 def test_textually_matched_term_reinforced_without_llm(conn):
     llm = StubLLM("[]")
     pid = _paper(conn, "Atlas", "A single-cell ATAC-seq study", "10.1/atac")
-    save_feedback(conn, USER["email"], pid, "relevant")
+    save_feedback(conn, USER["email"], pid, "5")
     # 先人工放入一个已提权词
     from database.db import upsert_learned_term
     upsert_learned_term(conn, USER["email"], "single-cell atac-seq", 1.0, 2, "2026-07-22")
@@ -113,15 +113,15 @@ def test_textually_matched_term_reinforced_without_llm(conn):
     assert llm.calls == 1  # 提词仍调用，但命中已有词走的是文本匹配
 
 
-def test_negative_feedback_downweights_only_learned_terms(conn, tmp_path):
+def test_weak_negative_feedback_downweights_only_learned_terms(conn, tmp_path):
     from database.db import upsert_learned_term
     upsert_learned_term(conn, USER["email"], "hormone", 2.0, 4, "2026-07-22")
     pid = _paper(conn, "Hormone paper", "hormone signaling in honeybee", "10.1/neg")
-    save_feedback(conn, USER["email"], pid, "not_relevant")
+    save_feedback(conn, USER["email"], pid, "2")
     learner.learn_from_feedback(conn, USER, StubLLM("[]"), CFG)
 
     row = get_learned_term(conn, USER["email"], "hormone")
-    assert row["weight"] == 2.0 * CFG["negative_factor"]
+    assert row["weight"] == 2.0 * CFG["negative_factor_weak"]
     assert row["support"] == 4  # support 不变
     # 手配词表不受影响（honeybee 命中论文但未生成学习词、不写 exclude）
     assert get_learned_term(conn, USER["email"], "honeybee") is None
@@ -130,9 +130,9 @@ def test_negative_feedback_downweights_only_learned_terms(conn, tmp_path):
     assert [r["action"] for r in records] == ["downweight"]
 
 
-def test_already_read_skipped_and_feedback_marked_processed(conn):
+def test_neutral_feedback_skipped_and_marked_processed(conn):
     pid = _paper(conn, "Paper", "abstract", "10.1/read")
-    save_feedback(conn, USER["email"], pid, "already_read")
+    save_feedback(conn, USER["email"], pid, "3")
     stats = learner.learn_from_feedback(conn, USER, StubLLM("[]"), CFG)
     assert stats == {"positive": 0, "negative": 0, "skipped": 1}
     assert get_unprocessed_feedback(conn, USER["email"]) == []  # 已标记 processed
@@ -140,5 +140,40 @@ def test_already_read_skipped_and_feedback_marked_processed(conn):
 
 def test_save_feedback_is_idempotent(conn):
     pid = _paper(conn, "Paper", "abstract", "10.1/dup")
-    assert save_feedback(conn, USER["email"], pid, "relevant", "原因") is True
-    assert save_feedback(conn, USER["email"], pid, "relevant", "原因") is False
+    assert save_feedback(conn, USER["email"], pid, "5", "原因") is True
+    assert save_feedback(conn, USER["email"], pid, "5", "原因") is False
+
+
+def test_strong_negative_feedback_uses_strong_factor(conn, tmp_path):
+    """⭐1 强负反馈：命中的学习词 ×negative_factor_strong，首次不写 exclude_candidate。"""
+    from database.db import upsert_learned_term
+    upsert_learned_term(conn, USER["email"], "hormone", 2.0, 4, "2026-07-22")
+    pid = _paper(conn, "Hormone paper", "hormone signaling", "10.1/strong")
+    save_feedback(conn, USER["email"], pid, "1")
+    stats = learner.learn_from_feedback(conn, USER, StubLLM("[]"), CFG)
+
+    assert stats["negative"] == 1
+    row = get_learned_term(conn, USER["email"], "hormone")
+    assert row["weight"] == round(2.0 * CFG["negative_factor_strong"], 4)
+    assert [r["action"] for r in _audit_actions(tmp_path)] == ["downweight"]
+
+
+def test_second_strong_negative_writes_exclude_candidate(conn, tmp_path):
+    """同一（用户, 词）累计第 2 次 ⭐1 时，审计日志追加 exclude_candidate 记录。"""
+    from database.db import upsert_learned_term
+    upsert_learned_term(conn, USER["email"], "hormone", 2.0, 4, "2026-07-22")
+    p1 = _paper(conn, "Hormone one", "hormone signaling", "10.1/s1")
+    p2 = _paper(conn, "Hormone two", "hormone receptor", "10.1/s2")
+
+    save_feedback(conn, USER["email"], p1, "1")
+    learner.learn_from_feedback(conn, USER, StubLLM("[]"), CFG)
+    assert [r["action"] for r in _audit_actions(tmp_path)] == ["downweight"]  # 第 1 次不触发
+
+    save_feedback(conn, USER["email"], p2, "1")
+    learner.learn_from_feedback(conn, USER, StubLLM("[]"), CFG)
+    records = _audit_actions(tmp_path)
+    assert [r["action"] for r in records] == ["downweight", "downweight", "exclude_candidate"]
+    ex = records[-1]
+    assert (ex["user"], ex["term"], ex["feedback"]) == (USER["email"], "hormone", "1")
+    row = get_learned_term(conn, USER["email"], "hormone")
+    assert row["weight"] == round(2.0 * CFG["negative_factor_strong"] ** 2, 4)

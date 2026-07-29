@@ -4,7 +4,8 @@
     为每个用户维护自动词表 config/users/auto_terms/<slug>.yaml（自动维护，勿手改）：
     - expansion：LLM 为个人检索词生成的同义词/拉丁学名/缩写等扩展词，
       只为召回兜底（不漏文献），等权参与检索与粗筛，不写回个人 yaml；
-    - feedback_added：反馈渠道新增的 keywords，等权追加到 keywords。
+    - feedback_added：反馈渠道新增的 keywords（回信 "+关键词" 行经
+      add_feedback_terms 追加），等权追加到 keywords。
     触发刷新条件：缓存缺失 / 用户 yaml 有修改 / 缓存超过 7 天；
     LLM 失败时保留旧缓存，不中断流水线。
 
@@ -15,6 +16,7 @@
 
 import json
 import logging
+import re
 import sys
 import time
 from datetime import date
@@ -28,8 +30,14 @@ logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 AUTO_TERMS_DIR = BASE_DIR / "config" / "users" / "auto_terms"
+USERS_DIR = BASE_DIR / "config" / "users"
 AUTO_TERMS_TTL_SECONDS = 7 * 86400
 MAX_ALIASES_PER_TERM = 5
+
+MAX_FEEDBACK_TERM_LENGTH = 60
+# 反馈新增词（B4）字符白名单：Unicode 字母/数字/下划线（\w，含中文）、空白、连字符；
+# 其余字符（正则元字符、标点、emoji 等）一律剔除，避免危险字符进入检索匹配
+_UNSAFE_TERM_CHARS = re.compile(r"[^\w\s-]+")
 
 TERM_FIELDS = ("research_interest", "keywords", "methods", "species")
 
@@ -151,6 +159,55 @@ def apply_auto_terms(user: dict, auto: dict) -> dict:
             keywords.append(t)
     merged["keywords"] = keywords
     return merged
+
+
+def slug_for_email(user_email: str, users_dir: Path = USERS_DIR) -> str | None:
+    """遍历用户 yaml 按 email 字段反查 slug（大小写不敏感）；未匹配返回 None。"""
+    email_lower = (user_email or "").strip().lower()
+    if not email_lower:
+        return None
+    for path in sorted(Path(users_dir).glob("*.yaml")):
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError:
+            continue  # 损坏的用户 yaml 不阻塞反查
+        if str(data.get("email") or "").strip().lower() == email_lower:
+            return path.stem
+    return None
+
+
+def clean_feedback_term(raw: str) -> str:
+    """清洗一个反馈新增词：剔除白名单外字符（见 _UNSAFE_TERM_CHARS）、压缩空白；
+    结果为空或超过 MAX_FEEDBACK_TERM_LENGTH 字符时返回 ""（丢弃该词）。"""
+    term = " ".join(_UNSAFE_TERM_CHARS.sub("", raw or "").split())
+    return term if 0 < len(term) <= MAX_FEEDBACK_TERM_LENGTH else ""
+
+
+def add_feedback_terms(user_email: str, terms: list[str], users_dir: Path = USERS_DIR,
+                       cache_dir: Path = AUTO_TERMS_DIR) -> list[str]:
+    """把反馈回信中的关键词追加到该用户自动词表的 feedback_added（B4）。
+
+    每个词先经 clean_feedback_term 清洗，与已有 feedback_added 大小写不敏感去重；
+    自动词表文件缺失时按现有格式新建（expansion 为空），已有 expansion 原样保留。
+    返回实际新增的词列表；email 不匹配任何用户 yaml 时记 warning 并跳过（返回 []）。
+    """
+    slug = slug_for_email(user_email, users_dir)
+    if slug is None:
+        logger.warning("反馈新增关键词的发件人 %s 不匹配任何用户，跳过", user_email)
+        return []
+    auto = load_auto_terms(slug, cache_dir)
+    seen = {str(t).lower() for t in auto["feedback_added"]}
+    added = []
+    for raw in terms:
+        term = clean_feedback_term(raw)
+        if term and term.lower() not in seen:
+            seen.add(term.lower())
+            auto["feedback_added"].append(term)
+            added.append(term)
+    if added:
+        _write_auto_terms(_auto_path(slug, cache_dir), auto["expansion"], auto["feedback_added"])
+        logger.info("用户 %s 自动词表新增反馈关键词：%s", slug, "、".join(added))
+    return added
 
 
 def main() -> int:

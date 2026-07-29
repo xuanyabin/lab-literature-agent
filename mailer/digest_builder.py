@@ -1,6 +1,6 @@
 """组装每日文献情报邮件的三段内容（新闻摘要 / 详细卡片 / 价值总结），渲染交给 template_renderer。
 
-Phase 5 起论文卡片底部带反馈链接（相关/不相关/已读/收藏）：mailto 回信，
+Phase 5 起论文卡片底部带反馈链接（B2 五星标注 ⭐1–⭐5）：mailto 回信，
 主题带 [FB] token，由 python -m feedback 收集学习。仅当调用方提供
 user_email、config 含 feedback_email 且 item 带 paper_id（已入库）时渲染。
 """
@@ -31,10 +31,11 @@ _CATEGORY_CLASS = {
 }
 
 _FEEDBACK_CHOICES = [
-    ("相关", "relevant"),
-    ("不相关", "not_relevant"),
-    ("已读", "already_read"),
-    ("收藏", "save"),
+    ("⭐1 完全不相关", "1"),
+    ("⭐2 不太相关", "2"),
+    ("⭐3 一般", "3"),
+    ("⭐4 比较重要", "4"),
+    ("⭐5 非常重要", "5"),
 ]
 
 # 中文四段结构化摘要：item 键 → 卡片小标签（为空的段不渲染）

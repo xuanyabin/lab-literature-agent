@@ -5,7 +5,7 @@ from email.message import EmailMessage
 import pytest
 
 from database.db import connect, save_paper
-from feedback.collector import collect, parse_feedback_message
+from feedback.collector import collect, parse_added_terms, parse_feedback_message
 from sources.paper import Paper
 
 
@@ -69,33 +69,36 @@ def _run_collect(conn, messages, monkeypatch):
 
 
 def test_parse_valid():
-    parsed = parse_feedback_message(_msg("[FB] u=a@x.com p=12 v=save", "因为与我课题相关"))
+    parsed = parse_feedback_message(_msg("[FB] u=a@x.com p=12 v=5", "因为与我课题相关"))
     assert parsed == {"user_email": "a@x.com", "paper_id": 12,
-                      "value": "save", "reason": "因为与我课题相关"}
+                      "value": "5", "reason": "因为与我课题相关"}
 
 
 def test_parse_re_prefix_and_strip_quotes():
     parsed = parse_feedback_message(_msg(
-        "Re: [FB] u=a@x.com p=3 v=relevant",
+        "Re: [FB] u=a@x.com p=3 v=4",
         "我的原因\n> 原邮件引用内容\n> 更多引用",
     ))
-    assert parsed["paper_id"] == 3 and parsed["value"] == "relevant"
+    assert parsed["paper_id"] == 3 and parsed["value"] == "4"
     assert parsed["reason"] == "我的原因"
 
 
 def test_parse_invalid():
     assert parse_feedback_message(_msg("普通邮件主题")) is None
     assert parse_feedback_message(_msg("[FB] u=a@x.com p=1 v=喜欢")) is None  # 非法值
-    assert parse_feedback_message(_msg("[FB] u=a@x.com p=abc v=save")) is None  # 非数字 id
+    assert parse_feedback_message(_msg("[FB] u=a@x.com p=abc v=5")) is None  # 非数字 id
+    # 旧四值（B2 前）回信视为非法值忽略
+    for old in ("relevant", "not_relevant", "already_read", "save"):
+        assert parse_feedback_message(_msg(f"[FB] u=a@x.com p=1 v={old}")) is None
 
 
 def test_collect_records_valid_and_marks_all_seen(conn, monkeypatch):
     paper_id = save_paper(conn, Paper(title="t", abstract="a", authors="", journal="",
                                       date="2026-07-22", doi="", url=""))
     msgs = [
-        _msg(f"[FB] u=a@x.com p={paper_id} v=relevant", "不错"),
+        _msg(f"[FB] u=a@x.com p={paper_id} v=5", "不错"),
         _msg("newsletter"),                             # 无标记 → 跳过
-        _msg("[FB] u=a@x.com p=99999 v=save"),          # 论文不存在 → 跳过
+        _msg("[FB] u=a@x.com p=99999 v=1"),             # 论文不存在 → 跳过
     ]
     recorded, fake = _run_collect(conn, msgs, monkeypatch)
     assert recorded == 1
@@ -103,7 +106,7 @@ def test_collect_records_valid_and_marks_all_seen(conn, monkeypatch):
     assert len(fake.seen) == 3
     row = conn.execute("SELECT value FROM feedback WHERE paper_id=?",
                        (paper_id,)).fetchone()
-    assert row["value"] == "relevant"
+    assert row["value"] == "5"
 
 
 def test_collect_without_imap_host(conn, monkeypatch, caplog):
@@ -117,7 +120,7 @@ def test_collect_without_imap_host(conn, monkeypatch, caplog):
 def test_collect_duplicate_ignored(conn, monkeypatch):
     paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
                                       date="2026-07-22", doi="", url=""))
-    subject = f"[FB] u=a@x.com p={paper_id} v=save"
+    subject = f"[FB] u=a@x.com p={paper_id} v=4"
     recorded, _ = _run_collect(conn, [_msg(subject), _msg(subject)], monkeypatch)
     assert recorded == 1  # 第二封重复被幂等跳过
 
@@ -128,12 +131,63 @@ def test_collect_rejects_spoofed_sender(conn, monkeypatch):
                                       date="2026-07-22", doi="", url=""))
     msgs = [
         # 伪造：attacker 发出的回信标注成受害者 a@x.com
-        _msg(f"[FB] u=a@x.com p={paper_id} v=not_relevant", sender="attacker@evil.com"),
+        _msg(f"[FB] u=a@x.com p={paper_id} v=1", sender="attacker@evil.com"),
         # 大小写不敏感：发件人大小写不同仍视为本人
-        _msg(f"[FB] u=a@x.com p={paper_id} v=save", sender="A@x.com"),
+        _msg(f"[FB] u=a@x.com p={paper_id} v=5", sender="A@x.com"),
     ]
     recorded, fake = _run_collect(conn, msgs, monkeypatch)
     assert recorded == 1
     assert len(fake.seen) == 2  # 伪造邮件同样标记已读，不反复重试
     row = conn.execute("SELECT value FROM feedback WHERE paper_id=?", (paper_id,)).fetchone()
-    assert row["value"] == "save"  # 只记录了本人那条，伪造的 not_relevant 被丢弃
+    assert row["value"] == "5"  # 只记录了本人那条，伪造的 ⭐1 被丢弃
+
+
+def test_parse_added_terms():
+    """正文 "+" 开头行解析新增关键词：逗号兼容中英文、多个词、引用行不解析。"""
+    msg = _msg("[FB] u=a@x.com p=1 v=5",
+               "这篇很有帮助\n+CRISPR, 单细胞测序\n+atac-seq，\n> +引用里的词不解析\n")
+    assert parse_added_terms(msg) == ["CRISPR", "单细胞测序", "atac-seq"]
+
+
+def test_parse_added_terms_absent():
+    assert parse_added_terms(_msg("[FB] u=a@x.com p=1 v=5", "只是普通原因")) == []
+
+
+def test_collect_appends_plus_line_terms(conn, monkeypatch):
+    """回信正文 "+关键词" 行在发件人校验通过后交给 add_feedback_terms（B4）。"""
+    paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
+                                      date="2026-07-22", doi="", url=""))
+    calls = []
+    monkeypatch.setattr("feedback.collector.add_feedback_terms",
+                        lambda email, terms: calls.append((email, terms)))
+    msgs = [_msg(f"[FB] u=a@x.com p={paper_id} v=4", "+CRISPR, 单细胞测序")]
+    recorded, _ = _run_collect(conn, msgs, monkeypatch)
+    assert recorded == 1
+    assert calls == [("a@x.com", ["CRISPR", "单细胞测序"])]
+
+
+def test_collect_without_plus_line_behavior_unchanged(conn, monkeypatch):
+    """无 "+" 行的普通回信不触发关键词追加，行为完全不变。"""
+    paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
+                                      date="2026-07-22", doi="", url=""))
+    calls = []
+    monkeypatch.setattr("feedback.collector.add_feedback_terms",
+                        lambda email, terms: calls.append((email, terms)))
+    recorded, _ = _run_collect(conn, [_msg(f"[FB] u=a@x.com p={paper_id} v=5", "普通原因")],
+                               monkeypatch)
+    assert recorded == 1
+    assert calls == []
+
+
+def test_collect_spoofed_sender_terms_rejected(conn, monkeypatch):
+    """伪造发件人的 "+关键词" 行不进入自动词表（防伪造校验优先于 B4）。"""
+    paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
+                                      date="2026-07-22", doi="", url=""))
+    calls = []
+    monkeypatch.setattr("feedback.collector.add_feedback_terms",
+                        lambda email, terms: calls.append((email, terms)))
+    msgs = [_msg(f"[FB] u=a@x.com p={paper_id} v=5", "+evilterm",
+                 sender="attacker@evil.com")]
+    recorded, _ = _run_collect(conn, msgs, monkeypatch)
+    assert recorded == 0
+    assert calls == []

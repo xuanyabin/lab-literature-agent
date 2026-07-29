@@ -109,8 +109,11 @@ def test_feedback_links_rendered_with_mailto_token():
     html = _build_with_feedback(item)
     assert "mailto:bot@x.com?subject=" in html
     # 主题经 URL 编码：[FB]→%5BFB%5D，=→%3D
-    assert "%5BFB%5D" in html and "p%3D7" in html and "v%3Dsave" in html
-    assert "不相关" in html and "收藏" in html
+    assert "%5BFB%5D" in html and "p%3D7" in html
+    # 五星反馈链接（B2）：v=1..5，链接文字带中文语义标注
+    for v in ("1", "2", "3", "4", "5"):
+        assert f"v%3D{v}" in html
+    assert "⭐1 完全不相关" in html and "⭐5 非常重要" in html
 
 
 def test_feedback_links_absent_without_user_email():

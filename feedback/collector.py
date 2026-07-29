@@ -1,8 +1,10 @@
 """反馈收集（Phase 5）：IMAP 轮询发件邮箱，解析用户的回信标注。
 
 邮件卡片上的反馈链接是 mailto：用户点击后生成回信草稿，主题带
-    [FB] u=<用户邮箱> p=<论文id> v=<relevant|not_relevant|already_read|save>
-正文首段可填原因（收藏时尤其有用）。本模块轮询收件箱中未读的
+    [FB] u=<用户邮箱> p=<论文id> v=<1|2|3|4|5>（五星标注，B2 起替代旧四值；
+旧值回信与非法值一样被忽略）。正文可填原因；以 "+" 开头的行是新增检索词
+（B4，如 "+CRISPR, 单细胞测序"，逗号兼容中英文），解析后交给
+term_expander.add_feedback_terms 追加到该用户自动词表。本模块轮询收件箱中未读的
 "[FB]" 回信，解析后写入 feedback 表并标记已读；无法解析的回信
 记录日志后同样标记已读（避免毒消息反复重试）。回信主题中的用户标注
 可被任何人填写，因此记录前必须校验实际发件人与标注用户一致，防止
@@ -23,11 +25,12 @@ import re
 from dotenv import load_dotenv
 
 from database.db import save_feedback
+from processing.term_expander import add_feedback_terms
 
 logger = logging.getLogger(__name__)
 
 SUBJECT_TAG = "[FB]"
-VALID_VALUES = {"relevant", "not_relevant", "already_read", "save"}
+VALID_VALUES = {"1", "2", "3", "4", "5"}
 
 _TOKEN = re.compile(r"u=(?P<u>\S+)\s+p=(?P<p>\d+)\s+v=(?P<v>\w+)")
 
@@ -48,8 +51,8 @@ def parse_feedback_message(msg: email.message.Message) -> dict | None:
     }
 
 
-def _plain_body(msg: email.message.Message) -> str:
-    """取第一个 text/plain 部分，去掉引用原信的行，合并剩余非空行（限 500 字符）。"""
+def _plain_text(msg: email.message.Message) -> str:
+    """取第一个 text/plain 部分并解码为原文（保留行结构）。"""
     part = msg if msg.get_content_type() == "text/plain" else None
     if part is None:
         for p in msg.walk():
@@ -60,10 +63,27 @@ def _plain_body(msg: email.message.Message) -> str:
         return ""
     payload = part.get_payload(decode=True) or b""
     charset = part.get_content_charset() or "utf-8"
-    text = payload.decode(charset, errors="replace")
-    lines = [ln.strip() for ln in text.splitlines()
+    return payload.decode(charset, errors="replace")
+
+
+def _plain_body(msg: email.message.Message) -> str:
+    """取正文，去掉引用原信的行，合并剩余非空行（限 500 字符）。"""
+    lines = [ln.strip() for ln in _plain_text(msg).splitlines()
              if ln.strip() and not ln.strip().startswith(">")]
     return " ".join(lines)[:500]
+
+
+def parse_added_terms(msg: email.message.Message) -> list[str]:
+    """解析正文中的新增关键词行（B4）：非引用行以 "+" 开头，逗号兼容中英文，
+    可多个词（如 "+CRISPR, 单细胞测序"）。这里只做切分与 strip，
+    清洗/去重/落盘由 term_expander.add_feedback_terms 负责。"""
+    terms = []
+    for ln in _plain_text(msg).splitlines():
+        ln = ln.strip()
+        if not ln or ln.startswith(">") or not ln.startswith("+"):
+            continue
+        terms.extend(part.strip() for part in re.split(r"[,，]", ln[1:]) if part.strip())
+    return terms
 
 
 def collect(conn, imap_factory=imaplib.IMAP4_SSL) -> int:
@@ -97,6 +117,10 @@ def collect(conn, imap_factory=imaplib.IMAP4_SSL) -> int:
                     logger.warning("反馈发件人 %s 与标注用户 %s 不符，拒绝记录",
                                    sender or "(空)", parsed["user_email"])
                 else:
+                    # B4：发件人校验通过后，正文 "+关键词" 行追加到该用户自动词表
+                    added_terms = parse_added_terms(msg)
+                    if added_terms:
+                        add_feedback_terms(sender, added_terms)
                     exists = conn.execute("SELECT 1 FROM papers WHERE id = ?",
                                           (parsed["paper_id"],)).fetchone()
                     if not exists:

@@ -6,6 +6,10 @@ bioRxiv 不提供服务端关键词检索，只能按日期区间拉取全量元
 是逐人遗留路径（先严格后宽松降级），仅测试与调试用。拉取结果按日期
 区间做模块级缓存，多用户共享一次抓取；API 异常时记日志并返回空列表，
 绝不阻断 PubMed 主流程。
+
+注意：bioRxiv 按美东时间发布，北京时间的"当天"窗口往往只有零星篇数
+（甚至为 0），因此抓取窗口向前多覆盖一天（days=1 实际拉取昨天+今天），
+跨天重叠的论文由主流水线的历史去重兜底，不会重复推送。
 """
 
 import logging
@@ -53,7 +57,7 @@ def fetch_recent(user: dict, days: int = 1, max_results: int = 50, min_results: 
         return []
 
     to_date = date.today()
-    from_date = to_date - timedelta(days=max(days - 1, 0))
+    from_date = to_date - timedelta(days=max(days, 1))  # 多覆盖前一天：bioRxiv 按美东时间发布，北京时间的当天只有零星篇数
     details = _fetch_details(from_date.isoformat(), to_date.isoformat())
     if not details:
         return []
@@ -98,7 +102,7 @@ def fetch_recent_global(species: list[str], others: list[str], days: int = 1,
         return []
 
     to_date = date.today()
-    from_date = to_date - timedelta(days=max(days - 1, 0))
+    from_date = to_date - timedelta(days=max(days, 1))  # 多覆盖前一天：bioRxiv 按美东时间发布，北京时间的当天只有零星篇数
     details = _fetch_details(from_date.isoformat(), to_date.isoformat())
     if not details:
         return []

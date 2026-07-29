@@ -71,7 +71,7 @@
 | `sources/global_pool.py` | 全局摄取层：全用户检索词（aliases 展开 + 有效学习词）合并去重 → LLM 主题聚类分簇（`prompts/topic_clustering.txt`，按词表哈希缓存 7 天，失败沿用旧缓存、无缓存回退单簇）→ 逐簇扁平 OR PubMed 检索（簇内关键词等权、命中任一词即召回，无 AND 分组）合并去重 + bioRxiv 全局过滤 + （可选）顶刊直采通道合并 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）、查询式永不带 NOT |
 | `sources/top_journals.py` | 顶刊直采通道（批 7）：`load_journal_names` 从 journals.yaml 按分层读原始刊名；`fetch_top_journals` 逐刊 `"<刊名>"[jour]` 直抓 PubMed 最近论文（单刊失败跳过、刊间 sleep 0.4s），绕过关键词召回解决顶刊漏召回（实测全局池零 CNS）；开关与参数见 scoring.yaml `journal_channel` |
 | `sources/pubmed.py` | **遗留逐人路径（不在主流水线，仅测试/调试）**。PubMed 采集（NCBI E-utilities）。`build_queries` 返回（严格， 宽松）两条查询：严格=物种组 OR 与其余全部检索词 OR 做 AND；宽松=全部词扁平 OR；严格命中 <5 篇自动降级宽松；两端都附加 exclude 词的 NOT 排除；aliases 与有效学习词先并入检索词；429 限流指数退避（5s/10s/20s） |
-| `sources/biorxiv.py` | bioRxiv 采集：无服务端检索，按日期区间拉全量后本地过滤——主流水线 `fetch_recent_global` 用全局词表扁平 OR（等权、命中任一词即保留）；逐人 `fetch_recent`（严格/宽松降级）为遗留路径，仅测试/调试 |
+| `sources/biorxiv.py` | bioRxiv 采集：无服务端检索，按日期区间拉全量后本地过滤——主流水线 `fetch_recent_global` 用全局词表扁平 OR（等权、命中任一词即保留）；逐人 `fetch_recent`（严格/宽松降级）为遗留路径，仅测试/调试。抓取窗口向前多覆盖一天（bioRxiv 按美东时间发布，北京时间当天只有零星篇数），重叠由跨天去重兜底 |
 | `sources/paper.py` | Paper 数据类 + `expand_with_aliases`（检索词并入 aliases 变体）+ `dedupe`（DOI 优先、规范化标题兜底） |
 | `recommendation/scorer.py` | 三层漏斗第 2 层：零成本等权关键词粗筛 + tie-break；exclude 命中直接剔除；期刊分层只在此加载（供精排用），**粗筛不按期刊加分**（V4）；叠加 learned 词加分（单篇封顶 6） |
 | `recommendation/ranker.py` | 三层漏斗第 3 层：六维 0-100 加权 Final Score + AI 中文推荐理由；按绝对阈值定级（≥75 Must Read / ≥60 Important / 其余 Reference，宁缺毋滥不凑配额）；`thresholds.push_floor` 推送下限——低于该分的论文直接不进邮件（批 7）；LLM 异常回退中性分 50 |

@@ -83,7 +83,7 @@
 | `processing/translator.py` | 标题中译 + 中文四段结构化摘要（背景/研究方法/研究结果/研究意义，prompt `paper_translation.txt`；由 email.yaml `show_translation` 控制，开启时邮件只展示中文四段摘要） |
 | `processing/daily_summary_generator.py` | 日报末尾"今日价值总结"（LLM 生成） |
 | `database/db.py` | SQLite（`literature_agent.db`）：papers（dedup_key UNIQUE，全局共享）、paper_analysis、paper_news_summary、paper_translation（四段摘要，全局共享）、recommendations（user_email+paper_id UNIQUE，sent_date/category/score）、feedback（UNIQUE(user,paper,value)，processed 标记）、learned_terms（weight/support/last_seen）；全部幂等写入 |
-| `mailer/digest_builder.py` | 日报 HTML（模板 `templates/daily_digest.html`）：开头总览块（窗口内全库新增/命中关键词/推送篇数与定级分布）+ 四段式；卡片展示中文四段结构化摘要；反馈按配置双模式——HTTP 模式（`.env` 配 FEEDBACK_BASE_URL+FEEDBACK_SECRET）：每张卡片底部内嵌 ⭐1–⭐5 链接（带 HMAC token，点击即由 feedback/server.py 落库），Part 4 收窄为"新增关注关键词"入口；回退模式（未配置）：Part 4 单个 mailto 按钮（主题 `[FB] u=<邮箱> d=<日期>`，正文预填当天编号行，按编号填 ⭐1–⭐5） |
+| `mailer/digest_builder.py` | 日报 HTML（模板 `templates/daily_digest.html`）：开头总览块（窗口内全库新增/命中关键词/推送篇数与定级分布）+ 三段式；每篇论文一张卡片，默认显示一句话新闻概要，`<details>` 折叠作者/DOI/关键词/推荐理由/中文四段摘要（不支持的客户端默认全展开）；反馈按配置双模式——HTTP 模式（`.env` 配 FEEDBACK_BASE_URL+FEEDBACK_SECRET）：每张卡片底部内嵌 ⭐1–⭐5 链接（带 HMAC token，点击即由 feedback/server.py 落库），Part 3 收窄为"新增关注关键词"入口；回退模式（未配置）：Part 3 单个 mailto 按钮（主题 `[FB] u=<邮箱> d=<日期>`，正文预填当天编号行，按编号填 ⭐1–⭐5） |
 | `mailer/sender.py` | SMTP 发信：凭据全部来自 `.env`（SMTP_HOST/PORT/USER/PASSWORD/DIGEST_FROM_EMAIL），缺失即报错列出缺项；465 走 SSL，其余 starttls |
 | `feedback/server.py` | HTTP 五星反馈接收服务（`python -m feedback.server`，默认 0.0.0.0:8710，随 run_daily.sh 自动拉起）：`GET /fb` 点星即写 feedback 表并返回"已反馈"确认页（附关键词表单）；`GET /kw` 新增关键词表单/提交（写入 auto_terms feedback_added）；`GET /health`；所有写操作要求 HMAC token，缺 FEEDBACK_SECRET 拒绝启动 |
 | `feedback/tokens.py` | 反馈链接 HMAC-SHA256 签名/校验（digest_builder 生成侧与 server 校验侧共用；签名覆盖用户|论文|星级，篡改任一参数即 403） |
@@ -212,12 +212,15 @@ weekly_report.py --days 30        # 月报（run_monthly.sh，cron 每月 1 日�
 
 ## 7. 邮件规格
 
-**日报（开头总览块 + 四段式）**：总览块（窗口内全库新增 X 篇 · 命中您的关键词 Y 篇 ·
-本次推送 Z 篇，附必读/重要/参考定级分布）；Part 1 今日论文新闻摘要表
-（一句话：问题→方法→创新→结果）；Part 2 详细卡片（定级徽标、Final Score、中英文标题、
-中文四段结构化摘要——背景/研究方法/研究结果/研究意义，`show_translation` 开启时只展示中文、
-不再显示英文摘要，关闭回退英文摘要；Keywords、DOI、AI 推荐理由）；
-Part 3 今日价值总结；Part 4 反馈入口（HTTP 模式为"新增关注关键词"，回退模式为批量标注 mailto，见下）。
+**日报（开头总览块 + 三段式卡片）**：总览块（窗口内全库新增 X 篇 · 命中您的关键词 Y 篇 ·
+本次推送 Z 篇，附必读/重要/参考定级分布）；Part 1 今日论文——每篇一张卡片，
+默认可见区为定级徽标 + Final Score + 标题链接（附中文标题）+ 一句话新闻概要
+（问题→方法→创新→结果）+ 期刊日期；卡片内 `<details>` 折叠「展开详情」
+（作者、DOI、链接、Keywords、AI 推荐理由、中文四段结构化摘要——背景/研究方法/
+研究结果/研究意义，`show_translation` 开启时只展示中文、不再显示英文摘要，关闭回退英文摘要），
+不支持 `<details>` 的邮件客户端默认全部展开、可读性不受影响；⭐ 重要性反馈在折叠区外，
+不展开即可点击；Part 2 今日价值总结；Part 3 反馈入口
+（HTTP 模式为"新增关注关键词"，回退模式为批量标注 mailto，见下）。
 
 **周报/月报（四段式）**：Part 1 LLM 趋势总结；Part 2 分布统计（定级/期刊分层/Top 期刊/高频词）；
 Part 3 阅读趋势（窗口内反馈正/中/负分桶 + 当前有效学习词 Top）；Part 4 重点论文清单
@@ -228,11 +231,11 @@ Part 3 阅读趋势（窗口内反馈正/中/负分桶 + 当前有效学习词 T
 ⭐4 比较重要 / ⭐5 非常重要），接收人点一下即完成反馈——链接指向 `feedback/server.py` 的
 `/fb` 端点（`u=邮箱&p=paper_id&v=星级&t=HMAC token`），落库 feedback 表（幂等去重）后浏览器
 直接显示"✓ 已反馈"确认页（附论文标题与新增关键词表单），**无需再发任何邮件**；
-Part 4 收窄为单个"新增关注关键词"按钮（`/kw` 表单，提交写入 auto_terms feedback_added，
+Part 3 收窄为单个"新增关注关键词"按钮（`/kw` 表单，提交写入 auto_terms feedback_added，
 次日进检索）。token 覆盖 用户|论文|星级 全参数，篡改即 403，无 FEEDBACK_SECRET 无法伪造
 （防污染他人学习词表）；服务随 `run_daily.sh` 自动拉起（pgrep 检查 + nohup）。
 
-**反馈 · 回退模式（未配置 FEEDBACK_*）**：日报 Part 4 单个 mailto 按钮，主题
+**反馈 · 回退模式（未配置 FEEDBACK_*）**：日报 Part 3 单个 mailto 按钮，主题
 `[FB] u=<用户邮箱> d=<日期>`；正文预填当天全部编号行（`01:`–`NN:`，编号与卡片展示序一致），
 在想评的编号后填 1-5，其余留空即可；collector 按编号经 recommendations 表
 （user_email + sent_date，按分数展示序）映射回 paper_id。正文其余行可自由填写原因（可选）；
@@ -270,7 +273,7 @@ Part 4 收窄为单个"新增关注关键词"按钮（`/kw` 表单，提交写�
    - **HTTP 模式（默认）**：用户在日报卡片底部直接点 ⭐1–⭐5 → `feedback/server.py` 校验
      HMAC token → 写 feedback 表 → 浏览器显示"已反馈"确认页（附新增关键词表单，
      提交经 `/kw` 写入 auto_terms 的 `feedback_added`，次日进检索）；全程无需发邮件；
-   - **回退模式**：用户在日报末尾 Part 4 点 **一键反馈** → 邮件客户端生成 `[FB]` 回信草稿
+   - **回退模式**：用户在日报末尾 Part 3 点 **一键反馈** → 邮件客户端生成 `[FB]` 回信草稿
      （主题带 `d=<日期>`，正文预填当天全部编号行），在想评的编号后填 ⭐1–⭐5 发出；
      正文可填原因（非必填），另起一行 `+关键词` 可新增检索词。
 2. 每日流水线**之前** `python -m feedback`：IMAP 收取未读 `[FB]` 回信 →
@@ -371,7 +374,7 @@ HMAC token（密钥在 `.env`，不入库不入文档）、参数强校验、页
 From 伪造校验（回信通道）与 HMAC token 校验（HTTP 通道）。
 
 **决策 2 · 五星反馈**（替代 relevant / not_relevant / already_read / save 四键）：
-日报末尾 Part 4 一键反馈——单个 mailto 按钮生成一封回信，主题 `[FB] u=<邮箱> d=<日期>`，
+日报末尾 Part 3 一键反馈——单个 mailto 按钮生成一封回信，主题 `[FB] u=<邮箱> d=<日期>`，
 正文预填当天编号行，按编号填 ⭐1–⭐5（批 5 起由逐篇 5 链接改为批量一封；
 旧逐篇 `p=<id> v=<1..5>` 格式 collector 仍兼容收集）；
 正文 `+关键词1, 关键词2` 语法保留（写入 `auto_terms` 的 `feedback_added`，次日进检索）。
@@ -416,6 +419,8 @@ holidays: ["2026-01-01", "2026-02-16", "..."]
 | 批 6 邮件内五星反馈 | 撤销决策 1 零入站端口约束，引入 HTTP 反馈服务：日报每张卡片内嵌 ⭐1–⭐5 链接（`feedback/server.py` /fb 点星即落库、浏览器显示"已反馈"页+关键词表单；/kw 独立关键词入口；`feedback/tokens.py` HMAC 签名防伪造）；未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 回退批 5 批量回信；服务随 run_daily.sh 自动拉起 | ✅ 已完成（2026-07-29，219 passed） |
 | 批 7 召回与推送质量 | 顶刊直采通道（`sources/top_journals.py`：按 journals.yaml 分层刊名 `"<刊名>"[jour]` 逐刊直抓 PubMed 并入全局池，绕过关键词召回解决全局池零 CNS；`global_pool.fetch_global_pool` 新增 journal_channel 参数；main.py top-N 后按刊名补入通道候选，每用户上限 max_per_user=10）+ 推送下限（`ranker.thresholds.push_floor`：低分论文不进邮件，过滤后为空则当日跳过发信）；配置均在 scoring.yaml `journal_channel` / `ranker.thresholds` | ✅ 已完成（2026-07-29，225 passed） |
 | 批 8 精排权重调整 | recency 权重 10→0 并入 personal（20→30）：journal 30 / personal 30 / lab 20 / method 10 / novelty 10 / recency 0；push_floor 随顶刊得分变化 40→30（不相关 T0 顶刊现仅 journal 30 分，保持露面机会）；recency 维度仍计算，配置调回即恢复 | ✅ 已完成（2026-07-29） |
+| 批 9 bioRxiv 窗口修复 | bioRxiv 按日期区间全量拉取，抓取窗口向前多覆盖一天，修复预印本时间分布导致新文长期捞不到、推送零 bioRxiv（`855728a`） | ✅ 已完成（2026-07-29，225 passed） |
+| 批 10 日报卡片合并 | Part 1 新闻摘要表与 Part 2 详情卡片合并：每篇一张卡片，默认可见区为徽标/得分/标题链接/一句话新闻概要/期刊日期，`<details>` 折叠作者、DOI、关键词、推荐理由与中文四段摘要（不支持的客户端默认全展开）；⭐ 反馈留在折叠区外不展开即可点；价值总结与反馈入口顺延为 Part 2 / Part 3 | ✅ 已完成（2026-07-29，227 passed） |
 
 ### 12.3 批 4 候选（第 11 节 P1/P2 余项）
 

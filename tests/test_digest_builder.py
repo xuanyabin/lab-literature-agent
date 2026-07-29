@@ -34,12 +34,22 @@ def build(items, summary="今日趋势总结。", config=None):
     return build_digest_html("轩亚冰", "2025-07-22", items, summary, config)
 
 
-def test_digest_contains_three_parts():
+def test_digest_merged_card_and_summary_parts():
     html = build([make_item()])
-    assert "今日论文新闻摘要" in html
-    assert "论文详细信息卡片" in html
+    assert "今日论文（1 篇）" in html
     assert "今日推荐文献价值总结" in html
     assert "今日趋势总结。" in html
+    # Part 1/2 已合并为卡片：不再有独立新闻摘要表与详情卡片两个区块
+    assert "今日论文新闻摘要" not in html
+    assert "论文详细信息卡片" not in html
+
+
+def test_card_collapsible_details_and_title_appears_once():
+    html = build([make_item()])
+    assert '<details class="card-details">' in html
+    assert "展开详情" in html
+    # 合并后标题只出现一次（旧版新闻表与详情卡各出现一次）
+    assert html.count("Atlas of &lt;Apis&gt; &amp; friends") == 1
 
 
 def test_digest_contains_full_card_fields():
@@ -99,7 +109,8 @@ def test_reason_and_score_shown_when_present():
 
 def test_reason_absent_when_empty():
     html = build([make_item()])
-    assert "推荐理由" not in html
+    # 折叠按钮文案含"推荐理由"四字，精确断言推荐理由内容块未渲染
+    assert '<span class="abs-label">推荐理由</span>' not in html
 
 
 def _build_with_feedback(items, user_email="a@x.com", config=None):
@@ -185,7 +196,14 @@ def test_http_mode_star_links_in_each_card():
     assert "一键标注" not in html
 
 
-def test_http_mode_part4_keyword_entry():
+def test_http_mode_stars_outside_details():
+    # 五星反馈在折叠区外：不展开详情也能直接点击
+    item = {**make_item(), "paper_id": 42}
+    html = _build_http([item])
+    assert html.index("</details>") < html.index('class="stars"')
+
+
+def test_http_mode_part3_keyword_entry():
     item = {**make_item(), "paper_id": 42}
     html = _build_http([item])
     assert "新增关注关键词" in html

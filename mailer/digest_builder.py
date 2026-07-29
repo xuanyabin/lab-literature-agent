@@ -1,10 +1,13 @@
-"""组装每日文献情报邮件的各段内容（总览 / 新闻摘要 / 详细卡片 / 价值总结 / 反馈入口），渲染交给 template_renderer。
+"""组装每日文献情报邮件的各段内容（总览 / 可展开论文卡片 / 价值总结 / 反馈入口），渲染交给 template_renderer。
+
+每篇论文一张卡片：默认只显示一句话新闻概要，卡片内 <details> 折叠完整信息
+（作者 / 摘要 / 推荐理由）；不支持 <details> 的邮件客户端会默认全部展开，可读性不受影响。
 
 反馈（两种模式，按配置自动切换）：
 - HTTP 模式（config 含 feedback_base_url 与 feedback_secret）：每张卡片底部内嵌
   ⭐1-5 星级链接，接收人点击即由 feedback/server.py 落库并显示"已反馈"页；
-  Part 4 收窄为一个"新增关注关键词"入口（/kw 表单）。链接带 HMAC token 防伪造。
-- 回退模式（未配置 base_url/secret）：整封邮件一个"一键反馈"mailto（Part 4），
+  Part 3 收窄为一个"新增关注关键词"入口（/kw 表单）。链接带 HMAC token 防伪造。
+- 回退模式（未配置 base_url/secret）：整封邮件一个"一键反馈"mailto（Part 3），
   回信主题带 [FB] token 与日期，正文按编号标注 1-5 星、以 "+" 开头的行是新增关键词，
   由 python -m feedback 收集学习。
 两种模式都要求调用方提供 user_email 且 items 非空。
@@ -67,7 +70,6 @@ def build_digest_html(user_name: str, digest_date: str, items: list[dict],
         "date": escape(digest_date),
         "count": str(len(items)),
         "overview_block": _overview_block(overview) if overview else "",
-        "news_items": "\n".join(_news_row(i, it) for i, it in enumerate(items, 1)),
         "paper_cards": "\n".join(_paper_card(i, it, cfg, user_email) for i, it in enumerate(items, 1)),
         "daily_summary": escape(daily_summary) if daily_summary else "（今日价值总结生成失败，请查看上方论文列表。）",
         "feedback_block": _feedback_block(user_email, digest_date, len(items), cfg),
@@ -94,33 +96,20 @@ def _badge(category: str) -> str:
     return f'<span class="badge {cls}">{escape(category or "Reference")}</span>'
 
 
-def _news_row(i: int, it: dict) -> str:
-    p = it["paper"]
-    return f"""      <tr>
-        <td class="num">{i}</td>
-        <td>
-          <div class="news-head">{_badge(it.get("category", "Reference"))}
-            <a class="title-link" href="{escape(p.url)}">{escape(p.title)}</a></div>
-          <div class="news">{escape(it["news"])}</div>
-          <div class="meta">{escape(p.journal)} · {escape(p.date)}</div>
-        </td>
-      </tr>"""
-
-
 def _http_mode(cfg: dict) -> bool:
     """配置了 feedback_base_url + feedback_secret 时走 HTTP 五星反馈服务。"""
     return bool(cfg.get("feedback_base_url") and cfg.get("feedback_secret"))
 
 
 def _feedback_block(user_email: str, digest_date: str, count: int, cfg: dict) -> str:
-    """Part 4 反馈入口：HTTP 模式收窄为关键词表单链接；回退模式为批量标注 mailto。"""
+    """Part 3 反馈入口：HTTP 模式收窄为关键词表单链接；回退模式为批量标注 mailto。"""
     if not user_email or count <= 0:
         return ""
     if _http_mode(cfg):
         base = cfg["feedback_base_url"].rstrip("/")
         token = make_token(cfg["feedback_secret"], user_email, "kw")
         href = f"{base}/kw?u={quote(user_email)}&t={token}"
-        return f"""    <h2>Part 4 · 反馈与关键词</h2>
+        return f"""    <h2>Part 3 · 反馈与关键词</h2>
     <p class="section-sub">在每张卡片下方点 ⭐ 即完成反馈（无需回信）</p>
     <div class="feedback-box">
       有希望我们持续跟踪的新方向？<br>
@@ -141,7 +130,7 @@ def _feedback_block(user_email: str, digest_date: str, count: int, cfg: dict) ->
     ]
     body = quote("\n".join(lines))
     href = f"mailto:{cfg['feedback_email']}?subject={subject}&body={body}"
-    return f"""    <h2>Part 4 · 一键反馈</h2>
+    return f"""    <h2>Part 3 · 一键反馈</h2>
     <p class="section-sub">只回一封邮件 · 按编号标注星级，帮助我们越推越准</p>
     <div class="feedback-box">
       点击下面的按钮打开反馈邮件草稿，在编号后填 1-5 星（只评想评的即可），发送即完成：<br>
@@ -170,33 +159,42 @@ def _star_row(user_email: str, paper_id, cfg: dict) -> str:
 
 
 def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "") -> str:
+    """单篇论文卡片：默认可见区为标题 + 一句话新闻概要 + 期刊日期，
+    <details> 折叠区内放作者 / DOI / 关键词 / 推荐理由 / 中文四段摘要。
+    五星反馈在折叠区外，不展开也能直接点击。"""
     p = it["paper"]
     head = f'Rank {i} {_badge(it.get("category", "Reference"))}'
     if it.get("score") is not None:
         head += f' · {it["score"]} 分'
     rows = [
         f'<div class="card-head">{head}</div>',
-        f'<div class="card-title">{escape(p.title)}</div>',
+        f'<div class="card-title"><a class="title-link" href="{escape(p.url)}">{escape(p.title)}</a></div>',
     ]
     if cfg["show_translation"] and it.get("title_zh"):
         rows.append(f'<div class="card-title-zh">{escape(it["title_zh"])}</div>')
-    rows.append(f'<div class="meta">{escape(p.authors)}</div>')
+    if it.get("news"):
+        rows.append(f'<div class="news">{escape(it["news"])}</div>')
     rows.append(f'<div class="meta">{escape(p.journal)} · {escape(p.date)}</div>')
+
+    detail = [f'<div class="meta">{escape(p.authors)}</div>']
     if cfg["show_doi"]:
-        rows.append(f'<div class="meta">DOI: {escape(p.doi or "—")}</div>')
-    rows.append(f'<div class="meta"><a href="{escape(p.url)}">{escape(p.url)}</a></div>')
+        detail.append(f'<div class="meta">DOI: {escape(p.doi or "—")}</div>')
+    detail.append(f'<div class="meta"><a href="{escape(p.url)}">{escape(p.url)}</a></div>')
     if cfg["show_keywords"]:
         keywords = "、".join(p.keywords) or "—"
-        rows.append(f'<div class="meta">Keywords: {escape(keywords)}</div>')
+        detail.append(f'<div class="meta">Keywords: {escape(keywords)}</div>')
     if it.get("reason"):
-        rows.append(f'<div class="reason"><span class="abs-label">推荐理由</span>{escape(it["reason"])}</div>')
+        detail.append(f'<div class="reason"><span class="abs-label">推荐理由</span>{escape(it["reason"])}</div>')
     if cfg["show_translation"]:
         # 只展示中文四段结构化摘要（为空的段不渲染），不再显示英文摘要
         for key, label in _SECTION_LABELS:
             if it.get(key):
-                rows.append(f'<div class="abstract"><span class="abs-label">{label}</span>{escape(it[key])}</div>')
+                detail.append(f'<div class="abstract"><span class="abs-label">{label}</span>{escape(it[key])}</div>')
     else:
-        rows.append(f'<div class="abstract"><span class="abs-label">Abstract</span>{escape(p.abstract or "（无摘要）")}</div>')
+        detail.append(f'<div class="abstract"><span class="abs-label">Abstract</span>{escape(p.abstract or "（无摘要）")}</div>')
+    rows.append('<details class="card-details"><summary class="detail-toggle">展开详情 · 作者 / 摘要 / 推荐理由</summary>\n'
+                + "\n".join(detail) + '\n</details>')
+
     star = _star_row(user_email, it.get("paper_id"), cfg)
     if star:
         rows.append(star)

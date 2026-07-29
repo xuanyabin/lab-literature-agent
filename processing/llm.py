@@ -78,16 +78,26 @@ class LLMClient:
         kwargs = {
             "model": self.model,
             "max_tokens": self.max_tokens,
+            "temperature": self.temperature,
             "messages": [{"role": "user", "content": prompt}],
         }
-        try:
-            resp = self._create(temperature=self.temperature, **kwargs)
-        except Exception as exc:
-            # 部分模型不接受 temperature 参数，遇到此类报错时去掉该参数重试一次
-            if "temperature" not in str(exc).lower():
-                raise
-            logger.warning("模型拒绝 temperature 参数，去掉后重试")
-            resp = self._create(**kwargs)
+        # 参数兼容兜底：部分模型/网关不接受 max_tokens 或 temperature 参数，
+        # 按报错提示换参数名（max_tokens→max_completion_tokens）或去参（temperature）
+        # 后重试；每种参数只兜底一次（兜底后该参数已不在 kwargs 中），其余错误直接抛出
+        while True:
+            try:
+                resp = self._create(**kwargs)
+                break
+            except Exception as exc:
+                msg = str(exc).lower()
+                if "max_tokens" in kwargs and "max_tokens" in msg:
+                    logger.warning("模型拒绝 max_tokens 参数，改用 max_completion_tokens 重试")
+                    kwargs["max_completion_tokens"] = kwargs.pop("max_tokens")
+                elif "temperature" in kwargs and "temperature" in msg:
+                    logger.warning("模型拒绝 temperature 参数，去掉后重试")
+                    del kwargs["temperature"]
+                else:
+                    raise
         self._record_call()
         return (resp.choices[0].message.content or "").strip()
 

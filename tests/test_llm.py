@@ -103,6 +103,40 @@ def test_temperature_fallback_still_works():
     assert calls[1]["max_tokens"] == 100  # 回退调用仍带 max_tokens
 
 
+def test_max_tokens_fallback_switches_to_completion_tokens():
+    """网关拒绝 max_tokens（400）时换用 max_completion_tokens 重试，其余参数保留。"""
+    err = _status_error(400, "Unsupported parameter: 'max_tokens' is not supported "
+                             "with this model. Use 'max_completion_tokens' instead.")
+    c = _client([err, _resp("ok")])
+    assert c.complete("p") == "ok"
+    calls = c._client.chat.completions.calls
+    assert calls[0]["max_tokens"] == 100
+    assert "max_tokens" not in calls[1]
+    assert calls[1]["max_completion_tokens"] == 100
+    assert calls[1]["temperature"] == 0.2
+
+
+def test_max_tokens_then_temperature_fallback():
+    """两种参数都被拒时依次兜底：先换 max_completion_tokens，再去 temperature。"""
+    err1 = _status_error(400, "Unsupported parameter: 'max_tokens'")
+    err2 = _status_error(400, "Unsupported parameter: 'temperature'")
+    c = _client([err1, err2, _resp("ok")])
+    assert c.complete("p") == "ok"
+    calls = c._client.chat.completions.calls
+    assert "max_completion_tokens" in calls[1]
+    assert "max_tokens" not in calls[2]
+    assert "temperature" not in calls[2]
+
+
+def test_max_tokens_fallback_only_once():
+    """换参后仍报 max_tokens 错误时不再兜底，直接抛出（不死循环）。"""
+    err = _status_error(400, "Unsupported parameter: 'max_tokens'")
+    c = _client([err, err])
+    with pytest.raises(APIStatusError):
+        c.complete("p")
+    assert len(c._client.chat.completions.calls) == 2  # 原始 1 次 + 兜底 1 次
+
+
 def test_budget_exceeded_blocks_call(tmp_path):
     usage = tmp_path / ".llm_usage.json"
     usage.write_text(json.dumps({"date": date.today().isoformat(), "calls": 5}))

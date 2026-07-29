@@ -1,4 +1,4 @@
-"""sources.global_pool 的测试：词表合并 / 聚类缓存 / 分簇检索降级与去重（全 mock，无网络）。"""
+"""sources.global_pool 的测试：词表合并 / 聚类缓存 / 分簇检索与去重（全 mock，无网络）。"""
 
 import sources.global_pool as gp
 from sources.paper import Paper
@@ -52,10 +52,11 @@ def test_collect_global_terms_ignores_lab_topics_and_bad_items():
 
 # ---------- build_cluster_query ----------
 
-def test_build_cluster_query_with_species_and_terms():
+def test_build_cluster_query_flat_or_equal_weight():
+    # 关键词等权：物种词与其他词同一层扁平 OR，不再有 AND 分组
     q = gp.build_cluster_query({"species": ["Apis", "Bombus"], "terms": ["genomics"]})
-    assert q == '("Apis" OR "Bombus") AND ("genomics")'
-    assert "NOT" not in q
+    assert q == '"Apis" OR "Bombus" OR "genomics"'
+    assert "AND" not in q and "NOT" not in q
 
 
 def test_build_cluster_query_without_species_flat_or():
@@ -125,16 +126,14 @@ def _paper(doi):
                  date="2026-07-22", doi=doi, url="", keywords=[])
 
 
-def test_fetch_global_pubmed_fallback_and_cross_cluster_dedupe(monkeypatch):
+def test_fetch_global_pubmed_flat_or_and_cross_cluster_dedupe(monkeypatch):
     searches = []
 
     def fake_search(query, days, retmax):
         searches.append(query)
-        if " AND " in query:
-            return ["1"]          # 严格查询命中不足 → 触发降级
         if "ecology" in query:
-            return ["2", "3"]     # 无物种词的簇：命中不足也不降级
-        return ["1", "2"]         # 降级后的扁平 OR
+            return ["2", "3"]
+        return ["1", "2"]
 
     monkeypatch.setattr(gp.pubmed, "search_pmids", fake_search)
     monkeypatch.setattr(gp.pubmed, "fetch_by_pmids",
@@ -145,10 +144,10 @@ def test_fetch_global_pubmed_fallback_and_cross_cluster_dedupe(monkeypatch):
         {"topic": "蜜蜂", "species": ["Apis"], "terms": ["genomics"]},
         {"topic": "生态", "species": [], "terms": ["ecology"]},
     ]
-    papers = gp.fetch_global_pubmed(clusters, days=1, min_results=5)
-    # 簇一 strict + 扁平降级共 2 次检索；簇二无物种词不降级，仅 1 次
-    assert len(searches) == 3
-    assert all("NOT" not in q for q in searches)
+    papers = gp.fetch_global_pubmed(clusters, days=1)
+    # 扁平 OR：每簇只检索一次（无严格查询与降级重试）
+    assert len(searches) == 2
+    assert all(" AND " not in q and "NOT" not in q for q in searches)
     assert [p.doi for p in papers] == ["10.1/1", "10.1/2", "10.1/3"]  # 跨簇合并去重
 
 

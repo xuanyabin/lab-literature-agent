@@ -161,20 +161,14 @@ def cluster_terms(terms: dict, llm, cache_path: Path = CLUSTER_CACHE) -> list[di
 
 
 def build_cluster_query(cluster: dict) -> str:
-    """单簇查询式：物种词与其余词都非空 → (OR 物种) AND (OR 其余)，
-    否则全部扁平 OR；永不带 NOT（exclude 在各用户粗筛时各自执行）。"""
-    species = _clean(cluster.get("species"))
-    others = _clean(cluster.get("terms"))
-    if species and others:
-        return f"({_or(species)}) AND ({_or(others)})"
-    return _or(species + others)
+    """单簇查询式：全部检索词扁平 OR——关键词等权、不区分物种与其他词，
+    命中任一词即召回；永不带 NOT（exclude 在各用户粗筛时各自执行）。"""
+    return _or(_clean(cluster.get("species")) + _clean(cluster.get("terms")))
 
 
-def fetch_global_pubmed(clusters: list[dict], days: int, retmax: int = 100,
-                        min_results: int = 5) -> list[Paper]:
+def fetch_global_pubmed(clusters: list[dict], days: int, retmax: int = 100) -> list[Paper]:
     """逐簇检索 PubMed 并合并去重。
 
-    簇有物种词且命中不足 min_results 时，该簇降级为扁平 OR 重搜一次；
     单簇异常记日志后继续其余簇；簇间 sleep 0.4s 避免触发 NCBI 限流。
     """
     papers: list[Paper] = []
@@ -184,12 +178,6 @@ def fetch_global_pubmed(clusters: list[dict], days: int, retmax: int = 100,
             if not query:
                 continue
             pmids = pubmed.search_pmids(query, days, retmax)
-            if cluster.get("species") and len(pmids) < min_results:
-                flat = _or(_clean(cluster.get("species")) + _clean(cluster.get("terms")))
-                if flat != query:
-                    logger.info("簇「%s」严格查询仅命中 %d 篇，降级为扁平 OR 重试",
-                                cluster.get("topic"), len(pmids))
-                    pmids = pubmed.search_pmids(flat, days, retmax)
             logger.info("簇「%s」命中 %d 篇", cluster.get("topic"), len(pmids))
             papers.extend(pubmed.fetch_by_pmids(pmids))
         except Exception:

@@ -1,11 +1,11 @@
 """bioRxiv 预印本采集（官方 details API + 本地关键词过滤）。
 
 bioRxiv 不提供服务端关键词检索，只能按日期区间拉取全量元数据后在本地
-过滤，过滤语义与 PubMed 检索保持一致：严格匹配（物种组命中 AND 其余词组
-命中）优先，命中不足 min_results 时降级为宽松匹配（任一词组命中）；
-exclude 词命中即弃。检索词同样并入 aliases 语义拓展词与反馈学习词表。
-拉取结果按日期区间做模块级缓存，多用户共享一次抓取；API 异常时记日志
-并返回空列表，绝不阻断 PubMed 主流程。
+过滤。主流水线用 fetch_recent_global：全部检索词扁平等权、命中任一词
+即收录（与 global_pool 的 PubMed 扁平 OR 查询语义一致）；fetch_recent
+是逐人遗留路径（先严格后宽松降级），仅测试与调试用。拉取结果按日期
+区间做模块级缓存，多用户共享一次抓取；API 异常时记日志并返回空列表，
+绝不阻断 PubMed 主流程。
 """
 
 import logging
@@ -87,13 +87,13 @@ def fetch_recent(user: dict, days: int = 1, max_results: int = 50, min_results: 
 
 
 def fetch_recent_global(species: list[str], others: list[str], days: int = 1,
-                        max_results: int = 200, min_results: int = 5) -> list[Paper]:
-    """全局池模式的 bioRxiv 过滤：与 fetch_recent 同一过滤语义，但词表由调用方
-    合并全用户并展开 aliases 后直接传入（本函数只做小写化，不再处理 aliases /
+                        max_results: int = 200) -> list[Paper]:
+    """全局池模式的 bioRxiv 过滤：全部检索词扁平等权，命中任一词即收录
+    （与 global_pool 的 PubMed 扁平 OR 查询语义一致）。词表由调用方合并全用户
+    并展开 aliases 后直接传入（本函数只做小写化，不再处理 aliases /
     exclude / learned_terms）；exclude 由全局池之后的每用户粗筛各自执行。"""
-    species = [t.lower() for t in _clean(species)]
-    others = [t.lower() for t in _clean(others)]
-    if not species and not others:
+    terms = [t.lower() for t in _clean(species) + _clean(others)]
+    if not terms:
         logger.info("全局词表为空，bioRxiv 过滤跳过")
         return []
 
@@ -103,28 +103,15 @@ def fetch_recent_global(species: list[str], others: list[str], days: int = 1,
     if not details:
         return []
 
-    strict: list[dict] = []
-    relaxed: list[dict] = []
+    picked: list[dict] = []
     for item in details:
         text = " ".join([
             item.get("title") or "",
             item.get("abstract") or "",
             item.get("category") or "",
         ]).lower()
-        sp_hit = any(t in text for t in species)
-        ot_hit = any(t in text for t in others)
-        if species and others:
-            if sp_hit and ot_hit:
-                strict.append(item)
-            elif sp_hit or ot_hit:
-                relaxed.append(item)
-        elif sp_hit or ot_hit:
-            strict.append(item)
-    if len(strict) >= min_results or not relaxed:
-        picked = strict
-    else:
-        logger.info("bioRxiv 全局严格过滤仅命中 %d 篇，降级为宽松匹配", len(strict))
-        picked = strict + relaxed
+        if any(t in text for t in terms):
+            picked.append(item)
     logger.info("bioRxiv 全局过滤命中 %d 篇（全量 %d 篇）", len(picked), len(details))
     return [_to_paper(item) for item in picked[:max_results]]
 

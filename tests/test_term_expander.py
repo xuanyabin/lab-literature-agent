@@ -65,7 +65,7 @@ def test_refresh_when_user_yaml_newer(tmp_path):
     os.utime(user_path, (future, future))
     second = FakeLLM({"honeybee": ["changed"]})
     auto = _refresh(tmp_path, second, user_path)
-    assert second.calls == 1
+    assert second.calls == 2  # 按字段分批：research_interest + keywords 各一批
     assert auto["expansion"]["honeybee"] == ["changed"]
 
 
@@ -76,8 +76,21 @@ def test_refresh_when_cache_older_than_ttl(tmp_path):
     os.utime(cache, (old, old))
     second = FakeLLM({"honeybee": ["changed"]})
     auto = _refresh(tmp_path, second, None)
-    assert second.calls == 1
+    assert second.calls == 2  # 按字段分批：research_interest + keywords 各一批
     assert auto["expansion"]["honeybee"] == ["changed"]
+
+
+def test_refresh_partial_field_failure(tmp_path):
+    """按字段分批：单批失败只丢该字段，其余字段的扩展词正常入缓存。"""
+
+    class FlakyLLM:
+        def complete(self, prompt):
+            if "[keywords]" in prompt:
+                return json.dumps({"honeybee": ["apis"]})
+            raise RuntimeError("LLM down")
+
+    auto = _refresh(tmp_path, FlakyLLM(), None)
+    assert auto["expansion"] == {"honeybee": ["apis"]}
 
 
 def test_refresh_llm_failure_keeps_old_cache(tmp_path):

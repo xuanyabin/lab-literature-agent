@@ -24,7 +24,7 @@ from pathlib import Path
 
 import yaml
 
-from .llm import LLMClient, load_prompt
+from .llm import BudgetExhaustedError, LLMClient, load_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -43,13 +43,26 @@ TERM_FIELDS = ("research_interest", "keywords", "methods", "species")
 
 
 def expand_terms(user: dict, llm) -> dict[str, list[str]]:
-    """对用户全部检索词做一次语义拓展，返回 {原词: [别名, ...]}。"""
-    terms = [(field, t) for field in TERM_FIELDS for t in user.get(field) or [] if t and t.strip()]
-    if not terms:
-        return {}
-    block = "\n".join(f"- [{field}] {t}" for field, t in terms)
-    prompt = load_prompt("term_expansion").safe_substitute(terms_block=block)
-    return _parse_json(llm.complete(prompt))
+    """对用户全部检索词做语义拓展，返回 {原词: [别名, ...]}。
+
+    按字段（TERM_FIELDS）分批调用：单批输出小，避免一次输出全部词的扩展
+    超出 max_tokens 被截断、整批 JSON 解析失败；单批异常只丢该字段的扩展，
+    不影响其他字段。
+    """
+    expansion: dict[str, list[str]] = {}
+    for field in TERM_FIELDS:
+        terms = [t for t in user.get(field) or [] if t and t.strip()]
+        if not terms:
+            continue
+        block = "\n".join(f"- [{field}] {t}" for t in terms)
+        prompt = load_prompt("term_expansion").safe_substitute(terms_block=block)
+        try:
+            expansion.update(_parse_json(llm.complete(prompt)))
+        except BudgetExhaustedError:
+            raise  # 预算耗尽快失败，剩余字段不再白调
+        except Exception:
+            logger.warning("扩展词生成异常（字段 %s），跳过该字段", field, exc_info=True)
+    return expansion
 
 
 def _parse_json(raw: str) -> dict[str, list[str]]:

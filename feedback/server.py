@@ -1,8 +1,9 @@
 """邮件内五星反馈的 HTTP 接收服务：点星即记录，浏览器直接显示"已反馈"。
 
 日报每张卡片底部嵌入 ⭐1–⭐5 五个链接（digest_builder 生成，带 HMAC token），
-指向本服务的 /fb 端点；接收人点一下即写入 feedback 表并返回确认页
-（附新增关键词表单，提交到 /kw），全程无需再发邮件。请求无有效 token
+指向本服务的 /fb 端点；接收人点一下即写入 feedback 表，响应是自动关闭的
+极简确认页（邮件点击必然拉起浏览器，页面只闪现"已反馈"即尝试自闭合）。
+新增关键词走邮件末尾的 /kw 入口，不打断评分动作。请求无有效 token
 一律拒绝（密钥为 .env 的 FEEDBACK_SECRET），防伪造污染他人学习词表。
 
 邮件内链接前缀由 .env 的 FEEDBACK_BASE_URL 决定（接收人设备可访问本机的地址，
@@ -123,7 +124,9 @@ class FeedbackHandler(BaseHTTPRequestHandler):
         )
         if not new:
             body += '<p class="sub">（相同评价此前已记录过，不会重复计数。）</p>'
-        body += _keyword_form(self.server.secret, u)
+        # 极简自动关闭页：点击评分只记录，不进入任何后续界面
+        body += ('<p class="sub">正在关闭本页…</p>'
+                 '<script>setTimeout(function(){window.close()},400)</script>')
         self._send(200, _render("已反馈", body))
 
     # ---- 新增关键词 ----

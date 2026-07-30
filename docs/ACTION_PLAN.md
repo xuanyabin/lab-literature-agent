@@ -1,6 +1,6 @@
 # Lab Literature Intelligence 实验室文献情报系统 · 具体行动方案
 
-> 版本：V4（按当前工作区实际状态编写）· 更新日期：2026-07-29
+> 版本：V4（按当前工作区实际状态编写）· 更新日期：2026-07-30
 > 部署环境：macOS · 项目根目录 `~/lab-literature-inteligence` · Python 3.13，一律使用 `.venv/bin/python`
 > 状态：批 1–3、批 5 全部落地并提交；批 6（2026-07-29）：邮件卡片内嵌 ⭐1–⭐5 五星反馈链接
 > （HTTP 反馈服务 `feedback/server.py` 点星即记录、浏览器显示"已反馈"，HMAC token 防伪造；
@@ -10,6 +10,9 @@
 > 批 11（2026-07-29）：性能改造——LLM 并发（model.yaml `max_workers=8`，产物生成与精排批次并行）、
 > 精排批处理（scoring.yaml `ranker.batch_size=5`，一次 LLM 调用评判多篇）、token 计量
 > （`logs/.llm_usage.json` 累计 prompt/completion/total tokens，流水线结束打用量日志）。
+> 批 12（2026-07-30）：lab.yaml 词表拓展（31 → 203 topics，覆盖 55 个课题方向，
+> 全部经 PubMed 90 天命中验证，过宽词有意不收）+ lab_topics 并入全局检索词参与召回
+> （此前只参与打分，实验室方向文献可能漏召回）。
 > 测试基线：237 passed（2026-07-29 复跑验证）。
 
 ---
@@ -71,7 +74,7 @@
 |---|---|
 | `main.py` | 每日流水线总入口（三阶段，详见第 5 节）：逐人词表准备 → 全局池一次检索 → 每用户本地粗筛取 top-N → shortlist 并集一次 LLM 处理 → 每用户精排发信；参数 `--user` / `--days`（默认 1）/ `--limit`（默认取 email.yaml 的 daily_paper_number=15）/ `--dry-run`（不发信不写库，HTML 落 `logs/`）；单用户失败 try/except 隔离继续，任一用户失败整体返回 1 |
 | `weekly_report.py` | 周报/月报入口：`--user` / `--days 7`（月报 `--days 30`）/ `--dry-run`；聚合 SQLite 窗口内推荐 → 统计 + 阅读趋势 → LLM 趋势总结 → 四段式邮件 |
-| `sources/global_pool.py` | 全局摄取层：全用户检索词（aliases 展开 + 有效学习词）合并去重 → LLM 主题聚类分簇（`prompts/topic_clustering.txt`，按词表哈希缓存 7 天，失败沿用旧缓存、无缓存回退单簇）→ 逐簇扁平 OR PubMed 检索（簇内关键词等权、命中任一词即召回，无 AND 分组）合并去重 + bioRxiv 全局过滤 + （可选）顶刊直采通道合并 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）、查询式永不带 NOT |
+| `sources/global_pool.py` | 全局摄取层：全用户检索词（aliases 展开 + 有效学习词 + 实验室公共方向 lab_topics）合并去重 → LLM 主题聚类分簇（`prompts/topic_clustering.txt`，按词表哈希缓存 7 天，失败沿用旧缓存、无缓存回退单簇）→ 逐簇扁平 OR PubMed 检索（簇内关键词等权、命中任一词即召回，无 AND 分组）合并去重 + bioRxiv 全局过滤 + （可选）顶刊直采通道合并 → 当日全局池；exclude 不进全局检索（各用户粗筛时各自剔除）、查询式永不带 NOT |
 | `sources/top_journals.py` | 顶刊直采通道（批 7）：`load_journal_names` 从 journals.yaml 按分层读原始刊名；`fetch_top_journals` 逐刊 `"<刊名>"[jour]` 直抓 PubMed 最近论文（单刊失败跳过、刊间 sleep 0.4s），绕过关键词召回解决顶刊漏召回（实测全局池零 CNS）；开关与参数见 scoring.yaml `journal_channel` |
 | `sources/pubmed.py` | **遗留逐人路径（不在主流水线，仅测试/调试）**。PubMed 采集（NCBI E-utilities）。`build_queries` 返回（严格， 宽松）两条查询：严格=物种组 OR 与其余全部检索词 OR 做 AND；宽松=全部词扁平 OR；严格命中 <5 篇自动降级宽松；两端都附加 exclude 词的 NOT 排除；aliases 与有效学习词先并入检索词；429 限流指数退避（5s/10s/20s） |
 | `sources/biorxiv.py` | bioRxiv 采集：无服务端检索，按日期区间拉全量后本地过滤——主流水线 `fetch_recent_global` 用全局词表扁平 OR（等权、命中任一词即保留）；逐人 `fetch_recent`（严格/宽松降级）为遗留路径，仅测试/调试。抓取窗口向前多覆盖一天（bioRxiv 按美东时间发布，北京时间当天只有零星篇数），重叠由跨天去重兜底 |
@@ -96,7 +99,7 @@
 | `config/users/<slug>.yaml` | 个人画像：name/email/active + 四组检索词 + exclude + aliases；**新增成员只需加一个 yaml，不改代码** |
 | `config/users/auto_terms/<slug>.yaml` | V4 自动词表缓存（自动维护勿手改，已 gitignore）：expansion（每词 ≤5 个别名）+ feedback_added（反馈确认新词） |
 | `config/holidays.yaml` + `scheduler/holiday.py` | 中国法定节假日静态表（每年初按国务院放假安排手工维护一次）；`backfill_days`：当日在表内返回 0（跳过），否则返回 1+当日之前连续节假日天数（上限 10，供节后合并补发）；CLI `python -m scheduler.holiday` 打印该整数 |
-| `config/lab.yaml` | 实验室公共方向 topics + aliases，`apply_lab_profile` 并入每个用户（个人配置优先） |
+| `config/lab.yaml` | 实验室公共方向 topics（203 个，覆盖 55 个课题方向，经 PubMed 90 天命中验证）+ aliases；`apply_lab_profile` 并入每个用户（个人配置优先），同时参与打分（lab 维度）与全局召回（批 12 起） |
 | `config/scoring.yaml` | 全部打分行为开关：粗筛等权/tie-break、ranker 六维权重与定级阈值（含 push_floor 推送下限、batch_size 精排批处理大小）、journal_channel 顶刊直采通道开关（enabled/tiers/max_per_user/retmax_per_journal）、learned 学习护栏（含 negative_factor_weak/strong，详见第 4、9 节） |
 | `config/journals.yaml` | 期刊分层 T0（CNS 正刊+顶级子刊 22 本）/ T1（综合强刊、基因组、进化生态、昆虫领域强刊）；仅用于精排 journal 维度与周报统计 |
 | `config/email.yaml` | daily_paper_number 15 / show_translation / show_keywords / show_doi（`feedback_email`、`feedback_base_url`、`feedback_secret` 非 yaml 键，由 main.py 运行时从 `.env` 的 DIGEST_FROM_EMAIL / FEEDBACK_BASE_URL / FEEDBACK_SECRET 注入） |
@@ -431,6 +434,7 @@ holidays: ["2026-01-01", "2026-02-16", "..."]
 | 批 9 bioRxiv 窗口修复 | bioRxiv 按日期区间全量拉取，抓取窗口向前多覆盖一天，修复预印本时间分布导致新文长期捞不到、推送零 bioRxiv（`855728a`） | ✅ 已完成（2026-07-29，225 passed） |
 | 批 10 日报卡片合并 | Part 1 新闻摘要表与 Part 2 详情卡片合并：每篇一张卡片，默认可见区为徽标/得分/标题链接/一句话新闻概要/期刊日期，`<details>` 折叠作者、DOI、关键词、推荐理由与中文四段摘要（不支持的客户端默认全展开）；⭐ 反馈留在折叠区外不展开即可点；价值总结与反馈入口顺延为 Part 2 / Part 3 | ✅ 已完成（2026-07-29，227 passed） |
 | 批 11 性能改造 | 并发 + 批处理 + token 计量：① `artifacts.py` 产物生成线程池并发（model.yaml `max_workers=8`，worker 只调 LLM，SQLite 读写留主线程）；② `ranker.py` 精排批处理（scoring.yaml `ranker.batch_size=5`，`judge_batch` 一次调用评判多篇、批次间并发，整批非法/数量不符整批回退中性分、单条非法仅该条回退，prompt `recommendation_reason_batch.txt`）；③ `llm.py` 用量文件累计 prompt/completion/total tokens（类级锁保护并发读写），`main.py` 结束打 `get_usage()` 用量日志 | ✅ 已完成（2026-07-29，237 passed） |
+| 批 12 词表拓展与召回贯通 | ① lab.yaml 按 55 个课题方向拓展：31 → 203 topics（LLM 生成候选 → PubMed 90 天命中逐词验证，数据 `logs/lab_term_verify.json`；d90>250 的过宽词与零命中词有意不收，防 lab 维度饱和与全局池灌水）；② `global_pool.collect_global_terms` 把 lab_topics 并入全局检索词（此前只参与打分，实验室方向文献可能漏召回）；③ 个人词表修复：user001 补 GWAS/RNAi/DNA language model 等、user002 methods 补单细胞分析短词 + 新增 keywords、user003 methods 长短语死词替换为可匹配短词 + 新增 keywords | ✅ 已完成（2026-07-30） |
 
 ### 12.3 批 4 候选（第 11 节 P1/P2 余项）
 

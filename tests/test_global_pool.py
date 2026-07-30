@@ -43,11 +43,12 @@ def test_collect_global_terms_merges_expands_and_dedupes():
     assert terms["others"] == ["Insect Evolution", "genomics", "scRNA-seq", "gut microbiome"]
 
 
-def test_collect_global_terms_ignores_lab_topics_and_bad_items():
-    users = [{"species": ["Apis", "", None], "lab_topics": ["should-not-appear"],
+def test_collect_global_terms_includes_lab_topics_and_skips_bad_items():
+    # lab_topics 并入其余组参与召回（V4 起）；空串/None 被过滤
+    users = [{"species": ["Apis", "", None], "lab_topics": ["Genome Evolution"],
               "research_interest": ["genomics"]}]
     terms = gp.collect_global_terms(users)
-    assert terms == {"species": ["Apis"], "others": ["genomics"]}
+    assert terms == {"species": ["Apis"], "others": ["genomics", "Genome Evolution"]}
 
 
 # ---------- build_cluster_query ----------

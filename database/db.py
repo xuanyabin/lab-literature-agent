@@ -142,7 +142,7 @@ def save_paper(conn: sqlite3.Connection, paper: Paper) -> int:
         (
             paper.title, paper.abstract, paper.authors, paper.journal, paper.date,
             paper.doi, paper.url, json.dumps(paper.keywords, ensure_ascii=False),
-            key, datetime.now(timezone.utc).isoformat(),
+            key, datetime.now().astimezone().isoformat(),  # first_seen 用本地时区：list_papers 按本地日期过滤
         ),
     )
     row = conn.execute("SELECT id FROM papers WHERE dedup_key = ?", (key,)).fetchone()

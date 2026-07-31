@@ -1,220 +1,133 @@
 # 实验室公共方向：对组内所有用户生效，与个人 yaml 的词表叠加参与打分
 # topics 以 scoring.yaml 中 lab_topics 权重计分；同时并入全局检索词参与召回（V4 起）
-# 新增词均经 PubMed 90 天命中验证（logs/lab_term_verify.json）；过宽词（d90>250）有意不收
+#
+# 批 14（2026-07-30）：按 lab_literature.exmple.txt（实验室实际关注文献清单）整体重构。
+# 设计原则：实验室画像是"演化框架 × 组学方法"的交叉，词表只收自带演化/比较语境的
+# 短语或主题专名；裸方法词/裸概念词（synteny、centromere、transposable element、
+# sex determination、Tissue architecture 等）单独会命中海量非演化论文，全部删除或
+# 改写为演化框架短语。物种专名只保留社会性昆虫锚点（示例文献直接相关）。
+# 候选词均经 PubMed 90 天命中验证（logs/lab_term_verify_v2.json，logs 不入库）：
+# 零命中虚词（AI biology、Generative biology 等臆造长尾）删除；热词（spatial
+# transcriptomics 1282/90d）属实验室核心方法予以保留——lab 维度已梯度化
+# （min(hits,4)*25，批 13），单词命中只 +25，不会单独饱和。
 topics:
-  # ===== 宏观方向 =====
+  # ===== 动物起源与多细胞化（示例文献 1-6）=====
+  - animal origins
+  - origin of animals
   - Animal evolution
-  - Evolutionary genomics
-  - Comparative genomics
-  - Phylogenomics
-  - Molecular evolution
-  - Evolution of complexity
-  - AI biology
-  - Comparative genome
-  - Genome evolution
-  - Gene family evolution
-  - Regulatory evolution
-  - Cis-regulatory evolution
-  - Chromatin evolution
-  - Non-coding genome
-  - Pangenomics
-  - Single-cell genomics
-  - Cell atlas
-  - Cell type evolution
-  - Cellular diversity
-  - Cell lineage evolution
-  - Comparative single-cell transcriptomics
-  - Spatial transcriptomics
-  - Spatial genomics
-  - Tissue architecture
-  - Cellular niches
-  - Molecular anatomy
-  - Artificial intelligence for biology
-  - Biological foundation models
-  - Machine learning in genomics
-  - AI-driven discovery
-  - Generative biology
-  # ===== 基因组组装与染色体演化 =====
+  - Evolutionary biology
+  - evolution of multicellularity
+  - multicellularity
+  - choanoflagellate
+  - evolutionary cell biology
+  - animal cell types
+  - animal complexity
+  - cellular complexity
+  # ===== 细胞类型演化与比较单细胞（示例 7-18）=====
+  - cell type evolution
+  - comparative single-cell
+  - cell phylogenies
+  - cell lineage evolution
+  - cellular evolution
+  - single-cell genomics
+  - single-cell multiomics
+  - comparative transcriptomics
+  # ===== 单细胞图谱（示例 19-26）=====
+  - cell atlas
+  - Tabula Muris
+  - Human Cell Atlas
+  - brain cell atlas
+  # ===== 空间组学与三维基因组（示例 27-32、49）=====
+  - spatial transcriptomics
+  - spatially resolved transcriptomics
+  - spatial multi-omics
+  - spatial omics
+  - spatial genomics
+  - spatial biology
+  - MERFISH
+  - Stereo-seq
+  - 3D genome
+  # ===== 社会性昆虫与社会演化（示例 33-42 + NEE 蚂蚁超个体篇）=====
+  - eusocial
+  - social evolution
+  - social insect
+  - insect society
+  - division of labour
+  - superorganism
+  - caste determination
+  - honeybee
+  - fire ant
+  - Solenopsis invicta
+  - Camponotus floridanus
+  - Monomorium pharaonis
+  # ===== 比较基因组学与基因组演化（示例 43-48、50-55）=====
+  - comparative genome
+  - comparative genomics
+  - evolutionary genomics
+  - phylogenomics
+  - molecular evolution
+  - genome evolution
+  - pangenome
+  - pangenomics
+  - genome architecture
+  - Zoonomia
+  - Earth BioGenome
+  - gene family evolution
+  - whole genome duplication
+  - convergent evolution
+  - adaptive radiation
+  - population genomics
+  # ===== 调控演化与 evo-devo（示例 56-63、53）=====
+  - gene regulatory network
+  - cis-regulatory
+  - regulatory evolution
+  - comparative epigenomics
+  - evo-devo
+  - chromatin evolution
+  - non-coding genome
+  # ===== 染色体演化（保留原组精简：裸方法词已删）=====
   - telomere-to-telomere
-  - T2T assembly
-  - chromosome-scale assembly
-  - chromosome-level assembly
-  - reference assembly
-  - synteny
   - chromosome evolution
   - chromosome rearrangement
   - chromosome fusion
-  - Robertsonian
-  - centromere
-  - transposable element
-  - whole-genome duplication
   - supergene
-  - one chromosome
-  - population genomics
-  - phylogeography
-  - convergent evolution
-  - adaptive radiation
-  - species delimitation
-  - cryptic species
-  # ===== 性染色体与性别决定 =====
+  # ===== 性染色体与性别决定（保留原组精简：裸 sex determination 等已删）=====
   - sex chromosome
-  - sex chromosome evolution
   - sex chromosome turnover
-  - vertebrate sex chromosome
-  - sex determination
   - sex-linked region
-  - gonadal differentiation
   - dosage compensation
-  - sex reversal
   - temperature-dependent sex determination
-  - haplodiploidy
   - parthenogenesis
-  - hermaphroditism
-  - genomic imprinting
-  - meiotic drive
-  - segregation distortion
-  - Wolbachia
-  - viviparity
-  # ===== 单细胞与发育演化 =====
+  # ===== 脑演化与脊椎起源（示例 lamprey Science 篇）=====
   - brain evolution
-  - brain cell type
-  - brain atlas
-  - developmental atlas
-  - early embryogenesis
-  - gastrulation
-  - organogenesis
-  - retinal cell type
-  - photoreceptor subtype
-  - avian retina
-  - avian embryo
-  - placenta evolution
-  - trophoblast cell
-  - heart morphology
-  - cardiac phenotype
-  - vertebrate heart
-  - kidney cell type
-  - vertebrate origin
-  # ===== 社会性昆虫与品级分化 =====
-  - eusociality
-  - social insect
-  - caste
-  - caste differentiation
-  - polyphenism
-  - male aging
-  # ===== 课题物种专名 =====
-  - Ochotona
-  - pika
-  - Osedax
-  - Siboglinidae
-  - Uta stansburiana
-  - side-blotched lizard
-  - Petaurus breviceps
-  - sugar glider
-  - Panthera
-  - big cat
-  - Pogona vitticeps
-  - bearded dragon
-  - Monomorium pharaonis
-  - Blattella germanica
-  - German cockroach
-  - Elysia marginata
-  - sacoglossan
-  - Bombyx mori
-  - silkworm
-  - Manis
-  - pangolin
-  - Ascaris suum
-  - Bos mutus
-  - Bos grunniens
-  - wild yak
-  - Selaginella
-  - spikemoss
-  - Codariocalyx motorius
-  - Hemitheconyx caudicinctus
-  - Polyrhachis vicina
-  - Myrmecia croslandi
-  - Myrmecocystus
-  - Dicrurus hottentottus
-  - Tenthredinidae
-  - sawfly
-  - Symphyta
-  - termite
-  - polychaete
-  - marine annelid
-  - Sus scrofa
-  # ===== 高阶分类阶元（同类群拓展） =====
-  - Gekkota
-  - Gekkonidae
-  - gecko
-  - Formicidae
-  - Hymenoptera
-  - Blattodea
-  - cockroach
-  - Nematoda
-  - Ascaris
-  - Porifera
-  - Annelida
-  - annelid
-  - Sacoglossa
-  - Lagomorpha
-  - Felidae
-  - Pholidota
-  - Bovidae
-  - penguin
-  - Spheniscidae
-  - Neoaves
-  - passerine
-  - marsupial
-  - monotreme
-  - platypus
-  - Serpentes
-  - Testudines
-  - Iguania
-  - Anolis
-  - lungfish
-  - amphioxus
-  - ascidian
   - lamprey
-  - hagfish
-  - cartilaginous fish
-  # ===== 微生物与环境适应 =====
-  - sponge microbiome
-  - sponge symbiosis
-  - holobiont
-  - microbial symbiosis
-  - endosymbiosis
-  - geomicrobiology
-  - cryoconite
-  - Greenland glacier
-  - manganese nodule
-  - deep-sea microbiome
-  - deep biosphere
-  - ornithogenic soil
-  - extremophile
-  - permafrost
-  - Antarctic
-  - hydrothermal vent
-  - kleptoplasty
-  - plastid retention
-  - marine protist
-  - host-microbe interaction
-  - Japan Sea
-  - nematode diversity
-  - nematode phylogeny
-  # ===== 保护基因组学与鸟类 =====
-  - conservation genetics
-  - endangered bird
-  - avian conservation
-  - avian diversity
-  - avian genome
-  - bird phylogeny
-  # ===== 群体与家系基因组 =====
-  - family trio
-  - trio sequencing
-  - multigenerational family
-  - human pedigree
-  - products of conception
-  - spontaneous abortion
+  - pallium
+  - vertebrate origin
+  # ===== AI 与生物学基础模型（示例 86-90）=====
+  - AlphaFold
+  - protein structure prediction
+  - foundation model
+  - language models for biology
+  - Generative AI for biological
 
-# 实验室级别名表（同义词/缩写展开），与个人 aliases 合并时个人配置优先
-aliases: {}
+# 实验室级别名表（同义词/拼写变体展开），与个人 aliases 合并时个人配置优先。
+# 命中任一别名即算原 topic 命中（多变体不重复计分）；英美拼写、连字符变体放这里，
+# 不要在 topics 里重复占位（会影响 lab 维度命中计数）。
+aliases:
+  honeybee: ["honey bee", "Apis mellifera"]
+  division of labour: ["division of labor"]
+  social insect: ["social insects"]
+  insect society: ["insect societies"]
+  cell phylogenies: ["cell phylogeny"]
+  cell type evolution: ["evolution of cell types"]
+  regulatory evolution: ["evolution of regulatory"]
+  comparative single-cell: ["comparative single cell"]
+  spatial multi-omics: ["spatial multiomics"]
+  Stereo-seq: ["Stereo seq"]
+  3D genome: ["three-dimensional genome"]
+  pangenome: ["pan-genome"]
+  whole genome duplication: ["whole-genome duplication"]
+  cis-regulatory: ["cis regulatory"]
+  evo-devo: ["evolutionary developmental biology"]
+  telomere-to-telomere: ["T2T", "telomere to telomere"]
+  sex chromosome turnover: ["sex-chromosome turnover"]

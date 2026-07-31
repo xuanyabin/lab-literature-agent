@@ -17,6 +17,14 @@
 > 共享词等权计入淹没个人词区分度，各用户候选趋同），只在全局召回与精排 lab 维度
 > 生效；精排 lab 维度改为四档梯度（命中 0/1/2/3/≥4 → 0/25/50/75/100），
 > 防大词表下 ≥2 即满分饱和。
+> 批 14（2026-07-30）：lab.yaml 按 `lab_literature.exmple.txt`（实验室实际关注文献
+> 清单）整体重构为"演化框架 × 组学方法"短语词表（87 topics / 17 条 aliases，
+> 11 个主题分组）。批 12 的 203 词版本此前已被裁剪，当前生效版本中的裸方法词/
+> 裸概念词（synteny、centromere、transposable element、sex determination、
+> Tissue architecture 等）单独命中海量非演化论文，全部删除或改写为演化框架短语；
+> 候选词经 PubMed 90 天命中验证（`logs/lab_term_verify_v2.json`），并用示例文献
+> 标题做命中回归：85 个真实标题 77 个 ≥1 命中（放过的 8 篇均为裸 AI/单细胞方法学，
+> 有意不收），6 条无关负例全部 0 命中。
 > 测试基线：238 passed（2026-07-30 复跑验证）。
 
 ---
@@ -103,7 +111,7 @@
 | `config/users/<slug>.yaml` | 个人画像：name/email/active + 四组检索词 + exclude + aliases；**新增成员只需加一个 yaml，不改代码** |
 | `config/users/auto_terms/<slug>.yaml` | V4 自动词表缓存（自动维护勿手改，已 gitignore）：expansion（每词 ≤5 个别名）+ feedback_added（反馈确认新词） |
 | `config/holidays.yaml` + `scheduler/holiday.py` | 中国法定节假日静态表（每年初按国务院放假安排手工维护一次）；`backfill_days`：当日在表内返回 0（跳过），否则返回 1+当日之前连续节假日天数（上限 10，供节后合并补发）；CLI `python -m scheduler.holiday` 打印该整数 |
-| `config/lab.yaml` | 实验室公共方向 topics（203 个，覆盖 55 个课题方向，经 PubMed 90 天命中验证）+ aliases；`apply_lab_profile` 并入每个用户（个人配置优先），参与全局召回（批 12 起）与精排 lab 维度打分；不参与粗筛打分（批 13，共享词表淹没个人区分度） |
+| `config/lab.yaml` | 实验室公共方向 topics（批 14：87 个"演化框架×组学方法"短语词，按示例文献 9 大主题分组，经 PubMed 90 天命中验证）+ aliases（17 条拼写变体）；`apply_lab_profile` 并入每个用户（个人配置优先），参与全局召回（批 12 起）与精排 lab 维度打分；不参与粗筛打分（批 13，共享词表淹没个人区分度） |
 | `config/scoring.yaml` | 全部打分行为开关：粗筛等权/tie-break、ranker 六维权重与定级阈值（含 push_floor 推送下限、batch_size 精排批处理大小）、journal_channel 顶刊直采通道开关（enabled/tiers/max_per_user/retmax_per_journal）、learned 学习护栏（含 negative_factor_weak/strong，详见第 4、9 节） |
 | `config/journals.yaml` | 期刊分层 T0（CNS 正刊+顶级子刊 22 本）/ T1（综合强刊、基因组、进化生态、昆虫领域强刊）；仅用于精排 journal 维度与周报统计 |
 | `config/email.yaml` | daily_paper_number 15 / show_translation / show_keywords / show_doi（`feedback_email`、`feedback_base_url`、`feedback_secret` 非 yaml 键，由 main.py 运行时从 `.env` 的 DIGEST_FROM_EMAIL / FEEDBACK_BASE_URL / FEEDBACK_SECRET 注入） |
@@ -440,6 +448,7 @@ holidays: ["2026-01-01", "2026-02-16", "..."]
 | 批 11 性能改造 | 并发 + 批处理 + token 计量：① `artifacts.py` 产物生成线程池并发（model.yaml `max_workers=8`，worker 只调 LLM，SQLite 读写留主线程）；② `ranker.py` 精排批处理（scoring.yaml `ranker.batch_size=5`，`judge_batch` 一次调用评判多篇、批次间并发，整批非法/数量不符整批回退中性分、单条非法仅该条回退，prompt `recommendation_reason_batch.txt`）；③ `llm.py` 用量文件累计 prompt/completion/total tokens（类级锁保护并发读写），`main.py` 结束打 `get_usage()` 用量日志 | ✅ 已完成（2026-07-29，237 passed） |
 | 批 12 词表拓展与召回贯通 | ① lab.yaml 按 55 个课题方向拓展：31 → 203 topics（LLM 生成候选 → PubMed 90 天命中逐词验证，数据 `logs/lab_term_verify.json`；d90>250 的过宽词与零命中词有意不收，防 lab 维度饱和与全局池灌水）；② `global_pool.collect_global_terms` 把 lab_topics 并入全局检索词（此前只参与打分，实验室方向文献可能漏召回）；③ 个人词表修复：user001 补 GWAS/RNAi/DNA language model 等、user002 methods 补单细胞分析短词 + 新增 keywords、user003 methods 长短语死词替换为可匹配短词 + 新增 keywords | ✅ 已完成（2026-07-30） |
 | 批 13 修复共享词表污染 | 批 12 副作用：203 个全员共享 lab_topics 等权计入粗筛，个人词区分度被淹没、各用户候选趋同。① `scorer.py` 粗筛打分剥离 lab_topics（配置残留该权重也硬跳过），lab_topics 只在全局召回与精排 lab 维度生效；② `ranker.lab_relevance` 改四档梯度（命中 0/1/2/3/≥4 → 0/25/50/75/100），防大词表下 ≥2 即满分饱和普涨总分；③ `scoring.yaml` weights 删除 lab_topics 行 | ✅ 已完成（2026-07-30，238 passed） |
+| 批 14 lab.yaml 按示例文献重构 | 用户反馈"词太细、筛出大量不符文献"。批 12 的 203 词版本此前已被裁剪（物种专名分组已删），生效版本残留的裸方法词/裸概念词（synteny、centromere、transposable element、裸 sex determination、Tissue architecture、Cellular niches 等）单独命中海量非演化论文。按 `lab_literature.exmple.txt` 整体重构为"演化框架 × 组学方法"短语词表：87 topics（动物起源与多细胞化/细胞类型演化/单细胞图谱/空间组学/社会性昆虫/比较基因组学/调控演化/染色体演化/性染色体/脑演化/AI 基础模型 11 组）+ 17 条 aliases（英美拼写、连字符变体、单复数，命中不重复计分）。候选词 PubMed 90 天命中验证（`logs/lab_term_verify_v2.json`）；示例文献标题回归：85 个真实标题 77 个 ≥1 命中（放过 8 篇裸 AI/单细胞方法学，有意不收），6 条无关负例 0 命中 | ✅ 已完成（2026-07-30，238 passed） |
 
 ### 12.3 批 4 候选（第 11 节 P1/P2 余项）
 

@@ -51,12 +51,24 @@ cp .env.example .env   # 填入 OPENAI_API_KEY 与 SMTP 配置
 一次性部署步骤：
 
 1. 在 GitHub 建 **Private** 仓库并 push main 分支
-2. Settings → Secrets and variables → Actions，配置 12 个 Repository Secrets
+2. Settings → Secrets and variables → Actions，配置 14 个 Repository Secrets
    （与 `.env.example` 同名）：`OPENAI_API_KEY`、`OPENAI_MODEL`、`OPENAI_BASE_URL`、
    `SMTP_HOST`、`SMTP_PORT`、`SMTP_USER`、`SMTP_PASSWORD`、`DIGEST_FROM_EMAIL`、
-   `IMAP_HOST`、`IMAP_PORT`、`IMAP_USER`、`IMAP_PASSWORD`
-3. Actions 页手动触发 `daily-pipeline`（workflow_dispatch）首跑，自动创建 state 分支
-4. 本地停用原 crontab：`crontab -e` 删除三条（每天 07:30 `run_daily.sh`、
+   `IMAP_HOST`、`IMAP_PORT`、`IMAP_USER`、`IMAP_PASSWORD`、
+   `FEEDBACK_WEBHOOK_URL`、`FEEDBACK_SECRET`（最后两个是星标一键反馈，可选；
+   不配则 ⭐1-5 降级为 mailto 回信）
+3. （可选，配合上一步两个 Secrets）一次性部署 Cloudflare Worker 实现星标"点完即记录"：
+   a. 注册 Cloudflare 账号 → Workers & Pages → Create Worker，把编辑器内容
+      整体替换为 `worker/feedback.js` 全文并 Deploy
+   b. GitHub 生成 fine-grained PAT（Settings → Developer settings →
+      Fine-grained tokens）：仅授权本仓库，Permissions 只开 Contents: Read and write
+   c. Worker → Settings → Variables 配置三个变量：`GITHUB_TOKEN`（上一步的 PAT，
+      Secret 类型）、`GITHUB_REPO`（owner/name）、`FEEDBACK_SECRET`
+      （自造随机长字符串，Secret 类型）
+   d. 把 Worker 域名（`https://<name>.<subdomain>.workers.dev`）与上一步同一个
+      `FEEDBACK_SECRET` 分别配为仓库 Secrets `FEEDBACK_WEBHOOK_URL` / `FEEDBACK_SECRET`
+4. Actions 页手动触发 `daily-pipeline`（workflow_dispatch）首跑，自动创建 state 分支
+5. 本地停用原 crontab：`crontab -e` 删除三条（每天 07:30 `run_daily.sh`、
    周一 07:53 `run_weekly.sh`、每月 1 日 07:26 `run_monthly.sh`）
 
 本地 `run_daily.sh` / `run_weekly.sh` / `run_monthly.sh` 保留为手动备用，可继续使用。
@@ -121,18 +133,22 @@ python weekly_report.py --user user001 --days 7
 
 ## 反馈学习（Phase 5）
 
-每日邮件的论文卡片底部内嵌 ⭐1–⭐5 mailto 反馈链接，点星生成预填回信
-（主题 `[FB] u=<邮箱> p=<论文id> v=<星级>`），发送即完成标注；日报 Part 3 另有
-批量标注入口（一封回信按编号给全天论文打星）。每日主流程前运行收集与学习：
+每日邮件的论文卡片底部内嵌 ⭐1–⭐5 反馈链接：**一键点选**——配置 webhook 后点击即由
+Cloudflare Worker 校验 HMAC 签名并直写仓库 `feedback_data/pending/`，零额外操作；
+未配置 webhook（`FEEDBACK_WEBHOOK_URL` / `FEEDBACK_SECRET`）时降级为 mailto 回信
+（主题预填 `[FB] u=<邮箱> p=<论文id> v=<星级>`，发送即完成标注）。日报 Part 3 另有
+批量标注入口（一封回信按编号给全天论文打星），机制不变。每日主流程前运行收集与学习：
 
 ```bash
-python -m feedback            # IMAP 收集回信 + 学习闭环
+python -m feedback            # IMAP 收集回信 + 学习闭环（Worker 直写的 pending 文件随 checkout 同步，直接消费）
 python -m feedback --learn-only   # 只学习 feedback_data/pending 中待学习的反馈（不连邮箱）
 ```
 
-- 需在 `.env` 配置 `IMAP_HOST`（发件邮箱开启 IMAP；`IMAP_USER`/`IMAP_PASSWORD` 缺省回退 SMTP 配置）
-- 收集到的反馈双写：`feedback_data/pending/` 文件队列（一文件一条 YAML，学习闭环数据源）
-  + feedback 表（周/月报统计）；学习后文件按月归档 `feedback_data/processed/YYYY-MM/`
+- webhook 直写不依赖邮箱；mailto 降级与 Part 3 批量标注需在 `.env` 配置 `IMAP_HOST`
+  （发件邮箱开启 IMAP；`IMAP_USER`/`IMAP_PASSWORD` 缺省回退 SMTP 配置）
+- 反馈统一落 `feedback_data/pending/` 文件队列（一文件一条 YAML，学习闭环数据源）：
+  Worker 星标直写 / IMAP 收集的回信（另双写 feedback 表供周/月报统计）；
+  学习后文件按月归档 `feedback_data/processed/YYYY-MM/`
 - 高分标注（⭐4/⭐5）→ LLM 提炼新检索词，同一词在 ≥2 篇高分论文出现才提权生效；
   低分标注（⭐1/⭐2）只对命中的学习词降权，不触碰手配词表
 - 学习词按半衰期 30 天衰减，作用于检索查询与粗筛打分；全部变更写 `logs/feedback_learning.log` 审计

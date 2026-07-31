@@ -26,7 +26,7 @@ python main.py              # 再跑：对每个 active 用户（config/users/*.
   ├─ AI 处理：摘要分析 → 一句话科研新闻 → 中文翻译（LLMClient，config/model.yaml）
   ├─ 个性化精排（六维加权 Final Score + AI 推荐理由 → 按绝对阈值定级 Must Read/Important/Reference）
   ├─ 入库 SQLite（papers / paper_analysis / paper_news_summary / recommendations）
-  └─ 每日价值总结 → 三段式 HTML 邮件（卡片带反馈链接，回信即标注）
+  └─ 每日价值总结 → 三段式 HTML 邮件（卡片 ⭐1-5 一键点选 webhook 直写 / mailto 回信降级）
 ```
 
 ### 每周流水线（`weekly_report.py`，GitHub Actions `.github/workflows/weekly.yml` 触发）
@@ -52,7 +52,8 @@ python main.py              # 再跑：对每个 active 用户（config/users/*.
 | `recommendation/` | 粗筛打分（scorer）+ 六维精排（ranker） |
 | `database/` | SQLite 持久化（papers、recommendations、feedback、learned_terms 等） |
 | `mailer/` | 日/周 HTML 组装（digest_builder、weekly_builder）+ SMTP 发送 |
-| `feedback/` | IMAP 收集、学习闭环（提权/降权/30 天半衰期衰减） |
+| `feedback/` | 反馈文件队列（store）、IMAP 收集、学习闭环（提权/降权/30 天半衰期衰减） |
+| `worker/` | Cloudflare Worker：星标一键反馈 webhook（HMAC 校验 → GitHub API 直写 `feedback_data/pending/`） |
 | `config/` | 配置驱动：lab / model / scoring / journals / email / users/*.yaml |
 | `prompts/`、`templates/` | Prompt 与邮件模板独立文件，禁硬编码 |
 
@@ -64,7 +65,7 @@ python main.py              # 再跑：对每个 active 用户（config/users/*.
 - [x] Phase 2 SQLite 持久化
 - [x] Phase 3 多用户系统（实验室公共方向叠加个人词表，按用户隔离去重）
 - [x] Phase 4 个性化推荐引擎（六维加权 Final Score + AI 推荐理由）
-- [x] Phase 5 反馈学习系统（邮件链接标注 → IMAP 收集 → 全自动词表学习，无人工审核）
+- [x] Phase 5 反馈学习系统（⭐ 一键点选（Worker 直写 feedback_data）/ 回信降级标注 → 收集 → 全自动词表学习，无人工审核）
 - [x] Phase 5.5 bioRxiv 预印本数据源 + 高水平期刊加权与低相关兜底
 - [x] Phase 6 每周情报报告（个性化周报：趋势总结 + 分布统计 + 重点清单）
 
@@ -75,7 +76,8 @@ python main.py              # 再跑：对每个 active 用户（config/users/*.
 - 数据源仅 PubMed + bioRxiv；Nature/Cell/Science RSS、arXiv 在 PROJECT.md 2.3 中列为未来扩展，尚未接入
 - bioRxiv 无服务端检索，按日期拉全量后本地过滤，请求体积大（有模块级缓存，多用户共享一次抓取）
 - 日报强依赖 LLM（分析/翻译/推荐理由/总结）；LLM 接口不可用时主流程会失败。周报趋势段已做容错（失败置空并显示兜底文案）
-- 反馈闭环依赖 `.env` 的 IMAP 配置；未配置时标注无法回收，学习不生效
+- 逐篇星标配了 webhook（`FEEDBACK_WEBHOOK_URL`/`FEEDBACK_SECRET`，Cloudflare Worker 直写仓库）
+  则不依赖邮箱；mailto 降级与 Part 3 批量标注仍依赖 `.env` 的 IMAP 配置，未配置时该通道标注无法回收
 - 周报趋势总结只读一句话新闻（控制 token），不参考原始摘要，深度有限
 - 交付与反馈唯一通道是邮件，无 Web 端查看入口
 - SQLite 单文件存储，不支持多机部署或并发写

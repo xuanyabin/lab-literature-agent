@@ -1,3 +1,6 @@
+import hashlib
+import hmac
+
 from mailer.digest_builder import build_digest_html
 from sources.paper import Paper
 
@@ -196,3 +199,49 @@ def test_stars_absent_without_feedback_email():
                              "总结。", {}, user_email="a@x.com")
     assert 'class="stars"' not in html
     assert "mailto:" not in html  # 未配 feedback_email：星标与 Part 3 批量入口都不渲染
+
+
+def _build_with_webhook(items, user_email="a@x.com", config=None):
+    cfg = {"feedback_email": "bot@x.com",
+           "feedback_webhook_url": "https://fb.workers.dev",
+           "feedback_secret": "s3cret", **(config or {})}
+    return build_digest_html("轩亚冰", "2025-07-22", items, "总结。", cfg,
+                             user_email=user_email)
+
+
+def _webhook_sig(user_email, paper_id, value, secret="s3cret"):
+    """与 worker/feedback.js 一致的本地签名：HMAC-SHA256 hex 前 16 位。"""
+    msg = f"{user_email}|{paper_id}|{value}".encode("utf-8")
+    return hmac.new(secret.encode("utf-8"), msg, hashlib.sha256).hexdigest()[:16]
+
+
+def test_star_links_webhook_one_click_when_configured():
+    item = {**make_item(), "paper_id": 42}
+    html = _build_with_webhook([item])
+    assert 'class="stars"' in html
+    # webhook 优先：星标不再用 mailto（全文唯一 mailto 是 Part 3 批量入口）
+    assert html.count("mailto:") == 1
+    assert "p%3D42" not in html
+    for n in (1, 2, 3, 4, 5):
+        sig = _webhook_sig("a@x.com", 42, n)
+        assert f"https://fb.workers.dev/fb?u=a%40x.com&p=42&v={n}&s={sig}" in html
+    assert "点击即完成反馈" in html
+
+
+def test_star_links_webhook_signature_matches_hmac_spec():
+    # 签名规格：HMAC-SHA256(key=FEEDBACK_SECRET, msg="邮箱|论文id|星级") hex 前 16 位
+    item = {**make_item(), "paper_id": 7}
+    html = _build_with_webhook([item], user_email="bob@lab.org")
+    sig = _webhook_sig("bob@lab.org", 7, 5)
+    assert len(sig) == 16 and all(c in "0123456789abcdef" for c in sig)
+    assert f"u=bob%40lab.org&p=7&v=5&s={sig}" in html
+
+
+def test_star_links_fall_back_to_mailto_when_webhook_incomplete():
+    item = {**make_item(), "paper_id": 42}
+    # 只配 URL 没配密钥 → 降级 mailto（现有行为）
+    html = _build_with_webhook([item], config={"feedback_secret": ""})
+    assert "/fb?u=" not in html
+    assert ("mailto:bot@x.com?subject=%5BFB%5D%20u%3Da%40x.com%20p%3D42%20v%3D1"
+            in html)
+    assert "点击后发送邮件即完成反馈" in html

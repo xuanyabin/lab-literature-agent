@@ -3,14 +3,20 @@
 每篇论文一张卡片：默认只显示一句话新闻概要，卡片内 <details> 折叠完整信息
 （作者 / 摘要 / 推荐理由）；不支持 <details> 的邮件客户端会默认全部展开，可读性不受影响。
 
-反馈入口（全部由 python -m feedback 经 IMAP 收集学习）：
-- 逐篇五星：每张卡片底部内嵌 ⭐1-5 mailto 链接（主题预填
-  "[FB] u=<用户邮箱> p=<论文id> v=<星级>"），接收人点击拉起邮件草稿，发送即完成反馈；
+反馈入口（⭐1-5 与 Part 3 标注最终都由 python -m feedback 学习闭环消费）：
+- 逐篇五星：每张卡片底部内嵌 ⭐1-5 链接，两种模式按优先级取一——
+  · webhook（feedback_webhook_url 与 feedback_secret 均配置）：指向 Cloudflare Worker
+    （worker/feedback.js，/fb?u=<邮箱>&p=<论文id>&v=<星级>&s=<HMAC 签名>），
+    Worker 校验签名后直写仓库 feedback_data/pending/，点击即完成反馈；
+  · mailto（feedback_email）：主题预填 "[FB] u=<用户邮箱> p=<论文id> v=<星级>"，
+    点击拉起邮件草稿，发送后经 IMAP 收集（webhook 未配置时的降级通道）；
 - 批量标注：整封邮件一个"一键反馈"mailto（Part 3），回信主题带 [FB] token 与日期，
   正文按编号标注 1-5 星、以 "+" 开头的行是新增关键词。
-两条路汇入同一个反馈收件箱（feedback_email），都要求调用方提供 user_email 且 items 非空。
+两条路都要求调用方提供 user_email 且 items 非空。
 """
 
+import hashlib
+import hmac
 from pathlib import Path
 from urllib.parse import quote
 
@@ -27,6 +33,8 @@ _DEFAULT_CONFIG = {
     "show_keywords": True,
     "show_doi": True,
     "feedback_email": "",
+    "feedback_webhook_url": "",
+    "feedback_secret": "",
 }
 
 _CATEGORY_CLASS = {
@@ -121,19 +129,38 @@ def _feedback_block(user_email: str, digest_date: str, count: int, cfg: dict) ->
 _RATING_LABELS = {1: "完全不相关", 2: "不太相关", 3: "一般", 4: "比较重要", 5: "非常重要"}
 
 
+def _webhook_star_url(base_url: str, secret: str, user_email: str, paper_id, value: int) -> str:
+    """星标一键反馈链接。签名：HMAC-SHA256(key=FEEDBACK_SECRET,
+    msg="<邮箱>|<论文id>|<星级>") 取 hex 前 16 位——与 worker/feedback.js 的
+    校验算法必须严格一致，改动需两侧同步。"""
+    msg = f"{user_email}|{paper_id}|{value}".encode("utf-8")
+    sig = hmac.new(secret.encode("utf-8"), msg, hashlib.sha256).hexdigest()[:16]
+    return (f"{base_url.rstrip('/')}/fb?u={quote(str(user_email))}"
+            f"&p={paper_id}&v={value}&s={sig}")
+
+
 def _star_row(user_email: str, paper_id, cfg: dict) -> str:
-    """卡片底部 ⭐1-5 反馈链接（mailto：点击拉起预填主题的邮件草稿，发送即完成反馈）；
-    未配置 feedback_email、缺 user_email 或 paper_id（dry-run）时不渲染。"""
-    if not (cfg["feedback_email"] and user_email and paper_id):
+    """卡片底部 ⭐1-5 反馈链接：webhook（feedback_webhook_url + feedback_secret
+    均配置，点击即完成反馈）优先，mailto（feedback_email，点击拉起预填邮件草稿，
+    发送即完成反馈）降级；两者都未配置、缺 user_email 或 paper_id（dry-run）时不渲染。"""
+    if not (user_email and paper_id):
+        return ""
+    webhook = bool(cfg["feedback_webhook_url"] and cfg["feedback_secret"])
+    if not webhook and not cfg["feedback_email"]:
         return ""
     links = []
     for n in (1, 2, 3, 4, 5):
-        subject = quote(f"[FB] u={user_email} p={paper_id} v={n}")
-        href = f"mailto:{cfg['feedback_email']}?subject={subject}"
+        if webhook:
+            href = _webhook_star_url(cfg["feedback_webhook_url"], cfg["feedback_secret"],
+                                     user_email, paper_id, n)
+        else:
+            subject = quote(f"[FB] u={user_email} p={paper_id} v={n}")
+            href = f"mailto:{cfg['feedback_email']}?subject={subject}"
         links.append(f'<a class="star" href="{href}" title="{_RATING_LABELS[n]}">⭐{n}</a>')
+    hint = "点击即完成反馈" if webhook else "点击后发送邮件即完成反馈"
     return ('<div class="stars"><span class="abs-label">重要性反馈</span>'
             + " ".join(links)
-            + '<span class="stars-hint">点击后发送邮件即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span></div>')
+            + f'<span class="stars-hint">{hint} · ⭐1 完全不相关 – ⭐5 非常重要</span></div>')
 
 
 def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "") -> str:

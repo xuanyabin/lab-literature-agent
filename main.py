@@ -221,8 +221,12 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
 def main() -> int:
     email_cfg = load_email_config()
     load_dotenv()
-    # 反馈收件箱（卡片 ⭐1-5 mailto 与 Part 3 批量回信都发往这里，由 IMAP 收集）
+    # 反馈收件箱（卡片 ⭐1-5 mailto 降级与 Part 3 批量回信都发往这里，由 IMAP 收集）
     email_cfg["feedback_email"] = os.environ.get("DIGEST_FROM_EMAIL", "")
+    # 星标一键反馈 webhook（Cloudflare Worker 校验签名后直写 feedback_data/pending/；
+    # 两者都配置后 ⭐1-5 点击即完成反馈，任一缺省则降级 mailto 回信）
+    email_cfg["feedback_webhook_url"] = os.environ.get("FEEDBACK_WEBHOOK_URL", "")
+    email_cfg["feedback_secret"] = os.environ.get("FEEDBACK_SECRET", "")
 
     parser = argparse.ArgumentParser(description="每日文献情报流水线")
     parser.add_argument("--user", default=None,

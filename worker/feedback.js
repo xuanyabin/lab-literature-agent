@@ -1,0 +1,166 @@
+/**
+ * 星标一键反馈 Worker：GET /fb?u=<邮箱>&p=<论文id>&v=<1-5>&s=<签名>
+ * 校验 HMAC 签名后用 GitHub API 把反馈 YAML 提交到仓库 main 的
+ * feedback_data/pending/；每日流水线 checkout 时随 main 带回，
+ * 由 python -m feedback 的学习闭环直接消费（与 IMAP 收集的反馈同一队列）。
+ *
+ * 环境变量（Worker Settings → Variables）：
+ *   GITHUB_TOKEN    fine-grained PAT，仅授权本仓库 Contents: Read and write（Secret 类型）
+ *   GITHUB_REPO     owner/name
+ *   FEEDBACK_SECRET HMAC 签名密钥，与仓库 Repository Secret 同名同值（Secret 类型）
+ *   GITHUB_BRANCH   可选，默认 main
+ *
+ * 签名约定（与 mailer/digest_builder.py 的 _webhook_star_url 必须严格一致，改动需两侧同步）：
+ *   HMAC-SHA256(key=FEEDBACK_SECRET utf-8, msg="<user_email>|<paper_id>|<value>")，
+ *   取 hex 前 16 位。
+ * 文件名与 YAML 字段约定（与 feedback/store.py 的 save_pending 逐行对应）：
+ *   文件名 u<sha256(user_email utf-8) 前 8 位>_p<paper_id>_v<value>.yaml——同名即同一条
+ *   反馈，文件内容相同则跳过提交（幂等）；字段 user_email / paper_id / value(字符串) /
+ *   reason / source / timestamp(UTC ISO)，字符串值用 JSON.stringify 双引号包裹（合法
+ *   YAML 标量，yaml.safe_load 解析结果与 Python 侧一致），source 固定 "star_webhook"。
+ */
+
+const GITHUB_API = "https://api.github.com";
+
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
+    if (url.pathname !== "/fb") {
+      return page(404, "页面不存在");
+    }
+    const u = url.searchParams.get("u") || "";
+    const p = url.searchParams.get("p") || "";
+    const v = url.searchParams.get("v") || "";
+    const s = (url.searchParams.get("s") || "").toLowerCase();
+
+    // 参数白名单校验（p 进文件名，论文 id 即 SQLite 自增 id，只允许数字）
+    if (!u.includes("@") || !/^\d+$/.test(p) || !/^[1-5]$/.test(v) ||
+        !/^[0-9a-f]{16}$/.test(s)) {
+      return page(400, "链接参数无效", "请从每日推荐邮件的论文卡片中点击星标链接。");
+    }
+    if (!env.GITHUB_TOKEN || !env.GITHUB_REPO || !env.FEEDBACK_SECRET) {
+      return page(500, "服务未配置完成", "Worker 缺少环境变量，请联系管理员。");
+    }
+    const expected = await hmacHex16(env.FEEDBACK_SECRET, `${u}|${p}|${v}`);
+    if (!timingSafeEqual(expected, s)) {
+      return page(403, "签名无效", "该链接未通过校验，请从每日推荐邮件中重新点击星标。");
+    }
+
+    // 文件名 / YAML 字段与 feedback/store.py save_pending 一一对应（见文件头注释）
+    const name = `u${(await sha256Hex(u)).slice(0, 8)}_p${p}_v${v}.yaml`;
+    const yaml = [
+      `user_email: ${JSON.stringify(u)}`,
+      `paper_id: ${p}`,
+      `value: ${JSON.stringify(v)}`,
+      `reason: ""`,
+      `source: "star_webhook"`,
+      `timestamp: ${JSON.stringify(new Date().toISOString())}`,
+    ].join("\n") + "\n";
+
+    const branch = env.GITHUB_BRANCH || "main";
+    try {
+      const result = await commitToGitHub(
+        env, `feedback_data/pending/${name}`, yaml, branch, `feedback: p${p} v${v}`);
+      const detail = result === "skipped"
+        ? "相同反馈已存在，无需重复提交。"
+        : "感谢反馈，推荐会越推越准。";
+      return page(200, `⭐${v} 反馈已记录，可关闭本页`, detail);
+    } catch (err) {
+      console.error("GitHub 提交失败：", err);
+      return page(502, "记录失败，请稍后重试", "反馈服务暂时不可用，稍后再点一次星标即可。");
+    }
+  },
+};
+
+// HMAC-SHA256 hex 前 16 位，对应 mailer/digest_builder.py _webhook_star_url
+async function hmacHex16(secret, message) {
+  const key = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  return toHex(sig).slice(0, 16);
+}
+
+// sha256 hex，对应 feedback/store.py _filename 的哈希输入（user_email 原样 utf-8，不做归一化）
+async function sha256Hex(text) {
+  return toHex(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)));
+}
+
+function toHex(buffer) {
+  return [...new Uint8Array(buffer)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+function timingSafeEqual(a, b) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+function base64Utf8(text) {
+  // btoa 只接受 Latin-1：先 UTF-8 编码为字节再逐字节转换（反馈文件极小，无性能问题）
+  let binary = "";
+  for (const b of new TextEncoder().encode(text)) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
+
+async function githubRequest(env, apiPath, options = {}) {
+  return fetch(`${GITHUB_API}${apiPath}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+      Accept: "application/vnd.github+json",
+      "User-Agent": "star-feedback-worker",  // GitHub API 要求必须带 User-Agent
+      "X-GitHub-Api-Version": "2022-11-28",
+    },
+  });
+}
+
+// 同路径文件：不存在则新建，内容相同则跳过（幂等），不同则带 sha 覆盖（如时间戳更新）
+async function commitToGitHub(env, path, content, branch, message) {
+  const encoded = base64Utf8(content);
+  const getResp = await githubRequest(
+    env, `/repos/${env.GITHUB_REPO}/contents/${path}?ref=${encodeURIComponent(branch)}`);
+  let sha;
+  if (getResp.status === 200) {
+    const existing = await getResp.json();
+    // GitHub 返回的 base64 每 60 字符换行，去空白后比对
+    if ((existing.content || "").replace(/\s/g, "") === encoded) return "skipped";
+    sha = existing.sha;
+  } else if (getResp.status !== 404) {
+    throw new Error(`GET ${path} -> ${getResp.status}`);
+  }
+  const body = { message, content: encoded, branch };
+  if (sha) body.sha = sha;
+  const putResp = await githubRequest(
+    env, `/repos/${env.GITHUB_REPO}/contents/${path}`,
+    { method: "PUT", body: JSON.stringify(body) });
+  if (!putResp.ok) throw new Error(`PUT ${path} -> ${putResp.status}`);
+  return sha ? "updated" : "created";
+}
+
+// 极简中文结果页（title/detail 均为代码内常量，不含用户输入，无需转义）
+function page(status, title, detail = "") {
+  const html = `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${title}</title>
+<style>
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+         display: flex; align-items: center; justify-content: center;
+         min-height: 100vh; margin: 0; background: #f6f7f9; color: #333; }
+  .box { background: #fff; border-radius: 12px; padding: 40px 48px; text-align: center;
+         box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+  h1 { font-size: 22px; margin: 0 0 12px; }
+  p { color: #777; margin: 0; font-size: 14px; }
+</style>
+</head>
+<body><div class="box"><h1>${title}</h1>${detail ? `<p>${detail}</p>` : ""}</div></body>
+</html>`;
+  return new Response(html, {
+    status,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}

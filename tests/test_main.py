@@ -67,6 +67,31 @@ def test_apply_lab_profile_with_empty_lab():
     assert merged["aliases"] == {}
 
 
+def test_apply_lab_profile_default_groups_auto_subscribed():
+    # default_groups 全员自动订阅，无需个人 yaml 声明
+    user = {"name": "A", "email": "a@x.com"}
+    lab = {"default_groups": ["core_spatial_omics"],
+           "topic_groups": {"core_spatial_omics": ["MERFISH", "spatial omics"],
+                            "social_insects": ["eusociality"]},
+           "rank_only": ["aging"]}
+    merged = apply_lab_profile(user, lab)
+    assert merged["lab_recall"] == ["MERFISH", "spatial omics"]
+    assert merged["lab_topics"] == ["MERFISH", "spatial omics", "aging"]
+
+
+def test_apply_lab_profile_duplicate_subscription_deduped():
+    # 用户重复订阅 default 组时按词去重，不双计打分
+    user = {"name": "A", "email": "a@x.com",
+            "topic_groups": ["core_spatial_omics", "social_insects"]}
+    lab = {"default_groups": ["core_spatial_omics"],
+           "topic_groups": {"core_spatial_omics": ["MERFISH", "Spatial Omics"],
+                            "social_insects": ["eusociality", "merfish"]},
+           "rank_only": ["MERFISH"]}
+    merged = apply_lab_profile(user, lab)
+    assert merged["lab_recall"] == ["MERFISH", "Spatial Omics", "eusociality"]
+    assert merged["lab_topics"] == ["MERFISH", "Spatial Omics", "eusociality"]
+
+
 # ---------- 个人关键词强命中兜底（V5） ----------
 
 def _paper(doi, title):

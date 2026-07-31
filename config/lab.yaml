@@ -1,155 +1,153 @@
-# 实验室公共方向（V5）：分层管理召回与打分，与个人 yaml 词表叠加生效
-#
-#   global_core  —— 低噪音演化框架短语：全员召回（进全局检索）+ 全员粗筛/精排加分
-#   topic_groups —— 命名分组：仅订阅用户召回+加分（用户在各自 yaml 用 topic_groups: [组名] 订阅）
-#   rank_only    —— 高噪音词：不进检索式、不打粗筛分，仅精排 lab 维度命中加分
-#   noise_terms  —— 医学噪音词：粗筛软惩罚（每命中一词减 scoring.yaml 的 noise_penalty 分，
-#                  允许负分沉底但不淘汰；个人 exclude 硬排除不受影响）
-#   aliases      —— 实验室级别名表（命中任一别名即算原词命中，多变体不重复计分）
-#
-# V5（2026-07-31）：从"全部 topics 全员 OR 召回 + 全员 lab 加分"改为上述分层策略。
-# 词表沿用批 14 经 PubMed 90 天命中验证的版本（logs/lab_term_verify_v2.json，logs 不入库），
-# 不引入新词。rank_only 按命中数 >150/90d 划分：这些词单独检索会灌入海量泛生物医学
-# 论文（spatial transcriptomics 1282/90d），退出召回后仍经精排 lab 维度
-# （min(hits,4)*25）为命中论文加分，实验室方向信号不丢失。
-global_core:
-  # ===== 动物起源与多细胞化（示例文献 1-6）=====
-  - animal origins
-  - origin of animals
-  - Animal evolution
-  - Evolutionary biology
-  - evolution of multicellularity
-  - multicellularity
-  - choanoflagellate
-  - evolutionary cell biology
-  - animal cell types
-  - animal complexity
-  - cellular complexity
-  # ===== 细胞类型演化与比较单细胞（示例 7-18）=====
-  - cell type evolution
-  - comparative single-cell
-  - cell phylogenies
-  - cell lineage evolution
-  - cellular evolution
-  - single-cell genomics
-  - single-cell multiomics
-  - comparative transcriptomics
-  # ===== 单细胞图谱（示例 19-26；cell atlas 181/90d 已降为 rank_only）=====
-  - Tabula Muris
-  - Human Cell Atlas
-  - brain cell atlas
-  # ===== 空间组学与三维基因组（示例 27-32、49；spatial transcriptomics 已降为 rank_only）=====
-  - spatially resolved transcriptomics
-  - spatial multi-omics
-  - spatial omics
-  - spatial genomics
-  - spatial biology
-  - MERFISH
-  - Stereo-seq
-  - 3D genome
-  # ===== 比较基因组学与基因组演化（示例 43-48、50-55；高噪音词已降为 rank_only）=====
-  - comparative genome
-  - evolutionary genomics
-  - phylogenomics
-  - molecular evolution
-  - pangenomics
-  - genome architecture
-  - Zoonomia
-  - Earth BioGenome
-  - gene family evolution
-  - whole genome duplication
-  - convergent evolution
-  - adaptive radiation
-  - population genomics
-  # ===== 调控演化与 evo-devo（示例 56-63、53；GRN/cis-regulatory 已降为 rank_only）=====
-  - regulatory evolution
-  - comparative epigenomics
-  - evo-devo
-  - chromatin evolution
-  - non-coding genome
-  # ===== 染色体演化 =====
-  - telomere-to-telomere
-  - chromosome evolution
-  - chromosome rearrangement
-  - chromosome fusion
-  - supergene
-  # ===== 性染色体与性别决定 =====
-  - sex chromosome
-  - sex chromosome turnover
-  - sex-linked region
-  - dosage compensation
-  - temperature-dependent sex determination
-  - parthenogenesis
-  # ===== AI 与生物学基础模型（示例 86-90；AlphaFold/foundation model 已降为 rank_only）=====
-  - protein structure prediction
-  - language models for biology
-  - Generative AI for biological
+# 实验室画像 · 全员研究方向（V5 全分组版）
+# 维护逻辑：
+#   - default_groups：全员自动订阅的组（旧 global_core 平铺列表的组化），召回时自动展开
+#   - topic_groups：全部关键词按方向分组命名，便于按组维护与验证召回覆盖
+#   - 个人画像（config/users/<id>.yaml）里 `topic_groups: [组名]` 可叠加订阅任意组
+#   - 验证某组召回覆盖：.venv/bin/python scripts/audit_group_recall.py --group <组名>
+#     （DEAD = 近 90 天零命中建议删词，HOT = 召回过多建议移入 rank_only）
+# 组内词表改动时维护注释里的命中数（90 天 PubMed 宽查询）。
+# 词表原始来源：批 14 全量词表（logs/lab_term_verify_v2.json，本文件为唯一入库版本）。
+default_groups:
+  - core_animal_origins
+  - core_cell_type_evolution
+  - core_single_cell_atlas
+  - core_spatial_omics
+  - core_comparative_genomics
+  - core_regulatory_evolution
+  - core_chromosome_evolution
+  - core_sex_chromosomes
+  - core_ai_models
 
-# 命名方向分组：用户在各自 yaml 用 topic_groups: [组名] 显式订阅后才参与其召回与打分，
-# 未订阅的用户完全不受该组影响（替代 V4 的全员共享）。词表为批 14 原 topics 中的两组。
 topic_groups:
-  # 社会性昆虫与社会演化（示例 33-42 + NEE 蚂蚁超个体篇）：user001、user003 订阅
-  social_insects:
+  # ── 全员组（default_groups，即旧 global_core 的 62 词）──
+  core_animal_origins:  # 动物起源与多细胞化
+    - animal origins
+    - origin of animals
+    - Animal evolution
+    - Evolutionary biology
+    - evolution of multicellularity
+    - multicellularity
+    - choanoflagellate
+    - evolutionary cell biology
+    - animal cell types
+    - animal complexity
+    - cellular complexity
+  core_cell_type_evolution:  # 细胞类型演化
+    - cell type evolution
+    - comparative single-cell
+    - cell phylogenies
+    - cell lineage evolution
+    - cellular evolution
+    - single-cell genomics
+    - single-cell multiomics
+    - comparative transcriptomics
+  core_single_cell_atlas:  # 单细胞图谱
+    - Tabula Muris
+    - Human Cell Atlas
+    - brain cell atlas
+  core_spatial_omics:  # 空间组学
+    - spatially resolved transcriptomics
+    - spatial multi-omics
+    - spatial omics
+    - spatial genomics
+    - spatial biology
+    - MERFISH
+    - Stereo-seq
+    - 3D genome
+  core_comparative_genomics:  # 比较基因组学与系统发育基因组学
+    - comparative genome
+    - evolutionary genomics
+    - phylogenomics
+    - molecular evolution
+    - pangenomics
+    - genome architecture
+    - Zoonomia
+    - Earth BioGenome
+    - gene family evolution
+    - whole genome duplication
+    - convergent evolution
+    - adaptive radiation
+    - population genomics
+  core_regulatory_evolution:  # 调控演化
+    - regulatory evolution
+    - comparative epigenomics
+    - evo-devo
+    - chromatin evolution
+    - non-coding genome
+  core_chromosome_evolution:  # 染色体演化
+    - telomere-to-telomere
+    - chromosome evolution
+    - chromosome rearrangement
+    - chromosome fusion
+    - supergene
+  core_sex_chromosomes:  # 性染色体与性别决定
+    - sex chromosome
+    - sex chromosome turnover
+    - sex-linked region
+    - dosage compensation
+    - temperature-dependent sex determination
+    - parthenogenesis
+  core_ai_models:  # AI 生物模型
+    - protein structure prediction
+    - language models for biology
+    - Generative AI for biological
+
+  # ── 订阅组（个人画像里按需订阅）──
+  social_insects:  # 社会性昆虫（12 词）
+    - eusociality
     - eusocial
+    - social insects
     - social evolution
-    - social insect
-    - insect society
-    - division of labour
-    - superorganism
+    - insect societies
     - caste determination
-    - honeybee
-    - fire ant
-    - Solenopsis invicta
-    - Camponotus floridanus
-    - Monomorium pharaonis
-  # 脑演化与脊椎起源（示例 lamprey Science 篇）：user002 订阅
-  brain_evolution:
+    - division of labor
+    - Polistes
+    - primitively eusocial
+    - social polymorphism
+    - ants
+    - superorganism
+  brain_evolution:  # 脑演化
     - brain evolution
-    - lamprey
-    - pallium
-    - vertebrate origin
+    - brain complexity
+    - neural cell types
+    - nervous system evolution
 
-# 高噪音词（PubMed 90 天命中 >150，据 logs/lab_term_verify_v2.json）：
-# 不进全局检索式、不打粗筛分；仅精排 lab 维度命中加分（ranker 读 lab_topics，
-# 由 apply_lab_profile 拼入）。新增词时先跑命中验证再决定放这层还是 global_core。
+# 只打分不召回：高噪音词（实验室感兴趣，但独立检索噪音大）。
+# 注释 = 近 90 天 PubMed 宽查询命中数（词表批 14 验证）。
 rank_only:
-  - spatial transcriptomics   # 1282/90d
-  - comparative genomics      # 500/90d
-  - AlphaFold                 # 413/90d
-  - foundation model          # 310/90d
-  - pangenome                 # 300/90d
-  - cis-regulatory            # 293/90d
-  - genome evolution          # 200/90d
-  - cell atlas                # 181/90d
-  - gene regulatory network   # 168/90d
+  - EvoDevo                 # 432
+  - Xenoturbella            # 56
+  - social immunity         # 255
+  - social behavior         # 22698
+  - social hierarchy        # 2169
+  - collective behavior     # 4666
+  - aging                   # 23130
+  - bird                    # 17542
+  - comparative analysis    # 77952
 
-# 医学噪音词：粗筛软惩罚（减分不淘汰），压制借 lab 泛词召回的临床/医学论文。
+# 医学噪音软惩罚（负分）：临床/医学期刊内容
 noise_terms:
-  - cancer
-  - tumor
-  - carcinoma
-  - patient
   - clinical trial
-  - disease biomarker
+  - chemotherapy
+  - immunotherapy
+  - tumor microenvironment
+  - patient cohort
+  - radiology
 
-# 实验室级别名表（同义词/拼写变体展开），与个人 aliases 合并时个人配置优先。
-# 命中任一别名即算原词命中（多变体不重复计分）；英美拼写、连字符变体放这里，
-# 不要在词表里重复占位（会影响 lab 维度命中计数）。
+# 精确词 → 召回宽词。个人画像里的 aliases 优先于这里。
 aliases:
-  honeybee: ["honey bee", "Apis mellifera"]
-  division of labour: ["division of labor"]
-  social insect: ["social insects"]
-  insect society: ["insect societies"]
-  cell phylogenies: ["cell phylogeny"]
-  cell type evolution: ["evolution of cell types"]
-  regulatory evolution: ["evolution of regulatory"]
-  comparative single-cell: ["comparative single cell"]
-  spatial multi-omics: ["spatial multiomics"]
-  Stereo-seq: ["Stereo seq"]
-  3D genome: ["three-dimensional genome"]
-  pangenome: ["pan-genome"]
-  whole genome duplication: ["whole-genome duplication"]
-  cis-regulatory: ["cis regulatory"]
-  evo-devo: ["evolutionary developmental biology"]
-  telomere-to-telomere: ["T2T", "telomere to telomere"]
-  sex chromosome turnover: ["sex-chromosome turnover"]
+  multicellularity: evolution of multicellularity
+  social insects: eusociality
+  eusociality: social insects
+  ants: social insects
+  single-cell: single-cell genomics
+  single cell: single-cell genomics
+  spatial transcriptomics: spatial omics
+  comparative genomics: comparative genome
+  genome evolution: evolutionary genomics
+  whole genome duplication: gene family evolution
+  WGD: whole genome duplication
+  sex chromosomes: sex chromosome
+  social evolution: eusociality
+  division of labor: social insects
+  3D genome: spatial genomics

@@ -85,24 +85,34 @@ def load_lab_profile(path: Path = LAB_CONFIG) -> dict:
 
 
 def apply_lab_profile(user: dict, lab: dict) -> dict:
-    """把实验室公共方向并入用户配置副本（V5 分层）：
+    """把实验室公共方向并入用户配置副本（V5 全分组版）：
 
-    - lab_recall = global_core + 用户订阅的 topic_groups 展开（进全局召回并参与粗筛打分）；
+    - lab_recall = default_groups（全员自动订阅组）+ 用户订阅的 topic_groups 展开
+      （进全局召回并参与粗筛打分，按词去重）；
     - lab_topics = lab_recall + rank_only（精排 lab 维度接口；rank_only 不进检索式、不打粗筛分）；
     - noise_terms = 医学噪音词（粗筛软惩罚，减分不淘汰）；
-    - 别名表合并（个人优先）。旧版 topics 键按 global_core 处理（向后兼容）。
+    - 别名表合并（个人优先）。旧版 global_core/topics 平铺键按一组额外词处理（向后兼容）。
     """
     merged = dict(user)
-    core = list(lab.get("global_core") or lab.get("topics") or [])
+    recall = list(lab.get("global_core") or lab.get("topics") or [])
     groups = lab.get("topic_groups") or {}
-    recall = list(core)
-    for name in user.get("topic_groups") or []:
+    subscribed = list(lab.get("default_groups") or []) + list(user.get("topic_groups") or [])
+    for name in subscribed:
         if name in groups:
             recall += list(groups[name] or [])
         else:
-            logging.getLogger(__name__).warning("用户订阅了不存在的 topic_group：%s，忽略", name)
+            logging.getLogger(__name__).warning("订阅了不存在的 topic_group：%s，忽略", name)
+    seen: set[str] = set()
+    recall = [t for t in recall
+              if (k := (t or "").strip().lower()) and not (k in seen or seen.add(k))]
+    lab_topics = list(recall)
+    for t in lab.get("rank_only") or []:
+        k = (t or "").strip().lower()
+        if k and k not in seen:
+            seen.add(k)
+            lab_topics.append(t)
     merged["lab_recall"] = recall
-    merged["lab_topics"] = recall + list(lab.get("rank_only") or [])
+    merged["lab_topics"] = lab_topics
     merged["noise_terms"] = list(lab.get("noise_terms") or [])
     merged["aliases"] = {**(lab.get("aliases") or {}), **(user.get("aliases") or {})}
     return merged

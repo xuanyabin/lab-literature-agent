@@ -7,8 +7,8 @@ aliases/自动扩展变体命中即计一次），同分候选用"标题命中 /
 由精排（recommendation/ranker.py）journal 维度独立承担；重要性定级
 也在精排按 Final Score 绝对阈值判定（宁缺毋滥）。Phase 5 起额外叠加
 反馈学习词表命中加分（按有效权重计、单篇封顶，与用户手配词表分离）。
-V5 关键词分层（见 config/lab.yaml）：lab_recall（global_core + 用户订阅
-topic_groups）参与本层等权打分；lab_topics 里的 rank_only 高噪音词不在
+V5 关键词分层（见 config/lab.yaml）：lab_recall（default_groups 全员组 +
+用户订阅 topic_groups）参与本层等权打分；lab_topics 里的 rank_only 高噪音词不在
 此打分（仅作精排 lab 维度接口），残留 lab_topics 权重会被守卫跳过；
 noise_terms 医学噪音词命中按 noise_penalty 软惩罚减分（允许负分沉底，
 不淘汰）。
@@ -32,7 +32,7 @@ DEFAULT_JOURNALS_CONFIG = BASE_DIR / "config" / "journals.yaml"
 _DEFAULT_WEIGHTS = {
     "species": 1, "methods": 1, "research_interest": 1,
     "keywords": 1,
-    # lab_recall（global_core + 订阅 topic_groups，V5）参与等权打分；
+    # lab_recall（default_groups 全员组 + 订阅 topic_groups，V5）参与等权打分；
     # lab_topics 旧键不直接打分（守卫跳过），其 rank_only 部分只供精排 lab 维度
     "lab_recall": 1,
 }

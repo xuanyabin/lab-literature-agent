@@ -114,9 +114,11 @@ python weekly_report.py --user user001 --days 7
 - PubMed：服务端严格/宽松降级检索；bioRxiv：官方 details API 按日期拉取全量后本地同语义过滤
   （严格 = 物种组 + 其余词组双命中，不足时降级宽松；模块级缓存，50 个用户共享一次抓取）
 - 两源合并去重（撞 DOI/标题时 PubMed 已发表版优先）；bioRxiv API 异常记日志并跳过，不阻断主流程
-- 关键词分层召回（V5，`config/lab.yaml`）：
-  - `global_core`：实验室核心框架词，全员召回并参与粗筛等权打分（`lab_recall` 权重）
-  - `topic_groups`：按方向分组的词表，用户在本人 yaml 用 `topic_groups: [...]` 订阅后才召回
+- 关键词分层召回（V5，`config/lab.yaml`，全部词按方向分组命名）：
+  - `default_groups`：全员自动订阅的核心方向组（9 组 62 词），全员召回并参与粗筛等权打分（`lab_recall` 权重）
+  - `topic_groups`：按方向分组的词表（含 default 组），用户在本人 yaml 用 `topic_groups: [...]` 订阅后叠加召回
+  - 分组覆盖维护：`scripts/audit_group_recall.py [--group 组名]` 逐词查 PubMed 近 90 天命中数，
+    DEAD（零命中）建议删词、HOT（过热）建议移入 rank_only
   - `rank_only`：高噪音词（如 spatial transcriptomics、AlphaFold）只作精排 lab 维度参考，
     不进检索式、不打粗筛分
   - `personal_fallback`：个人词（species/keywords/research_interest/methods，aliases 展开）

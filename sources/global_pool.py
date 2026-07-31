@@ -51,7 +51,7 @@ def _or(terms: list[str]) -> str:
 
 def collect_global_terms(prepared_users: list[dict]) -> dict:
     """合并全部用户的检索词：species 进物种组，research_interest/keywords/methods、
-    实验室召回词 lab_recall（V5：global_core + 订阅 topic_groups）与反馈学习词
+    实验室召回词 lab_recall（V5：default_groups 全员组 + 订阅 topic_groups）与反馈学习词
     进其余组；aliases 先展开，大小写去重、保持顺序。高噪音词在 lab_topics 里
     属 rank-only（只打粗筛分），此处必须用 lab_recall 而非 lab_topics，否则
     rank-only 词会漏进召回检索式。"""

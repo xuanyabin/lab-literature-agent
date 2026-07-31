@@ -46,8 +46,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SCORING_CONFIG = BASE_DIR / "config" / "scoring.yaml"
 
 DEFAULT_RANKER_WEIGHTS = {
-    "personal": 30, "lab": 20, "journal": 30,
-    "novelty": 10, "method": 10, "recency": 0,
+    "personal": 40, "lab": 20, "journal": 30,
+    "novelty": 10, "method": 0, "recency": 0,
 }
 DEFAULT_RANKER_THRESHOLDS = {"must_read": 75, "important": 60}
 DEFAULT_BATCH_SIZE = 5  # 精排批处理：一次 LLM 调用评判的论文数

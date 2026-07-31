@@ -26,7 +26,7 @@ USER = {
     "aliases": {"honeybee": ["Apis mellifera"]},
 }
 
-WEIGHTS = {"personal": 30, "lab": 20, "journal": 30, "novelty": 10, "method": 10, "recency": 0}
+WEIGHTS = {"personal": 40, "lab": 20, "journal": 30, "novelty": 10, "method": 0, "recency": 0}
 THRESHOLDS = {"must_read": 60, "important": 20}
 JOURNAL_TIERS = {"nature": "t0", "plos one": "t1"}
 
@@ -92,7 +92,7 @@ def test_final_score_weighted_average():
     dims = {"personal": 100, "lab": 100, "journal": 100, "novelty": 100, "method": 100, "recency": 100}
     assert final_score(dims, WEIGHTS) == 100
     dims["personal"] = 0
-    assert final_score(dims, WEIGHTS) == 70  # 只扣掉 personal 的 30%
+    assert final_score(dims, WEIGHTS) == 60  # 只扣掉 personal 的 40%
 
 
 def test_judge_paper_fallback_on_bad_json():
@@ -151,8 +151,8 @@ def test_rank_items_llm_failure_keeps_pipeline_alive():
 
     items = [{"paper": _paper("Genomics paper"), "analysis": {}}]
     ranked = rank_items(items, USER, BadLLM(), {}, WEIGHTS, THRESHOLDS)
-    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级（34 分 → Important）
-    assert ranked[0]["score"] == 34
+    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级（39 分 → Important）
+    assert ranked[0]["score"] == 39
     assert ranked[0]["reason"] == ""
     assert ranked[0]["category"] == "Important"
 
@@ -249,5 +249,5 @@ def test_rank_items_batch_failure_falls_back_per_batch():
     ranked = rank_items(items, USER, FlakyLLM(), JOURNAL_TIERS, WEIGHTS, THRESHOLDS, today,
                         batch_size=1, max_workers=1)
     assert ranked[0]["paper"].title == "High paper"  # 合法批正常
-    # 非法批回退中性分（personal/novelty 各 50）：30*0.3+50*0.3+50*0.1+0*0.2+0*0.1=29
-    assert ranked[1]["score"] == 29
+    # 非法批回退中性分（personal/novelty 各 50）：50*0.4+30*0.3+50*0.1+0*0.2+0*0=34
+    assert ranked[1]["score"] == 34

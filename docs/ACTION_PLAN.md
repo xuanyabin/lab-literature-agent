@@ -117,7 +117,8 @@
 | `config/email.yaml` | daily_paper_number 15 / show_translation / show_keywords / show_doi（`feedback_email`、`feedback_base_url`、`feedback_secret` 非 yaml 键，由 main.py 运行时从 `.env` 的 DIGEST_FROM_EMAIL / FEEDBACK_BASE_URL / FEEDBACK_SECRET 注入） |
 | `prompts/` | 10 个 prompt 文件：paper_analysis / paper_news_summary / paper_translation / daily_value_summary / recommendation_reason / recommendation_reason_batch（精排批处理，批 11）/ feedback_term_extraction / term_expansion / topic_clustering / weekly_report |
 | `run_daily.sh` / `run_weekly.sh` / `run_monthly.sh` | cron 入口脚本（日报/周报/月报），均前置节假日判断（当日节假日记日志跳过；日报节后经 `--days` 合并补发）；run_daily.sh 另会先确保 feedback/server.py 反馈服务已在后台运行（pgrep 检查，未运行则 nohup 拉起，缺 FEEDBACK_SECRET 时进程自行退出不影响主流水线）；日志 `logs/pipeline.log`、`logs/cron.log`、`logs/feedback_server.log` |
-| `tests/` | 237 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
+| `scripts/list_papers.py` | 查看入库文献的命令行工具：`--today`（默认）/ `--date` 按入库日 / `--pub-date` 按发表日 / `--days N` 最近 N 天分组 / `--count-only`（只读查询） |
+| `tests/` | 241 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
 
 ---
 

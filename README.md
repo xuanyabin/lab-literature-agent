@@ -70,13 +70,21 @@ python weekly_report.py --user user001 --days 7
 
 建议 cron 每周一早上独立执行：`53 7 * * 1 /Users/sanshui/lab-literature-inteligence/run_weekly.sh`
 
-## 数据源与粗筛策略（Phase 5.5 / V4）
+## 数据源与粗筛策略（Phase 5.5 / V5）
 
 - PubMed：服务端严格/宽松降级检索；bioRxiv：官方 details API 按日期拉取全量后本地同语义过滤
   （严格 = 物种组 + 其余词组双命中，不足时降级宽松；模块级缓存，50 个用户共享一次抓取）
 - 两源合并去重（撞 DOI/标题时 PubMed 已发表版优先）；bioRxiv API 异常记日志并跳过，不阻断主流程
-- 粗筛（V4）：零成本等权关键词匹配（原词/aliases 命中即计 1 分 + tie-break），不按期刊过滤、
-  不做兜底递补；期刊影响力只在精排 journal 维度体现（config/scoring.yaml ranker.weights）
+- 关键词分层召回（V5，`config/lab.yaml`）：
+  - `global_core`：实验室核心框架词，全员召回并参与粗筛等权打分（`lab_recall` 权重）
+  - `topic_groups`：按方向分组的词表，用户在本人 yaml 用 `topic_groups: [...]` 订阅后才召回
+  - `rank_only`：高噪音词（如 spatial transcriptomics、AlphaFold）只作精排 lab 维度参考，
+    不进检索式、不打粗筛分
+  - `personal_fallback`：个人词（species/keywords/research_interest/methods，aliases 展开）
+    命中标题的候选在 top-N 截断后兜底补入精排（scoring.yaml 配置开关与上限）
+  - `noise_terms`：医学噪音词（cancer/patient 等）粗筛软惩罚减分（允许负分沉底，不淘汰）
+- 粗筛：零成本等权关键词匹配（原词/aliases 命中即计 1 分 + tie-break），不按期刊过滤；
+  期刊影响力只在精排 journal 维度体现（config/scoring.yaml ranker.weights）
 - 召回增强（V4）：LLM 为个人检索词自动生成扩展词（同义词/拉丁学名/缩写，每词 ≤5 个，
   与个人词等权），缓存于 `config/users/auto_terms/<slug>.yaml`（自动维护，勿手改；
   缓存缺失/用户 yaml 更新/超 7 天时刷新，LLM 失败沿用旧缓存）；个人 aliases 仍保持

@@ -14,7 +14,8 @@ python main.py              # 再跑：对每个 active 用户（config/users/*.
   ├─ 加载 learned 词表（feedback/vocab.py，与手配词表分离）
   ├─ 加载自动词表（config/users/auto_terms/<slug>.yaml：LLM 扩展词仅用于召回、等权，自动刷新）
   ├─ PubMed 检索（严格/宽松降级）+ bioRxiv 按日期拉全量本地过滤 → 合并去重
-  ├─ 规则粗筛打分（个人词 + 实验室公共方向 + 别名扩展，全部等权；期刊不参与粗筛）
+  ├─ 规则粗筛打分（V5 分层：个人词 + lab_recall = global_core + 订阅 topic_groups，全部等权；
+  │   rank_only 高噪音词不打粗筛分；noise_terms 医学噪音软惩罚减分；个人词标题强命中兜底补入）
   ├─ 按用户跨天去重（recommendations 表）
   ├─ AI 处理：摘要分析 → 一句话科研新闻 → 中文翻译（LLMClient，config/model.yaml）
   ├─ 个性化精排（六维加权 Final Score + AI 推荐理由 → 按绝对阈值定级 Must Read/Important/Reference）

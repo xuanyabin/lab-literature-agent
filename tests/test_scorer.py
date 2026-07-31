@@ -19,7 +19,7 @@ USER = {
 
 CONFIG = {
     "weights": {"species": 1, "methods": 1, "research_interest": 1,
-                "keywords": 1, "lab_topics": 1},
+                "keywords": 1, "lab_topics": 1, "lab_recall": 1},
     "title_bonus": 1,
     "frequency_bonus": 1,
     "frequency_cap": 3,
@@ -166,3 +166,57 @@ def test_lab_topics_excluded_from_coarse_score():
     user = {**USER, "lab_topics": ["genomics"]}
     p = _paper("Unrelated title", abstract="A genomics study")
     assert score_paper(p, user, CONFIG) == 0
+
+
+# ---------- V5 分层：lab_recall 打分 / noise_terms 软惩罚 ----------
+
+def test_lab_recall_scores_like_other_fields():
+    # V5：lab_recall（global_core + 订阅 topic_groups）参与等权打分
+    user = {**USER, "lab_recall": ["eusociality"]}
+    p = _paper("Unrelated title", abstract="A study of eusociality")
+    assert score_paper(p, user, CONFIG) == 1
+    # 标题命中同样给 title_bonus
+    assert score_paper(_paper("Eusociality origins"), user, CONFIG) == 2
+
+
+def test_lab_recall_dedupes_alias_variants():
+    # lab_recall 词同样走 aliases 变体展开，同一原词权重只计一次；
+    # 摘要里变体共命中 2 次（eusocial 子串命中 eusociality），频次加分 +1
+    user = {**USER, "lab_recall": ["eusociality"],
+            "aliases": {"eusociality": ["eusocial"]}}
+    p = _paper("Unrelated", abstract="eusocial and eusociality")
+    assert score_paper(p, user, CONFIG) == 2  # 权重 1 + 频次 1
+
+
+def test_noise_terms_soft_penalty():
+    # V5：每命中一个 noise_terms 词减 noise_penalty 分（默认 2），不淘汰
+    user = {**USER, "noise_terms": ["patient", "clinical trial"]}
+    p = _paper("Honeybee study", abstract="patient cohort, clinical trial")
+    # 基础分 species 1 + 标题 1 = 2；命中 2 个噪音词 → -4 → 负分
+    assert score_paper(p, user, CONFIG) == -2
+
+
+def test_noise_penalty_from_config():
+    user = {**USER, "noise_terms": ["patient"]}
+    cfg = {**CONFIG, "noise_penalty": 5}
+    assert score_paper(_paper("Honeybee study", abstract="patient data"), user, cfg) == 2 - 5
+
+
+def test_rank_papers_keeps_negative_scores():
+    # 软惩罚只沉底不剔除：负分论文仍留在列表末尾
+    noisy = _paper("Honeybee clinical trial", abstract="patient cohort")
+    clean = _paper("Honeybee brain")
+    user = {**USER, "noise_terms": ["patient", "clinical trial"]}
+    ranked = rank_papers([noisy, clean], user, CONFIG)
+    assert [p.title for _, p in ranked] == [clean.title, noisy.title]
+    assert ranked[-1][0] < 0
+
+
+def test_load_scoring_config_v5_defaults(tmp_path):
+    # 未配置 V5 字段时回退默认：noise_penalty=2、personal_fallback 空 dict
+    path = tmp_path / "scoring.yaml"
+    path.write_text(yaml.dump({}), encoding="utf-8")
+    cfg = load_scoring_config(path, journals_path=tmp_path / "missing.yaml")
+    assert cfg["weights"]["lab_recall"] == 1
+    assert cfg["noise_penalty"] == 2
+    assert cfg["personal_fallback"] == {}

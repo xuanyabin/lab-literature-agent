@@ -86,12 +86,54 @@ def load_lab_profile(path: Path = LAB_CONFIG) -> dict:
 
 
 def apply_lab_profile(user: dict, lab: dict) -> dict:
-    """把实验室公共方向并入用户配置副本：lab_topics 供全局召回与精排 lab 维度
-    （不参与粗筛打分，批 13），别名表合并（个人优先）。"""
+    """把实验室公共方向并入用户配置副本（V5 分层）：
+
+    - lab_recall = global_core + 用户订阅的 topic_groups 展开（进全局召回并参与粗筛打分）；
+    - lab_topics = lab_recall + rank_only（精排 lab 维度接口；rank_only 不进检索式、不打粗筛分）；
+    - noise_terms = 医学噪音词（粗筛软惩罚，减分不淘汰）；
+    - 别名表合并（个人优先）。旧版 topics 键按 global_core 处理（向后兼容）。
+    """
     merged = dict(user)
-    merged["lab_topics"] = list(lab.get("topics") or [])
+    core = list(lab.get("global_core") or lab.get("topics") or [])
+    groups = lab.get("topic_groups") or {}
+    recall = list(core)
+    for name in user.get("topic_groups") or []:
+        if name in groups:
+            recall += list(groups[name] or [])
+        else:
+            logging.getLogger(__name__).warning("用户订阅了不存在的 topic_group：%s，忽略", name)
+    merged["lab_recall"] = recall
+    merged["lab_topics"] = recall + list(lab.get("rank_only") or [])
+    merged["noise_terms"] = list(lab.get("noise_terms") or [])
     merged["aliases"] = {**(lab.get("aliases") or {}), **(user.get("aliases") or {})}
     return merged
+
+
+def _personal_title_fallback(fresh: list, shortlist: list, user: dict, max_extra: int) -> list:
+    """个人关键词强命中兜底（V5）：未进 top-N 截断的候选中，任意个人词
+    （species/keywords/research_interest/methods，aliases 展开）命中标题者追加
+    （最多 max_extra 篇），兜底个人强相关论文被 lab 词高分挤掉的情况。"""
+    if max_extra <= 0:
+        return []
+    picked = {dedup_key(p) for _, p in shortlist}
+    aliases = user.get("aliases") or {}
+    variants: list[str] = []
+    for field in ("species", "keywords", "research_interest", "methods"):
+        for term in user.get(field) or []:
+            if not term or not term.strip():
+                continue
+            term = term.strip()
+            variants += [v.strip().lower() for v in [term, *(aliases.get(term) or [])] if v and v.strip()]
+    extras = []
+    for s, p in fresh:
+        if len(extras) >= max_extra:
+            break
+        if dedup_key(p) in picked:
+            continue
+        if any(v in p.title.lower() for v in variants):
+            picked.add(dedup_key(p))
+            extras.append((s, p))
+    return extras
 
 
 def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
@@ -265,6 +307,14 @@ def main() -> int:
             log.info("用户 %s 跨天去重：%d 篇已在历史邮件中出现过，跳过",
                      slug, len(scored) - len(fresh))
         shortlist = fresh[:args.limit]
+        fallback_cfg = scoring_cfg.get("personal_fallback") or {}
+        if fallback_cfg.get("enabled"):
+            extras = _personal_title_fallback(fresh, shortlist, u,
+                                              int(fallback_cfg.get("max_per_user", 5)))
+            if extras:
+                log.info("用户 %s 个人关键词标题强命中兜底：额外 %d 篇进入精排",
+                         slug, len(extras))
+                shortlist += extras
         if channel_journals:  # 顶刊通道：绕过关键词得分，按粗筛排序补入通道论文
             picked = {dedup_key(p) for _, p in shortlist}
             extras = []

@@ -7,9 +7,11 @@ aliases/自动扩展变体命中即计一次），同分候选用"标题命中 /
 由精排（recommendation/ranker.py）journal 维度独立承担；重要性定级
 也在精排按 Final Score 绝对阈值判定（宁缺毋滥）。Phase 5 起额外叠加
 反馈学习词表命中加分（按有效权重计、单篇封顶，与用户手配词表分离）。
-lab_topics（实验室公共方向）不参与本层打分（批 13）：词表大且全员共享，
-等权计入会淹没个人词区分度、导致各用户候选趋同；它只在全局召回
-（sources/global_pool.py）与精排 lab 维度生效。
+V5 关键词分层（见 config/lab.yaml）：lab_recall（global_core + 用户订阅
+topic_groups）参与本层等权打分；lab_topics 里的 rank_only 高噪音词不在
+此打分（仅作精排 lab 维度接口），残留 lab_topics 权重会被守卫跳过；
+noise_terms 医学噪音词命中按 noise_penalty 软惩罚减分（允许负分沉底，
+不淘汰）。
 """
 
 import logging
@@ -29,7 +31,10 @@ DEFAULT_JOURNALS_CONFIG = BASE_DIR / "config" / "journals.yaml"
 
 _DEFAULT_WEIGHTS = {
     "species": 1, "methods": 1, "research_interest": 1,
-    "keywords": 1,  # lab_topics 不参与粗筛打分（批 13，见模块 docstring）
+    "keywords": 1,
+    # lab_recall（global_core + 订阅 topic_groups，V5）参与等权打分；
+    # lab_topics 旧键不直接打分（守卫跳过），其 rank_only 部分只供精排 lab 维度
+    "lab_recall": 1,
 }
 
 CATEGORY_MUST_READ = "Must Read"
@@ -50,6 +55,8 @@ def load_scoring_config(path: Path = DEFAULT_SCORING_CONFIG,
         "journal_channel": cfg.get("journal_channel") or {},
         "learned_score_cap": (cfg.get("learned") or {}).get(
             "score_cap", DEFAULT_LEARNED_CONFIG["score_cap"]),
+        "noise_penalty": cfg.get("noise_penalty", 2),
+        "personal_fallback": cfg.get("personal_fallback") or {},
     }
 
 
@@ -114,6 +121,10 @@ def score_paper(paper: Paper, user: dict, config: dict) -> int:
         if variant in title:
             learned += config.get("title_bonus", 1)
     score += min(learned, config.get("learned_score_cap", DEFAULT_LEARNED_CONFIG["score_cap"]))
+    # 医学噪音软惩罚（V5）：每命中一个 noise_terms 词减 noise_penalty 分，允许负分沉底，不淘汰
+    noise = [t.strip().lower() for t in user.get("noise_terms") or [] if t and t.strip()]
+    if noise:
+        score -= config.get("noise_penalty", 2) * sum(1 for t in noise if t in text)
     return score
 
 

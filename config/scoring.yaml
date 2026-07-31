@@ -6,8 +6,16 @@ weights:
   methods: 1            # 方法词（如 single-cell RNA sequencing）
   research_interest: 1  # 研究兴趣词
   keywords: 1           # 关键词
-  # lab_topics 不参与粗筛打分（批 13）：全员共享词表等权计入会淹没个人词区分度、
-  # 导致各用户候选趋同；它只在全局召回（global_pool）与精排 lab 维度生效
+  lab_recall: 1         # 实验室召回词（global_core + 订阅 topic_groups，V5）；
+                        # lab.yaml 的 rank_only 高噪音词不打粗筛分（仅精排 lab 维度接口）
+
+# 医学噪音软惩罚（V5）：每命中一个 lab.yaml noise_terms 词减分（允许负分沉底，不淘汰）
+noise_penalty: 2
+
+# 个人关键词强命中兜底（V5）：粗筛 top-N 截断后，个人词命中标题的候选补入精排
+personal_fallback:
+  enabled: true
+  max_per_user: 5
 
 # tie-break 加分：提升同分候选的区分度
 title_bonus: 1          # 检索词命中标题时额外加分

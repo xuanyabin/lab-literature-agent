@@ -44,11 +44,28 @@ def test_collect_global_terms_merges_expands_and_dedupes():
 
 
 def test_collect_global_terms_includes_lab_topics_and_skips_bad_items():
-    # lab_topics 并入其余组参与召回（V4 起）；空串/None 被过滤
+    # lab_topics 并入其余组参与召回（无 lab_recall 时的兼容回退）；空串/None 被过滤
     users = [{"species": ["Apis", "", None], "lab_topics": ["Genome Evolution"],
               "research_interest": ["genomics"]}]
     terms = gp.collect_global_terms(users)
     assert terms == {"species": ["Apis"], "others": ["genomics", "Genome Evolution"]}
+
+
+def test_collect_global_terms_prefers_lab_recall_over_lab_topics():
+    # V5：有 lab_recall 时优先之；lab_topics 里的 rank_only 词不进召回检索式
+    users = [{"species": [], "research_interest": [], "keywords": [], "methods": [],
+              "lab_recall": ["eusociality"],
+              "lab_topics": ["eusociality", "spatial transcriptomics"]}]
+    terms = gp.collect_global_terms(users)
+    assert terms["others"] == ["eusociality"]
+
+
+def test_collect_global_terms_empty_lab_recall_not_falling_back():
+    # V5：lab_recall 存在但为空时不能用 lab_topics 兜底（rank_only 会漏进召回）
+    users = [{"species": [], "research_interest": [], "keywords": [], "methods": [],
+              "lab_recall": [], "lab_topics": ["spatial transcriptomics"]}]
+    terms = gp.collect_global_terms(users)
+    assert terms["others"] == []
 
 
 # ---------- build_cluster_query ----------

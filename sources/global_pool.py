@@ -1,7 +1,7 @@
 """全局摄取层：全用户词表合并 → LLM 主题聚类（缓存）→ 分批检索合并全局池。
 
 多用户共享一次检索：collect_global_terms 把所有 active 用户的检索词
-（aliases 已展开、含反馈学习词与实验室公共方向 lab_topics）合并去重，
+（aliases 已展开、含反馈学习词与实验室召回词 lab_recall）合并去重，
 cluster_terms 调 LLM 按研究主题聚成若干簇（结果按词表哈希缓存 7 天，
 LLM 失败沿用旧缓存，无缓存回退单簇），fetch_global_pubmed 逐簇检索后
 合并去重，与 bioRxiv 全局过滤结果一起构成当日全局池。exclude 词不进全局
@@ -51,9 +51,10 @@ def _or(terms: list[str]) -> str:
 
 def collect_global_terms(prepared_users: list[dict]) -> dict:
     """合并全部用户的检索词：species 进物种组，research_interest/keywords/methods、
-    实验室公共方向 lab_topics 与反馈学习词进其余组；aliases 先展开，大小写去重、
-    保持顺序。lab_topics 只参与召回（批 13 起不再参与粗筛打分，避免共享词表
-    淹没个人区分度），确保实验室方向文献进得了全局池。"""
+    实验室召回词 lab_recall（V5：global_core + 订阅 topic_groups）与反馈学习词
+    进其余组；aliases 先展开，大小写去重、保持顺序。高噪音词在 lab_topics 里
+    属 rank-only（只打粗筛分），此处必须用 lab_recall 而非 lab_topics，否则
+    rank-only 词会漏进召回检索式。"""
     species_all: list[str] = []
     others_all: list[str] = []
     for user in prepared_users:
@@ -64,7 +65,8 @@ def collect_global_terms(prepared_users: list[dict]) -> dict:
             + _clean(user.get("methods")),
             aliases,
         )
-        others_all += _clean(user.get("lab_topics"))
+        recall = user["lab_recall"] if "lab_recall" in user else user.get("lab_topics")
+        others_all += _clean(recall)
         others_all += _clean(t for t, _ in user.get("learned_terms") or [])
     return {"species": _unique(species_all), "others": _unique(others_all)}
 

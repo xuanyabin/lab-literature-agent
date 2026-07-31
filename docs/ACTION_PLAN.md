@@ -13,7 +13,11 @@
 > 批 12（2026-07-30）：lab.yaml 词表拓展（31 → 203 topics，覆盖 55 个课题方向，
 > 全部经 PubMed 90 天命中验证，过宽词有意不收）+ lab_topics 并入全局检索词参与召回
 > （此前只参与打分，实验室方向文献可能漏召回）。
-> 测试基线：237 passed（2026-07-29 复跑验证）。
+> 批 13（2026-07-30）：修复批 12 副作用——lab_topics 不再参与粗筛打分（203 个全员
+> 共享词等权计入淹没个人词区分度，各用户候选趋同），只在全局召回与精排 lab 维度
+> 生效；精排 lab 维度改为四档梯度（命中 0/1/2/3/≥4 → 0/25/50/75/100），
+> 防大词表下 ≥2 即满分饱和。
+> 测试基线：238 passed（2026-07-30 复跑验证）。
 
 ---
 
@@ -99,7 +103,7 @@
 | `config/users/<slug>.yaml` | 个人画像：name/email/active + 四组检索词 + exclude + aliases；**新增成员只需加一个 yaml，不改代码** |
 | `config/users/auto_terms/<slug>.yaml` | V4 自动词表缓存（自动维护勿手改，已 gitignore）：expansion（每词 ≤5 个别名）+ feedback_added（反馈确认新词） |
 | `config/holidays.yaml` + `scheduler/holiday.py` | 中国法定节假日静态表（每年初按国务院放假安排手工维护一次）；`backfill_days`：当日在表内返回 0（跳过），否则返回 1+当日之前连续节假日天数（上限 10，供节后合并补发）；CLI `python -m scheduler.holiday` 打印该整数 |
-| `config/lab.yaml` | 实验室公共方向 topics（203 个，覆盖 55 个课题方向，经 PubMed 90 天命中验证）+ aliases；`apply_lab_profile` 并入每个用户（个人配置优先），同时参与打分（lab 维度）与全局召回（批 12 起） |
+| `config/lab.yaml` | 实验室公共方向 topics（203 个，覆盖 55 个课题方向，经 PubMed 90 天命中验证）+ aliases；`apply_lab_profile` 并入每个用户（个人配置优先），参与全局召回（批 12 起）与精排 lab 维度打分；不参与粗筛打分（批 13，共享词表淹没个人区分度） |
 | `config/scoring.yaml` | 全部打分行为开关：粗筛等权/tie-break、ranker 六维权重与定级阈值（含 push_floor 推送下限、batch_size 精排批处理大小）、journal_channel 顶刊直采通道开关（enabled/tiers/max_per_user/retmax_per_journal）、learned 学习护栏（含 negative_factor_weak/strong，详见第 4、9 节） |
 | `config/journals.yaml` | 期刊分层 T0（CNS 正刊+顶级子刊 22 本）/ T1（综合强刊、基因组、进化生态、昆虫领域强刊）；仅用于精排 journal 维度与周报统计 |
 | `config/email.yaml` | daily_paper_number 15 / show_translation / show_keywords / show_doi（`feedback_email`、`feedback_base_url`、`feedback_secret` 非 yaml 键，由 main.py 运行时从 `.env` 的 DIGEST_FROM_EMAIL / FEEDBACK_BASE_URL / FEEDBACK_SECRET 注入） |
@@ -129,7 +133,7 @@ LLM 主题聚类分簇（按词表哈希缓存 7 天）→ 逐簇一条扁平 OR
 
 | 规则 | 分值 | 说明 |
 |---|---|---|
-| 检索词命中 | +1/词 | 五组词表（species/methods/research_interest/keywords/lab_topics）全部等权；原词或其 aliases/自动扩展变体任一命中即计，多变体不重复计 |
+| 检索词命中 | +1/词 | 四组个人词表（species/methods/research_interest/keywords）全部等权；原词或其 aliases/自动扩展变体任一命中即计，多变体不重复计；lab_topics 不参与粗筛（批 13），只在全局召回与精排 lab 维度生效 |
 | 标题命中 | +1 | 变体出现在标题（title_bonus） |
 | 命中频次 | +1/次 | 按命中最多的变体计，封顶 3 次（frequency_bonus/frequency_cap） |
 | 学习词命中 | +有效权重 | 单篇封顶 6 分（learned.score_cap，不压过手配词表） |
@@ -146,7 +150,7 @@ LLM 主题聚类分簇（按词表哈希缓存 7 天）→ 逐簇一条扁平 OR
 |---|---|---|
 | journal 期刊影响力 | 30 | journals.yaml 分层：T0=100 / T1=70 / 未分层=30（刊名规范化后精确匹配） |
 | personal 个人相关度 | 30 | LLM 依据个人画像语义判断（异常回退 50；2026-07-29 起原 recency 的 10 分并入本维度） |
-| lab 实验室方向 | 20 | lab_topics 命中 0/1/≥2 个 → 0/50/100 |
+| lab 实验室方向 | 20 | lab_topics 命中 0/1/2/3/≥4 个 → 0/25/50/75/100（批 13 梯度化，防大词表下 ≥2 即饱和） |
 | method 方法相关度 | 10 | 个人 methods 命中 0/1/≥2 个 → 0/50/100 |
 | novelty 新颖性 | 10 | LLM 依据 AI 分析判断（异常回退 50） |
 | recency 时效性 | 0 | 当天~1 天=100 / 2 天=80 / 3 天=60 / 周内=40 / 更早=20 / 日期无法解析=50（权重归零，维度仍计算，调回即可恢复） |
@@ -187,7 +191,7 @@ python main.py --days "$DAYS"                   # 再三阶段执行：
      （journal_channel.enabled 时并入顶刊直采通道：按 journals.yaml 刊名逐刊直抓）
 
 阶段三 · 逐用户分发
-  6. 每用户本地规则粗筛等权打分（lab_topics 叠加个人词表；期刊不参与）
+  6. 每用户本地规则粗筛等权打分（仅个人词表，lab_topics 批 13 起剥离；期刊不参与）
   7. 跨天去重：该用户历史已发论文（recommendations 表）跳过；取 top-N（默认 15）；
      顶刊通道论文按刊名补入候选（每用户上限 journal_channel.max_per_user，默认 10）
   8. 各用户 shortlist 求并集，并集只做一次 LLM 处理
@@ -435,6 +439,7 @@ holidays: ["2026-01-01", "2026-02-16", "..."]
 | 批 10 日报卡片合并 | Part 1 新闻摘要表与 Part 2 详情卡片合并：每篇一张卡片，默认可见区为徽标/得分/标题链接/一句话新闻概要/期刊日期，`<details>` 折叠作者、DOI、关键词、推荐理由与中文四段摘要（不支持的客户端默认全展开）；⭐ 反馈留在折叠区外不展开即可点；价值总结与反馈入口顺延为 Part 2 / Part 3 | ✅ 已完成（2026-07-29，227 passed） |
 | 批 11 性能改造 | 并发 + 批处理 + token 计量：① `artifacts.py` 产物生成线程池并发（model.yaml `max_workers=8`，worker 只调 LLM，SQLite 读写留主线程）；② `ranker.py` 精排批处理（scoring.yaml `ranker.batch_size=5`，`judge_batch` 一次调用评判多篇、批次间并发，整批非法/数量不符整批回退中性分、单条非法仅该条回退，prompt `recommendation_reason_batch.txt`）；③ `llm.py` 用量文件累计 prompt/completion/total tokens（类级锁保护并发读写），`main.py` 结束打 `get_usage()` 用量日志 | ✅ 已完成（2026-07-29，237 passed） |
 | 批 12 词表拓展与召回贯通 | ① lab.yaml 按 55 个课题方向拓展：31 → 203 topics（LLM 生成候选 → PubMed 90 天命中逐词验证，数据 `logs/lab_term_verify.json`；d90>250 的过宽词与零命中词有意不收，防 lab 维度饱和与全局池灌水）；② `global_pool.collect_global_terms` 把 lab_topics 并入全局检索词（此前只参与打分，实验室方向文献可能漏召回）；③ 个人词表修复：user001 补 GWAS/RNAi/DNA language model 等、user002 methods 补单细胞分析短词 + 新增 keywords、user003 methods 长短语死词替换为可匹配短词 + 新增 keywords | ✅ 已完成（2026-07-30） |
+| 批 13 修复共享词表污染 | 批 12 副作用：203 个全员共享 lab_topics 等权计入粗筛，个人词区分度被淹没、各用户候选趋同。① `scorer.py` 粗筛打分剥离 lab_topics（配置残留该权重也硬跳过），lab_topics 只在全局召回与精排 lab 维度生效；② `ranker.lab_relevance` 改四档梯度（命中 0/1/2/3/≥4 → 0/25/50/75/100），防大词表下 ≥2 即满分饱和普涨总分；③ `scoring.yaml` weights 删除 lab_topics 行 | ✅ 已完成（2026-07-30，238 passed） |
 
 ### 12.3 批 4 候选（第 11 节 P1/P2 余项）
 

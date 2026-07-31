@@ -160,9 +160,9 @@ def test_learned_score_cap_from_config():
     assert score_paper(p, user, cfg) == 4
 
 
-def test_lab_topics_score_like_any_weighted_field():
-    # lab_topics 由 main.apply_lab_profile 注入 user dict，与其他词等权命中
+def test_lab_topics_excluded_from_coarse_score():
+    # 批 13：lab_topics（全员共享、词表大）不参与粗筛打分，避免淹没个人词区分度；
+    # CONFIG weights 里故意残留 lab_topics 权重，验证即使配置残留也被跳过
     user = {**USER, "lab_topics": ["genomics"]}
     p = _paper("Unrelated title", abstract="A genomics study")
-    assert score_paper(p, user, CONFIG) == 1
-    assert score_paper(p, USER, CONFIG) == 0  # 未注入 lab_topics 的用户不受影响
+    assert score_paper(p, user, CONFIG) == 0

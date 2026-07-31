@@ -52,7 +52,8 @@ def _or(terms: list[str]) -> str:
 def collect_global_terms(prepared_users: list[dict]) -> dict:
     """合并全部用户的检索词：species 进物种组，research_interest/keywords/methods、
     实验室公共方向 lab_topics 与反馈学习词进其余组；aliases 先展开，大小写去重、
-    保持顺序。lab_topics 同时参与召回与打分（V4 起，确保实验室方向不漏文献）。"""
+    保持顺序。lab_topics 只参与召回（批 13 起不再参与粗筛打分，避免共享词表
+    淹没个人区分度），确保实验室方向文献进得了全局池。"""
     species_all: list[str] = []
     others_all: list[str] = []
     for user in prepared_users:

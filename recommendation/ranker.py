@@ -110,8 +110,12 @@ def _hits(text: str, terms: list, aliases: dict) -> int:
 
 
 def lab_relevance(paper: Paper, user: dict) -> int:
-    """实验室方向相关度：lab_topics 命中 0/1/≥2 个 → 0/50/100。"""
-    return min(_hits(_text_of(paper), user.get("lab_topics"), user.get("aliases") or {}), 2) * 50
+    """实验室方向相关度：lab_topics 命中 0/1/2/3/≥4 个 → 0/25/50/75/100。
+
+    词表扩到 200+ 后"命中 ≥2 即满分"会饱和（几乎篇篇 100，维度失去区分度
+    并普涨总分），批 13 起改为四档梯度。
+    """
+    return min(_hits(_text_of(paper), user.get("lab_topics"), user.get("aliases") or {}), 4) * 25
 
 
 def method_relevance(paper: Paper, user: dict) -> int:

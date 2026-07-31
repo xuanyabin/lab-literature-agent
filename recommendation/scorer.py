@@ -7,6 +7,9 @@ aliases/自动扩展变体命中即计一次），同分候选用"标题命中 /
 由精排（recommendation/ranker.py）journal 维度独立承担；重要性定级
 也在精排按 Final Score 绝对阈值判定（宁缺毋滥）。Phase 5 起额外叠加
 反馈学习词表命中加分（按有效权重计、单篇封顶，与用户手配词表分离）。
+lab_topics（实验室公共方向）不参与本层打分（批 13）：词表大且全员共享，
+等权计入会淹没个人词区分度、导致各用户候选趋同；它只在全局召回
+（sources/global_pool.py）与精排 lab 维度生效。
 """
 
 import logging
@@ -26,7 +29,7 @@ DEFAULT_JOURNALS_CONFIG = BASE_DIR / "config" / "journals.yaml"
 
 _DEFAULT_WEIGHTS = {
     "species": 1, "methods": 1, "research_interest": 1,
-    "keywords": 1, "lab_topics": 1,
+    "keywords": 1,  # lab_topics 不参与粗筛打分（批 13，见模块 docstring）
 }
 
 CATEGORY_MUST_READ = "Must Read"
@@ -87,6 +90,8 @@ def score_paper(paper: Paper, user: dict, config: dict) -> int:
     aliases = user.get("aliases") or {}
     score = 0
     for field, weight in config["weights"].items():
+        if field == "lab_topics":
+            continue  # 共享词表不参与个人粗筛（批 13），即使配置残留该权重也跳过
         for term in user.get(field) or []:
             term = term.strip()
             if not term:

@@ -86,7 +86,8 @@ def load_lab_profile(path: Path = LAB_CONFIG) -> dict:
 
 
 def apply_lab_profile(user: dict, lab: dict) -> dict:
-    """把实验室公共方向并入用户配置副本：lab_topics 参与打分，别名表合并（个人优先）。"""
+    """把实验室公共方向并入用户配置副本：lab_topics 供全局召回与精排 lab 维度
+    （不参与粗筛打分，批 13），别名表合并（个人优先）。"""
     merged = dict(user)
     merged["lab_topics"] = list(lab.get("topics") or [])
     merged["aliases"] = {**(lab.get("aliases") or {}), **(user.get("aliases") or {})}

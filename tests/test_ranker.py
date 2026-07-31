@@ -57,9 +57,16 @@ def _paper(title, abstract="", journal="", date_str=""):
 
 
 def test_lab_relevance_graded_by_hits():
+    # 批 13：四档梯度 0/25/50/75/100（命中 0/1/2/3/≥4 个），防大词表下 ≥2 即饱和
     assert lab_relevance(_paper("Unrelated"), USER) == 0
-    assert lab_relevance(_paper("A genomics study"), USER) == 50
-    assert lab_relevance(_paper("Genomics", abstract="spatial transcriptomics"), USER) == 100
+    assert lab_relevance(_paper("A genomics study"), USER) == 25
+    assert lab_relevance(_paper("Genomics", abstract="spatial transcriptomics"), USER) == 50
+
+
+def test_lab_relevance_saturates_at_four_hits():
+    user = {**USER, "lab_topics": ["t1", "t2", "t3", "t4", "t5"]}
+    assert lab_relevance(_paper("x", abstract="t1 t2 t3"), user) == 75
+    assert lab_relevance(_paper("x", abstract="t1 t2 t3 t4 t5"), user) == 100
 
 
 def test_method_relevance_uses_personal_methods():
@@ -98,7 +105,7 @@ def test_judge_paper_fallback_on_bad_json():
 
 
 def test_rank_items_sorts_by_final_score_and_assigns_by_threshold():
-    # 阈值定级：High 70 ≥ 60 → Must Read；Genomics 40 ≥ 20 → Important；Low 9 → Reference
+    # 阈值定级：High 70 ≥ 60 → Must Read；Genomics 35 ≥ 20 → Important；Low 9 → Reference
     today = date(2026, 7, 22)
     d = today.isoformat()
     items = [
@@ -144,8 +151,8 @@ def test_rank_items_llm_failure_keeps_pipeline_alive():
 
     items = [{"paper": _paper("Genomics paper"), "analysis": {}}]
     ranked = rank_items(items, USER, BadLLM(), {}, WEIGHTS, THRESHOLDS)
-    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级（39 分 → Important）
-    assert ranked[0]["score"] == 39
+    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级（34 分 → Important）
+    assert ranked[0]["score"] == 34
     assert ranked[0]["reason"] == ""
     assert ranked[0]["category"] == "Important"
 

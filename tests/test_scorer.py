@@ -95,8 +95,16 @@ def test_load_scoring_config_defaults(tmp_path):
     assert cfg["weights"]["research_interest"] == 1
     assert cfg["title_bonus"] == 1
     assert cfg["journal_tiers"] == {}
+    assert cfg["candidate_limit_per_user"] == 30
     # 粗筛去期刊化后，配置不再包含期刊加分与定级配额
     assert "journal_t0" not in cfg and "tiers" not in cfg
+
+
+def test_load_scoring_config_candidate_limit_override(tmp_path):
+    path = tmp_path / "scoring.yaml"
+    path.write_text(yaml.dump({"ranker": {"candidate_limit_per_user": 50}}), encoding="utf-8")
+    cfg = load_scoring_config(path, journals_path=tmp_path / "missing.yaml")
+    assert cfg["candidate_limit_per_user"] == 50
 
 
 USER_WITH_ALIASES = {
@@ -181,11 +189,26 @@ def test_lab_recall_scores_like_other_fields():
 
 def test_lab_recall_dedupes_alias_variants():
     # lab_recall 词同样走 aliases 变体展开，同一原词权重只计一次；
-    # 摘要里变体共命中 2 次（eusocial 子串命中 eusociality），频次加分 +1
+    # 摘要里原词共命中 2 次，频次加分 +1
     user = {**USER, "lab_recall": ["eusociality"],
             "aliases": {"eusociality": ["eusocial"]}}
-    p = _paper("Unrelated", abstract="eusocial and eusociality")
+    p = _paper("Unrelated", abstract="eusociality and eusociality")
     assert score_paper(p, user, CONFIG) == 2  # 权重 1 + 频次 1
+
+
+def test_alias_string_value_is_single_variant_not_characters():
+    user = {**USER, "lab_recall": ["ants"],
+            "aliases": {"ants": "social insects"}}
+    assert score_paper(_paper("Social insects evolve"), user, CONFIG) == 2
+    # The alias string must not expand into one-letter variants such as "s".
+    assert score_paper(_paper("Unrelated study", abstract="simple sample"), user, CONFIG) == 0
+
+
+def test_short_terms_do_not_match_inside_words():
+    user = {**USER, "species": ["ants"], "research_interest": [],
+            "methods": [], "aliases": {}}
+    assert score_paper(_paper("Ants genome"), user, CONFIG) == 2
+    assert score_paper(_paper("Plants genome", abstract="mutants and participants"), user, CONFIG) == 0
 
 
 def test_noise_terms_soft_penalty():

@@ -9,6 +9,7 @@ from recommendation.ranker import (
     judge_paper,
     lab_relevance,
     load_ranker_batch_size,
+    load_ranker_gating,
     load_ranker_thresholds,
     load_ranker_weights,
     method_relevance,
@@ -26,7 +27,7 @@ USER = {
     "aliases": {"honeybee": ["Apis mellifera"]},
 }
 
-WEIGHTS = {"personal": 40, "lab": 20, "journal": 30, "novelty": 10, "method": 0, "recency": 0}
+WEIGHTS = {"personal": 45, "lab": 15, "journal": 20, "novelty": 10, "method": 10, "recency": 0}
 THRESHOLDS = {"must_read": 60, "important": 20}
 JOURNAL_TIERS = {"nature": "t0", "plos one": "t1"}
 
@@ -92,7 +93,7 @@ def test_final_score_weighted_average():
     dims = {"personal": 100, "lab": 100, "journal": 100, "novelty": 100, "method": 100, "recency": 100}
     assert final_score(dims, WEIGHTS) == 100
     dims["personal"] = 0
-    assert final_score(dims, WEIGHTS) == 60  # 只扣掉 personal 的 40%
+    assert final_score(dims, WEIGHTS) == 55  # 只扣掉 personal 的 45%
 
 
 def test_judge_paper_fallback_on_bad_json():
@@ -131,7 +132,7 @@ def test_rank_items_all_low_scores_no_must_read():
 
 
 def test_rank_items_push_floor_filters_low_scores():
-    # 推送下限：低分小刊（9 分）被过滤，不相关顶刊（30 分）保留露面
+    # 推送下限：低分小刊与低相关顶刊都被过滤；顶刊直采只保证进入精排，不保证进入邮件
     today = date(2026, 7, 22)
     d = today.isoformat()
     thresholds = {**THRESHOLDS, "push_floor": 30}
@@ -140,8 +141,7 @@ def test_rank_items_push_floor_filters_low_scores():
         {"paper": _paper("Low paper in Nature", journal="Nature", date_str=d), "analysis": {}},
     ]
     ranked = rank_items(items, USER, FakeLLM(), JOURNAL_TIERS, WEIGHTS, thresholds, today)
-    assert [it["paper"].title for it in ranked] == ["Low paper in Nature"]
-    assert ranked[0]["score"] == 30
+    assert ranked == []
 
 
 def test_rank_items_llm_failure_keeps_pipeline_alive():
@@ -151,8 +151,8 @@ def test_rank_items_llm_failure_keeps_pipeline_alive():
 
     items = [{"paper": _paper("Genomics paper"), "analysis": {}}]
     ranked = rank_items(items, USER, BadLLM(), {}, WEIGHTS, THRESHOLDS)
-    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级（39 分 → Important）
-    assert ranked[0]["score"] == 39
+    # LLM 两个维度回退 50 分，流程不中断且仍产出分数与定级（37 分 → Important）
+    assert ranked[0]["score"] == 37
     assert ranked[0]["reason"] == ""
     assert ranked[0]["category"] == "Important"
 
@@ -163,7 +163,7 @@ def test_load_ranker_weights_defaults_and_override(tmp_path):
     path.write_text(yaml.dump({"ranker": {"weights": {"personal": 50}}}), encoding="utf-8")
     weights = load_ranker_weights(path)
     assert weights["personal"] == 50
-    assert weights["lab"] == 20  # 未覆盖字段回退默认
+    assert weights["lab"] == 15  # 未覆盖字段回退默认
 
 
 def test_load_ranker_thresholds_defaults_and_override(tmp_path):
@@ -173,6 +173,14 @@ def test_load_ranker_thresholds_defaults_and_override(tmp_path):
     thresholds = load_ranker_thresholds(path)
     assert thresholds["must_read"] == 80
     assert thresholds["important"] == 60  # 未覆盖字段回退默认
+
+
+def test_load_ranker_gating_defaults_and_override(tmp_path):
+    assert load_ranker_gating(tmp_path / "missing.yaml") == {}
+    path = tmp_path / "scoring.yaml"
+    gating = {"weak_relevance": {"personal_below": 30, "max_category": "Reference"}}
+    path.write_text(yaml.dump({"ranker": {"gating": gating}}), encoding="utf-8")
+    assert load_ranker_gating(path) == gating
 
 
 def test_load_ranker_batch_size_defaults_and_override(tmp_path):
@@ -249,5 +257,100 @@ def test_rank_items_batch_failure_falls_back_per_batch():
     ranked = rank_items(items, USER, FlakyLLM(), JOURNAL_TIERS, WEIGHTS, THRESHOLDS, today,
                         batch_size=1, max_workers=1)
     assert ranked[0]["paper"].title == "High paper"  # 合法批正常
-    # 非法批回退中性分（personal/novelty 各 50）：50*0.4+30*0.3+50*0.1+0*0.2+0*0=34
+    # 非法批回退中性分（personal/novelty 各 50）：50*0.45+30*0.2+50*0.1=34
     assert ranked[1]["score"] == 34
+
+
+def test_rank_items_gating_caps_weak_personal_and_no_method_signal():
+    class WeakLLM:
+        def complete(self, prompt):
+            return '[{"personal_relevance": 20, "novelty": 100, "reason": "弱相关"}]'
+
+    user = {**USER, "lab_topics": ["genomics"], "methods": ["single-cell RNA sequencing"]}
+    paper = _paper("High paper in Nature", abstract="genomics", journal="Nature",
+                   date_str=date(2026, 7, 22).isoformat())
+    items = [{"paper": paper, "analysis": {}}]
+    thresholds = {"must_read": 40, "important": 20}
+    gating = {
+        "weak_relevance": {
+            "personal_below": 30,
+            "method_equals": 0,
+            "lab_below": 50,
+            "max_category": "Reference",
+        }
+    }
+    ranked = rank_items(items, user, WeakLLM(), JOURNAL_TIERS, WEIGHTS, thresholds,
+                        date(2026, 7, 22), gating=gating)
+    assert ranked[0]["score"] >= thresholds["important"]
+    assert ranked[0]["category"] == "Reference"
+
+
+def test_rank_items_gating_keeps_weak_personal_when_method_matches():
+    class WeakLLM:
+        def complete(self, prompt):
+            return '[{"personal_relevance": 20, "novelty": 100, "reason": "方法相关"}]'
+
+    user = {**USER, "lab_topics": ["genomics"], "methods": ["single-cell RNA sequencing"]}
+    paper = _paper("High paper in Nature",
+                   abstract="genomics single-cell RNA sequencing",
+                   journal="Nature", date_str=date(2026, 7, 22).isoformat())
+    items = [{"paper": paper, "analysis": {}}]
+    thresholds = {"must_read": 40, "important": 20}
+    gating = {
+        "weak_relevance": {
+            "personal_below": 30,
+            "method_equals": 0,
+            "lab_below": 50,
+            "max_category": "Reference",
+        }
+    }
+    ranked = rank_items(items, user, WeakLLM(), JOURNAL_TIERS, WEIGHTS, thresholds,
+                        date(2026, 7, 22), gating=gating)
+    assert ranked[0]["category"] == "Must Read"
+
+
+def test_rank_items_gating_caps_top_journal_low_signal():
+    class NeutralLLM:
+        def complete(self, prompt):
+            return '[{"personal_relevance": 50, "novelty": 100, "reason": "顶刊但低信号"}]'
+
+    paper = _paper("High paper in Nature", journal="Nature",
+                   date_str=date(2026, 7, 22).isoformat())
+    items = [{"paper": paper, "analysis": {}, "coarse_score": 0}]
+    thresholds = {"must_read": 40, "important": 20}
+    gating = {
+        "top_journal_low_signal": {
+            "journal_at_least": 100,
+            "coarse_at_most": 0,
+            "lab_equals": 0,
+            "personal_below": 70,
+            "max_category": "Reference",
+        }
+    }
+    ranked = rank_items(items, USER, NeutralLLM(), JOURNAL_TIERS, WEIGHTS, thresholds,
+                        date(2026, 7, 22), gating=gating)
+    assert ranked[0]["score"] >= thresholds["important"]
+    assert ranked[0]["category"] == "Reference"
+
+
+def test_rank_items_gating_keeps_top_journal_when_coarse_score_matches():
+    class NeutralLLM:
+        def complete(self, prompt):
+            return '[{"personal_relevance": 50, "novelty": 100, "reason": "粗筛命中"}]'
+
+    paper = _paper("High paper in Nature", journal="Nature",
+                   date_str=date(2026, 7, 22).isoformat())
+    items = [{"paper": paper, "analysis": {}, "coarse_score": 1}]
+    thresholds = {"must_read": 40, "important": 20}
+    gating = {
+        "top_journal_low_signal": {
+            "journal_at_least": 100,
+            "coarse_at_most": 0,
+            "lab_equals": 0,
+            "personal_below": 70,
+            "max_category": "Reference",
+        }
+    }
+    ranked = rank_items(items, USER, NeutralLLM(), JOURNAL_TIERS, WEIGHTS, thresholds,
+                        date(2026, 7, 22), gating=gating)
+    assert ranked[0]["category"] == "Must Read"

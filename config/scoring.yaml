@@ -25,19 +25,33 @@ frequency_cap: 3        # 每个检索词的频次加分封顶
 # Phase 4 个性化精排：六维权重（各维度 0-100，按权重加权平均为 Final Score）
 ranker:
   weights:
-    personal: 40   # 个人相关度（LLM 语义判断；2026-07-30 起并入 method 让出的 10%）
-    lab: 20        # 实验室方向相关度
-    journal: 30    # 期刊影响力（journals.yaml 分层；期刊因素只在此体现）
+    personal: 45   # 个人相关度（LLM 语义判断；个人强相关优先）
+    lab: 15        # 实验室方向相关度
+    journal: 20    # 期刊影响力（journals.yaml 分层；降低顶刊对个人相关性的覆盖）
     novelty: 10    # 新颖性（LLM 语义判断）
-    method: 0      # 方法相关度（2026-07-30 起权重归零让位 personal；维度仍计算，调回即可恢复）
+    method: 10     # 方法相关度；保护 Hobrac/centromere 等强方法/关键词命中文献
     recency: 0     # 时效性（2026-07-29 起权重归零让位 personal；维度仍计算，调回即可恢复）
+  # 个性化 gating：顶刊直采或弱相关论文不能仅靠 journal/lab 分进入高等级
+  gating:
+    weak_relevance:
+      personal_below: 30
+      method_equals: 0
+      lab_below: 50
+      max_category: Reference
+    top_journal_low_signal:
+      journal_at_least: 100
+      coarse_at_most: 0
+      lab_equals: 0
+      personal_below: 70
+      max_category: Reference
   # 重要性按 Final Score 绝对阈值定级（宁缺毋滥：当日全部低分则没有 Must Read）
   thresholds:
     must_read: 75  # Final Score ≥ 75 → Must Read
     important: 60  # Final Score ≥ 60 → Important；其余 Reference
     push_floor: 30 # Final Score < 30 的论文不进邮件（推送下限；删掉本行则全量推送）。
-                   # 2026-07-29 随 recency 权重归零从 40 下调：不相关 T0 顶刊现为 journal 30 分（原 40），30 保持其露面机会
+                   # 顶刊直采论文仍进入精排；若个人/实验室/方法信号弱，会被降级或低于下限。
   # 精排批处理：一次 LLM 调用评判的论文数（≥1；批次之间按 model.yaml 的 max_workers 并发）
+  candidate_limit_per_user: 30  # 每用户进入 LLM 分析/精排的候选数；最终邮件篇数仍由 email.yaml 控制
   batch_size: 5
 
 # 顶刊直采通道（sources/top_journals.py）：绕过关键词召回，按 journals.yaml

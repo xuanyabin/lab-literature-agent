@@ -21,7 +21,7 @@ from pathlib import Path
 import yaml
 
 from feedback.vocab import DEFAULT_LEARNED_CONFIG
-from sources.paper import Paper
+from sources.paper import Paper, term_count, term_matches, variants_for
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +57,7 @@ def load_scoring_config(path: Path = DEFAULT_SCORING_CONFIG,
             "score_cap", DEFAULT_LEARNED_CONFIG["score_cap"]),
         "noise_penalty": cfg.get("noise_penalty", 2),
         "personal_fallback": cfg.get("personal_fallback") or {},
+        "candidate_limit_per_user": (cfg.get("ranker") or {}).get("candidate_limit_per_user", 30),
     }
 
 
@@ -103,28 +104,28 @@ def score_paper(paper: Paper, user: dict, config: dict) -> int:
             term = term.strip()
             if not term:
                 continue
-            variants = [v.strip().lower() for v in [term, *(aliases.get(term) or [])] if v and v.strip()]
-            hits = max((text.count(v) for v in variants), default=0)
+            variants = variants_for(term, aliases)
+            hits = max((term_count(text, v) for v in variants), default=0)
             if not hits:
                 continue
             score += weight
-            if any(v in title for v in variants):
+            if any(term_matches(title, v) for v in variants):
                 score += config.get("title_bonus", 1)
             score += min(hits - 1, config.get("frequency_cap", 3)) * config.get("frequency_bonus", 1)
     # 反馈学习词表（Phase 5）：命中按有效权重加分，单篇封顶 learned_score_cap
     learned = 0
     for term, term_weight in user.get("learned_terms") or []:
         variant = str(term).strip().lower()
-        if not variant or variant not in text:
+        if not variant or not term_matches(text, variant):
             continue
         learned += max(1, round(term_weight))
-        if variant in title:
+        if term_matches(title, variant):
             learned += config.get("title_bonus", 1)
     score += min(learned, config.get("learned_score_cap", DEFAULT_LEARNED_CONFIG["score_cap"]))
     # 医学噪音软惩罚（V5）：每命中一个 noise_terms 词减 noise_penalty 分，允许负分沉底，不淘汰
     noise = [t.strip().lower() for t in user.get("noise_terms") or [] if t and t.strip()]
     if noise:
-        score -= config.get("noise_penalty", 2) * sum(1 for t in noise if t in text)
+        score -= config.get("noise_penalty", 2) * sum(1 for t in noise if term_matches(text, t))
     return score
 
 
@@ -137,7 +138,7 @@ def rank_papers(papers: list[Paper], user: dict, config: dict) -> list[tuple[int
     scored = []
     dropped = 0
     for p in papers:
-        if exclude and any(t in _text_of(p) for t in exclude):
+        if exclude and any(term_matches(_text_of(p), t) for t in exclude):
             dropped += 1
             continue
         scored.append((score_paper(p, user, config), p))

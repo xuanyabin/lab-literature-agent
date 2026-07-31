@@ -17,7 +17,7 @@ from datetime import date, timedelta
 
 import requests
 
-from .paper import Paper, expand_with_aliases
+from .paper import Paper, any_term_matches, expand_with_aliases
 
 logger = logging.getLogger(__name__)
 
@@ -70,10 +70,10 @@ def fetch_recent(user: dict, days: int = 1, max_results: int = 50, min_results: 
             item.get("abstract") or "",
             item.get("category") or "",
         ]).lower()
-        if exclude and any(t in text for t in exclude):
+        if exclude and any_term_matches(text, exclude):
             continue
-        sp_hit = any(t in text for t in species)
-        ot_hit = any(t in text for t in others)
+        sp_hit = any_term_matches(text, species)
+        ot_hit = any_term_matches(text, others)
         if species and others:
             if sp_hit and ot_hit:
                 strict.append(item)
@@ -114,7 +114,7 @@ def fetch_recent_global(species: list[str], others: list[str], days: int = 1,
             item.get("abstract") or "",
             item.get("category") or "",
         ]).lower()
-        if any(t in text for t in terms):
+        if any_term_matches(text, terms):
             picked.append(item)
     logger.info("bioRxiv 全局过滤命中 %d 篇（全量 %d 篇）", len(picked), len(details))
     return [_to_paper(item) for item in picked[:max_results]]

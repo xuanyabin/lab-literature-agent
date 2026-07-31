@@ -43,6 +43,14 @@ def test_collect_global_terms_merges_expands_and_dedupes():
     assert terms["others"] == ["Insect Evolution", "genomics", "scRNA-seq", "gut microbiome"]
 
 
+def test_collect_global_terms_treats_string_alias_as_one_variant():
+    users = [{"species": ["ants"], "aliases": {"ants": "social insects"},
+              "research_interest": [], "keywords": [], "methods": []}]
+    terms = gp.collect_global_terms(users)
+    assert terms["species"] == ["ants", "social insects"]
+    assert not any(len(t) == 1 for t in terms["species"] + terms["others"])
+
+
 def test_collect_global_terms_includes_lab_topics_and_skips_bad_items():
     # lab_topics 并入其余组参与召回（无 lab_recall 时的兼容回退）；空串/None 被过滤
     users = [{"species": ["Apis", "", None], "lab_topics": ["Genome Evolution"],

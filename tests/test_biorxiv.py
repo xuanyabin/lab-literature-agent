@@ -151,3 +151,15 @@ def test_fetch_recent_global_flat_or_any_hit(monkeypatch, payload):
     papers = biorxiv.fetch_recent_global(["mouse"], ["microbiome"], days=1)
     assert [p.doi for p in papers] == [
         "10.1101/2026.07.20.123456", "10.1101/2026.07.20.654321"]
+
+
+def test_fetch_recent_global_short_term_uses_boundaries(monkeypatch, payload):
+    payload["collection"] = [
+        {"title": "Plants and mutants", "authors": "", "doi": "10.1/plants",
+         "date": "2026-07-22", "category": "", "abstract": "participants only"},
+        {"title": "Ants genome", "authors": "", "doi": "10.1/ants",
+         "date": "2026-07-22", "category": "", "abstract": ""},
+    ]
+    _mock_get(monkeypatch, payload)
+    papers = biorxiv.fetch_recent_global(["ants"], [], days=1)
+    assert [p.doi for p in papers] == ["10.1/ants"]

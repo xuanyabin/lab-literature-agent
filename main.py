@@ -10,14 +10,15 @@
       拼成当日全局池）→ 每用户本地规则
       粗筛等权打分选出候选（实验室公共方向词叠加个人词表；期刊因素只在精排
       journal 维度体现，粗筛不再按期刊加分；顶刊通道论文按刊名补入候选，
-      每用户每日上限见 scoring.yaml 的 journal_channel）→ 按用户跨天去重 → top-N；
+      每用户每日上限见 scoring.yaml 的 journal_channel）→ 按用户跨天去重 →
+      scoring.yaml 的 ranker.candidate_limit_per_user；
       各用户 shortlist 求并集，并集只做一次 LLM 处理（分析/新闻摘要/翻译，
       SQLite 全局表缓存复用，同一篇论文全实验室只处理一次；未命中缓存的论文按
       model.yaml max_workers 并发调 LLM）→ 每用户个性化精排
       （六维加权 Final Score + AI 推荐理由；LLM 判断按 scoring.yaml ranker.batch_size
       分批一次调用评判多篇、批次间并发；按 Final Score 绝对阈值定级
       Must Read / Important / Reference，低于 push_floor 推送下限的不进邮件，
-      超过 --limit 时按 Final Score 截断封顶，宁缺毋滥）→ 每日价值总结 → HTML 邮件
+      超过 --limit 时按 Final Score 截断到最终邮件篇数，宁缺毋滥）→ 每日价值总结 → HTML 邮件
       （卡片内嵌 ⭐1-5 mailto 反馈链接 + Part 3 批量标注回信入口，
       均由 python -m feedback 经 IMAP 收集学习）；
       论文与产物入库 SQLite，推荐记录写入 recommendations 表
@@ -50,10 +51,12 @@ from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import BudgetExhaustedError, LLMClient
 from processing.term_expander import apply_auto_terms, refresh_auto_terms
 from recommendation.ranker import (
-    load_ranker_batch_size, load_ranker_thresholds, load_ranker_weights, rank_items,
+    load_ranker_batch_size, load_ranker_gating, load_ranker_thresholds,
+    load_ranker_weights, rank_items,
 )
 from recommendation.scorer import _normalize_journal, load_scoring_config, rank_papers
 from sources.global_pool import fetch_global_pool
+from sources.paper import term_matches, variants_for
 from sources.top_journals import load_journal_names
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -119,30 +122,54 @@ def apply_lab_profile(user: dict, lab: dict) -> dict:
 
 
 def _personal_title_fallback(fresh: list, shortlist: list, user: dict, max_extra: int) -> list:
-    """个人关键词强命中兜底（V5）：未进 top-N 截断的候选中，任意个人词
-    （species/keywords/research_interest/methods，aliases 展开）命中标题者追加
-    （最多 max_extra 篇），兜底个人强相关论文被 lab 词高分挤掉的情况。"""
+    """个人关键词强命中兜底（V5）。
+
+    未进 top-N 截断的候选中，个人词命中标题 1 个，或标题/摘要合计命中
+    >=2 个原词时追加（最多 max_extra 篇）。这样能兜住 Hobrac/centromere
+    这类强个人相关工具或基因组论文，同时避免单个泛词在摘要里误触发。
+    """
     if max_extra <= 0:
         return []
     picked = {dedup_key(p) for _, p in shortlist}
     aliases = user.get("aliases") or {}
-    variants: list[str] = []
+    groups: list[list[str]] = []
     for field in ("species", "keywords", "research_interest", "methods"):
         for term in user.get(field) or []:
             if not term or not term.strip():
                 continue
             term = term.strip()
-            variants += [v.strip().lower() for v in [term, *(aliases.get(term) or [])] if v and v.strip()]
+            groups.append(variants_for(term, aliases))
     extras = []
     for s, p in fresh:
         if len(extras) >= max_extra:
             break
         if dedup_key(p) in picked:
             continue
-        if any(v in p.title.lower() for v in variants):
+        title = p.title.lower()
+        text = " ".join([p.title, p.abstract, " ".join(p.keywords)]).lower()
+        title_hit = any(any(term_matches(title, v) for v in variants) for variants in groups)
+        text_hits = sum(1 for variants in groups if any(term_matches(text, v) for v in variants))
+        if title_hit or text_hits >= 2:
             picked.add(dedup_key(p))
             extras.append((s, p))
     return extras
+
+
+def _candidate_limit(scoring_cfg: dict, final_limit: int) -> int:
+    """每用户进入 LLM 分析/精排的候选上限；与最终邮件篇数分离。"""
+    try:
+        return max(1, int(scoring_cfg.get("candidate_limit_per_user", final_limit)))
+    except (TypeError, ValueError):
+        return max(1, final_limit)
+
+
+def _artifact_union(shortlists: dict[str, list]) -> list:
+    """各用户候选并集去重：同一论文只做一次全局 AI 分析。"""
+    union: dict[str, object] = {}
+    for lst in shortlists.values():
+        for _, p in lst:
+            union.setdefault(dedup_key(p), p)
+    return list(union.values())
 
 
 def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
@@ -164,6 +191,7 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
         a = artifacts[dedup_key(paper)]
         items.append({
             "paper": paper,
+            "coarse_score": score,
             "analysis": a["analysis"],
             "news": a["news"],
             "title_zh": a["title_zh"],
@@ -178,7 +206,8 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
     items = rank_items(items, user, llm, scoring_cfg["journal_tiers"],
                        load_ranker_weights(), load_ranker_thresholds(),
                        batch_size=load_ranker_batch_size(),
-                       max_workers=llm.max_workers)
+                       max_workers=llm.max_workers,
+                       gating=load_ranker_gating())
     if not items:  # 推送下限过滤后为空：宁缺毋滥，今日不发
         log.info("用户 %s 无达到推送下限的论文，跳过今日邮件", slug)
         return
@@ -305,6 +334,9 @@ def main() -> int:
     channel_journals = {name for name, tier in scoring_cfg["journal_tiers"].items()
                         if tier in channel_tiers}
     channel_max = int(channel_cfg.get("max_per_user", 10))
+    candidate_limit = _candidate_limit(scoring_cfg, args.limit)
+    log.info("每用户进入 LLM 分析/精排候选上限：%d；最终邮件上限：%d",
+             candidate_limit, args.limit)
     shortlists: dict[str, list] = {}
     matched_counts: dict[str, int] = {}
     for slug, u in prepared:
@@ -317,7 +349,7 @@ def main() -> int:
         if len(fresh) < len(scored):
             log.info("用户 %s 跨天去重：%d 篇已在历史邮件中出现过，跳过",
                      slug, len(scored) - len(fresh))
-        shortlist = fresh[:args.limit]
+        shortlist = fresh[:candidate_limit]
         fallback_cfg = scoring_cfg.get("personal_fallback") or {}
         if fallback_cfg.get("enabled"):
             extras = _personal_title_fallback(fresh, shortlist, u,
@@ -342,12 +374,9 @@ def main() -> int:
         shortlists[slug] = shortlist
 
     # 各用户 shortlist 求并集，LLM 产物全局只做一次（带 SQLite 缓存复用）
-    union: dict[str, object] = {}
-    for lst in shortlists.values():
-        for _, p in lst:
-            union.setdefault(dedup_key(p), p)
+    union = _artifact_union(shortlists)
     log.info("各用户 shortlist 并集 %d 篇，进入全局 AI 处理", len(union))
-    artifacts = ensure_artifacts(list(union.values()), llm, conn,
+    artifacts = ensure_artifacts(union, llm, conn,
                                  persist=not args.dry_run,
                                  show_translation=email_cfg["show_translation"], log=log,
                                  max_workers=llm.max_workers)

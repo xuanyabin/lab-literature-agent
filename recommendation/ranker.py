@@ -38,7 +38,7 @@ from recommendation.scorer import (
     _normalize_journal,
     _text_of,
 )
-from sources.paper import Paper
+from sources.paper import Paper, term_matches, variants_for
 
 logger = logging.getLogger(__name__)
 
@@ -46,10 +46,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_SCORING_CONFIG = BASE_DIR / "config" / "scoring.yaml"
 
 DEFAULT_RANKER_WEIGHTS = {
-    "personal": 40, "lab": 20, "journal": 30,
-    "novelty": 10, "method": 0, "recency": 0,
+    "personal": 45, "lab": 15, "journal": 20,
+    "novelty": 10, "method": 10, "recency": 0,
 }
 DEFAULT_RANKER_THRESHOLDS = {"must_read": 75, "important": 60}
+DEFAULT_RANKER_GATING = {}
 DEFAULT_BATCH_SIZE = 5  # 精排批处理：一次 LLM 调用评判的论文数
 
 _NEUTRAL_JUDGMENT = {"personal_relevance": 50, "novelty": 50, "reason": ""}
@@ -75,6 +76,15 @@ def load_ranker_thresholds(path: Path = DEFAULT_SCORING_CONFIG) -> dict:
     return {**DEFAULT_RANKER_THRESHOLDS, **thresholds}
 
 
+def load_ranker_gating(path: Path = DEFAULT_SCORING_CONFIG) -> dict:
+    """读取精排分类封顶规则；缺省为空，不改变旧行为。"""
+    p = Path(path)
+    if not p.exists():
+        return dict(DEFAULT_RANKER_GATING)
+    cfg = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+    return (cfg.get("ranker") or {}).get("gating") or dict(DEFAULT_RANKER_GATING)
+
+
 def load_ranker_batch_size(path: Path = DEFAULT_SCORING_CONFIG) -> int:
     """读取 scoring.yaml 的 ranker.batch_size（一次 LLM 调用评判的论文数），缺省 5，下限 1。"""
     p = Path(path)
@@ -96,6 +106,33 @@ def _category_of(score: int, thresholds: dict) -> str:
     return CATEGORY_REFERENCE
 
 
+def _cap_category(category: str, max_category: str) -> str:
+    order = {
+        CATEGORY_REFERENCE: 0,
+        CATEGORY_IMPORTANT: 1,
+        CATEGORY_MUST_READ: 2,
+    }
+    if order.get(category, 0) > order.get(max_category, order[CATEGORY_MUST_READ]):
+        return max_category
+    return category
+
+
+def _apply_gating(category: str, dims: dict, coarse_score: int, gating: dict) -> str:
+    weak = gating.get("weak_relevance") or {}
+    if weak and dims.get("personal", 0) < weak.get("personal_below", -1) \
+            and dims.get("method", 0) == weak.get("method_equals", dims.get("method", 0)) \
+            and dims.get("lab", 0) < weak.get("lab_below", -1):
+        category = _cap_category(category, weak.get("max_category", CATEGORY_REFERENCE))
+
+    top = gating.get("top_journal_low_signal") or {}
+    if top and dims.get("journal", 0) >= top.get("journal_at_least", 101) \
+            and coarse_score <= top.get("coarse_at_most", -1) \
+            and dims.get("lab", 0) == top.get("lab_equals", dims.get("lab", 0)) \
+            and dims.get("personal", 0) < top.get("personal_below", -1):
+        category = _cap_category(category, top.get("max_category", CATEGORY_REFERENCE))
+    return category
+
+
 def _hits(text: str, terms: list, aliases: dict) -> int:
     """命中的检索词个数（同一词的多个变体只算一次）。"""
     n = 0
@@ -103,8 +140,8 @@ def _hits(text: str, terms: list, aliases: dict) -> int:
         term = term.strip()
         if not term:
             continue
-        variants = [v.strip().lower() for v in [term, *(aliases.get(term) or [])] if v and v.strip()]
-        if any(v in text for v in variants):
+        variants = variants_for(term, aliases)
+        if any(term_matches(text, v) for v in variants):
             n += 1
     return n
 
@@ -258,7 +295,8 @@ def _parse_judgment(raw: str) -> dict:
 
 def rank_items(items: list[dict], user: dict, llm, journal_tiers: dict,
                weights: dict, thresholds: dict, today: date | None = None,
-               batch_size: int = DEFAULT_BATCH_SIZE, max_workers: int = 8) -> list[dict]:
+               batch_size: int = DEFAULT_BATCH_SIZE, max_workers: int = 8,
+               gating: dict | None = None) -> list[dict]:
     """对 AI 处理完的 items 计算 Final Score，按分数降序重排并按绝对阈值定级。
 
     每个 item 增加 "score"（0-100）、"reason"（推荐理由）、"category" 字段。
@@ -298,11 +336,17 @@ def rank_items(items: list[dict], user: dict, llm, journal_tiers: dict,
         }
         it["score"] = final_score(dims, weights)
         it["reason"] = judgment["reason"]
+        it["_dims"] = dims
         scored.append((it["score"], it))
     scored.sort(key=lambda x: -x[0])
     for score, it in scored:
         it["category"] = _category_of(score, thresholds)
     items = [it for _, it in scored]
+    gating = gating or {}
+    for it in items:
+        it["category"] = _apply_gating(
+            it["category"], it.get("_dims") or {}, int(it.get("coarse_score") or 0), gating)
+        it.pop("_dims", None)
     floor = thresholds.get("push_floor")
     if floor is not None:  # 推送下限：低分论文不进邮件（宁缺毋滥）
         kept = [it for it in items if it["score"] >= floor]

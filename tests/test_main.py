@@ -1,6 +1,12 @@
 import yaml
 
-from main import _personal_title_fallback, apply_lab_profile, load_users
+from main import (
+    _artifact_union,
+    _candidate_limit,
+    _personal_title_fallback,
+    apply_lab_profile,
+    load_users,
+)
 from sources.paper import Paper
 
 
@@ -19,6 +25,13 @@ def test_load_users_skips_inactive_and_sorts(tmp_path):
 
 def test_load_users_empty_dir(tmp_path):
     assert load_users(tmp_path) == []
+
+
+def test_candidate_limit_defaults_to_config_and_is_separate_from_email_limit():
+    assert _candidate_limit({"candidate_limit_per_user": 30}, final_limit=15) == 30
+    assert _candidate_limit({}, final_limit=15) == 15
+    assert _candidate_limit({"candidate_limit_per_user": 0}, final_limit=15) == 1
+    assert _candidate_limit({"candidate_limit_per_user": "bad"}, final_limit=15) == 15
 
 
 def test_apply_lab_profile_v5_layers():
@@ -99,6 +112,11 @@ def _paper(doi, title):
                  date="", doi=doi, url="", keywords=[])
 
 
+def _paper_with_abstract(doi, title, abstract):
+    return Paper(title=title, abstract=abstract, authors="", journal="J",
+                 date="", doi=doi, url="", keywords=[])
+
+
 def test_personal_title_fallback_adds_title_hits_beyond_shortlist():
     user = {"species": ["fire ant"], "keywords": [], "research_interest": [],
             "methods": [], "aliases": {"fire ant": ["Solenopsis invicta"]}}
@@ -123,7 +141,28 @@ def test_personal_title_fallback_skips_already_picked_and_caps():
     assert [p.doi for _, p in extras] == ["10.1/c", "10.1/d"]  # 不重复 + 上限
 
 
+def test_personal_fallback_adds_two_personal_abstract_hits():
+    user = {"species": [], "keywords": ["centromere", "karyotype evolution"],
+            "research_interest": [], "methods": [], "aliases": {}}
+    fresh = [(5, _paper("10.1/a", "Unrelated high score")),
+             (1, _paper_with_abstract("10.1/b", "Chromosome inheritance",
+                                      "CRISPR centromere fission reveals karyotype evolution."))]
+    extras = _personal_title_fallback(fresh, fresh[:1], user, max_extra=5)
+    assert [p.doi for _, p in extras] == ["10.1/b"]
+
+
 def test_personal_title_fallback_disabled_or_no_terms():
     fresh = [(1, _paper("10.1/a", "Fire ant"))]
     assert _personal_title_fallback(fresh, [], {"species": ["fire ant"]}, 0) == []
     assert _personal_title_fallback(fresh, [], {"species": []}, 5) == []
+
+
+def test_artifact_union_dedupes_same_paper_across_users():
+    same_a = _paper("10.1/a", "Shared paper")
+    same_b = _paper("10.1/a", "Shared paper duplicate")
+    unique = _paper("10.1/b", "Unique paper")
+    union = _artifact_union({
+        "user001": [(3, same_a), (2, unique)],
+        "user002": [(4, same_b)],
+    })
+    assert [p.doi for p in union] == ["10.1/a", "10.1/b"]

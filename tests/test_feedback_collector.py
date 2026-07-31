@@ -1,8 +1,9 @@
-"""feedback.collector 的 IMAP 反馈收集测试（用假 IMAP，不碰真实服务器）。"""
+"""feedback.collector 的 IMAP 反馈收集测试（用假 IMAP，不碰真实服务器与 feedback_data/）。"""
 
 from email.message import EmailMessage
 
 import pytest
+import yaml
 
 from database.db import connect, save_paper, save_recommendation
 from feedback.collector import (collect, parse_added_terms,
@@ -54,7 +55,17 @@ def conn(tmp_path):
     c.close()
 
 
-def _run_collect(conn, messages, monkeypatch):
+@pytest.fixture
+def store_dir(tmp_path):
+    """隔离的反馈文件队列目录（不碰仓库真实的 feedback_data/）。"""
+    return tmp_path / "feedback_data"
+
+
+def _pending_files(store_dir):
+    return sorted((store_dir / "pending").glob("*.yaml"))
+
+
+def _run_collect(conn, messages, monkeypatch, base_dir):
     """注入假 IMAP 与 IMAP 配置，返回 (新记录数, fake)。"""
     monkeypatch.setattr("feedback.collector.load_dotenv", lambda: None)
     monkeypatch.setenv("IMAP_HOST", "imap.test")
@@ -66,7 +77,7 @@ def _run_collect(conn, messages, monkeypatch):
         assert host == "imap.test" and port == 993
         return fake
 
-    return collect(conn, imap_factory=factory), fake
+    return collect(conn, imap_factory=factory, base_dir=base_dir), fake
 
 
 def test_parse_valid():
@@ -93,7 +104,7 @@ def test_parse_invalid():
         assert parse_feedback_message(_msg(f"[FB] u=a@x.com p=1 v={old}")) is None
 
 
-def test_collect_records_valid_and_marks_all_seen(conn, monkeypatch):
+def test_collect_records_valid_and_marks_all_seen(conn, monkeypatch, store_dir):
     paper_id = save_paper(conn, Paper(title="t", abstract="a", authors="", journal="",
                                       date="2026-07-22", doi="", url=""))
     msgs = [
@@ -101,13 +112,33 @@ def test_collect_records_valid_and_marks_all_seen(conn, monkeypatch):
         _msg("newsletter"),                             # 无标记 → 跳过
         _msg("[FB] u=a@x.com p=99999 v=1"),             # 论文不存在 → 跳过
     ]
-    recorded, fake = _run_collect(conn, msgs, monkeypatch)
+    recorded, fake = _run_collect(conn, msgs, monkeypatch, store_dir)
     assert recorded == 1
     # 所有邮件都标记已读，防止毒消息反复处理
     assert len(fake.seen) == 3
     row = conn.execute("SELECT value FROM feedback WHERE paper_id=?",
                        (paper_id,)).fetchone()
     assert row["value"] == "5"
+
+
+def test_collect_double_writes_pending_file(conn, monkeypatch, store_dir):
+    """逐篇 [FB] 回信双写：pending 文件队列（学习用）+ feedback 表（统计用）。"""
+    paper_id = save_paper(conn, Paper(title="t", abstract="a", authors="", journal="",
+                                      date="2026-07-22", doi="", url=""))
+    msgs = [_msg(f"[FB] u=a@x.com p={paper_id} v=4", "与课题相关")]
+    recorded, _ = _run_collect(conn, msgs, monkeypatch, store_dir)
+    assert recorded == 1
+    files = _pending_files(store_dir)
+    assert len(files) == 1
+    data = yaml.safe_load(files[0].read_text(encoding="utf-8"))
+    assert data["user_email"] == "a@x.com"
+    assert data["paper_id"] == paper_id
+    assert data["value"] == "4"
+    assert data["reason"] == "与课题相关"
+    # db 侧同步写入（周/月报 get_feedback_since 统计用）
+    row = conn.execute("SELECT value FROM feedback WHERE paper_id=?",
+                       (paper_id,)).fetchone()
+    assert row["value"] == "4"
 
 
 def test_collect_without_imap_host(conn, monkeypatch, caplog):
@@ -118,15 +149,16 @@ def test_collect_without_imap_host(conn, monkeypatch, caplog):
     assert "IMAP_HOST" in caplog.text
 
 
-def test_collect_duplicate_ignored(conn, monkeypatch):
+def test_collect_duplicate_ignored(conn, monkeypatch, store_dir):
     paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
                                       date="2026-07-22", doi="", url=""))
     subject = f"[FB] u=a@x.com p={paper_id} v=4"
-    recorded, _ = _run_collect(conn, [_msg(subject), _msg(subject)], monkeypatch)
+    recorded, _ = _run_collect(conn, [_msg(subject), _msg(subject)], monkeypatch, store_dir)
     assert recorded == 1  # 第二封重复被幂等跳过
+    assert len(_pending_files(store_dir)) == 1  # 文件队列同样幂等
 
 
-def test_collect_rejects_spoofed_sender(conn, monkeypatch):
+def test_collect_rejects_spoofed_sender(conn, monkeypatch, store_dir):
     """发件人与主题中标注的用户不符时拒绝记录（防止伪造回信污染他人词表）。"""
     paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
                                       date="2026-07-22", doi="", url=""))
@@ -136,11 +168,12 @@ def test_collect_rejects_spoofed_sender(conn, monkeypatch):
         # 大小写不敏感：发件人大小写不同仍视为本人
         _msg(f"[FB] u=a@x.com p={paper_id} v=5", sender="A@x.com"),
     ]
-    recorded, fake = _run_collect(conn, msgs, monkeypatch)
+    recorded, fake = _run_collect(conn, msgs, monkeypatch, store_dir)
     assert recorded == 1
     assert len(fake.seen) == 2  # 伪造邮件同样标记已读，不反复重试
     row = conn.execute("SELECT value FROM feedback WHERE paper_id=?", (paper_id,)).fetchone()
     assert row["value"] == "5"  # 只记录了本人那条，伪造的 ⭐1 被丢弃
+    assert len(_pending_files(store_dir)) == 1  # 伪造反馈不进文件队列
 
 
 def test_parse_added_terms():
@@ -154,7 +187,7 @@ def test_parse_added_terms_absent():
     assert parse_added_terms(_msg("[FB] u=a@x.com p=1 v=5", "只是普通原因")) == []
 
 
-def test_collect_appends_plus_line_terms(conn, monkeypatch):
+def test_collect_appends_plus_line_terms(conn, monkeypatch, store_dir):
     """回信正文 "+关键词" 行在发件人校验通过后交给 add_feedback_terms（B4）。"""
     paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
                                       date="2026-07-22", doi="", url=""))
@@ -162,12 +195,12 @@ def test_collect_appends_plus_line_terms(conn, monkeypatch):
     monkeypatch.setattr("feedback.collector.add_feedback_terms",
                         lambda email, terms: calls.append((email, terms)))
     msgs = [_msg(f"[FB] u=a@x.com p={paper_id} v=4", "+CRISPR, 单细胞测序")]
-    recorded, _ = _run_collect(conn, msgs, monkeypatch)
+    recorded, _ = _run_collect(conn, msgs, monkeypatch, store_dir)
     assert recorded == 1
     assert calls == [("a@x.com", ["CRISPR", "单细胞测序"])]
 
 
-def test_collect_without_plus_line_behavior_unchanged(conn, monkeypatch):
+def test_collect_without_plus_line_behavior_unchanged(conn, monkeypatch, store_dir):
     """无 "+" 行的普通回信不触发关键词追加，行为完全不变。"""
     paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
                                       date="2026-07-22", doi="", url=""))
@@ -175,12 +208,12 @@ def test_collect_without_plus_line_behavior_unchanged(conn, monkeypatch):
     monkeypatch.setattr("feedback.collector.add_feedback_terms",
                         lambda email, terms: calls.append((email, terms)))
     recorded, _ = _run_collect(conn, [_msg(f"[FB] u=a@x.com p={paper_id} v=5", "普通原因")],
-                               monkeypatch)
+                               monkeypatch, store_dir)
     assert recorded == 1
     assert calls == []
 
 
-def test_collect_spoofed_sender_terms_rejected(conn, monkeypatch):
+def test_collect_spoofed_sender_terms_rejected(conn, monkeypatch, store_dir):
     """伪造发件人的 "+关键词" 行不进入自动词表（防伪造校验优先于 B4）。"""
     paper_id = save_paper(conn, Paper(title="t", abstract="", authors="", journal="",
                                       date="2026-07-22", doi="", url=""))
@@ -189,9 +222,10 @@ def test_collect_spoofed_sender_terms_rejected(conn, monkeypatch):
                         lambda email, terms: calls.append((email, terms)))
     msgs = [_msg(f"[FB] u=a@x.com p={paper_id} v=5", "+evilterm",
                  sender="attacker@evil.com")]
-    recorded, _ = _run_collect(conn, msgs, monkeypatch)
+    recorded, _ = _run_collect(conn, msgs, monkeypatch, store_dir)
     assert recorded == 0
     assert calls == []
+    assert _pending_files(store_dir) == []  # 伪造反馈也不进文件队列
 
 
 # ---------- 批量反馈（B6：一封邮件按编号标注星级） ----------
@@ -226,50 +260,53 @@ def test_parse_batch_invalid():
     assert parse_batch_feedback_message(_msg("[FB] u=a@x.com d=昨天")) is None
 
 
-def test_collect_batch_maps_numbers_to_papers(conn, monkeypatch):
+def test_collect_batch_maps_numbers_to_papers(conn, monkeypatch, store_dir):
     ids = _save_papers(conn, 3)
     # 展示顺序按分数降序：ids[2]=01 号、ids[0]=02 号、ids[1]=03 号
     _save_recs(conn, "a@x.com", "2026-07-28",
                [(ids[0], 60), (ids[1], 50), (ids[2], 70)])
     msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 5\n03: 2\n")
-    recorded, fake = _run_collect(conn, [msg], monkeypatch)
+    recorded, fake = _run_collect(conn, [msg], monkeypatch, store_dir)
     assert recorded == 2
     assert len(fake.seen) == 1
     rows = {r["paper_id"]: r["value"]
             for r in conn.execute("SELECT paper_id, value FROM feedback").fetchall()}
     assert rows == {ids[2]: "5", ids[1]: "2"}
+    # 每颗星各写一个 pending 文件（学习队列以文件为准）
+    assert len(_pending_files(store_dir)) == 2
 
 
-def test_collect_batch_out_of_range_skipped(conn, monkeypatch, caplog):
+def test_collect_batch_out_of_range_skipped(conn, monkeypatch, caplog, store_dir):
     ids = _save_papers(conn, 1)
     _save_recs(conn, "a@x.com", "2026-07-28", [(ids[0], 60)])
     msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 5\n09: 3\n")
     with caplog.at_level("WARNING"):
-        recorded, _ = _run_collect(conn, [msg], monkeypatch)
+        recorded, _ = _run_collect(conn, [msg], monkeypatch, store_dir)
     assert recorded == 1  # 越界编号 09 跳过，合法编号 01 正常记录
     assert "超出" in caplog.text
 
 
-def test_collect_batch_no_recommendations(conn, monkeypatch, caplog):
+def test_collect_batch_no_recommendations(conn, monkeypatch, caplog, store_dir):
     msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 5\n")
     with caplog.at_level("WARNING"):
-        recorded, fake = _run_collect(conn, [msg], monkeypatch)
+        recorded, fake = _run_collect(conn, [msg], monkeypatch, store_dir)
     assert recorded == 0
     assert "无推荐记录" in caplog.text
     assert len(fake.seen) == 1  # 无法映射也标记已读，不反复重试
 
 
-def test_collect_batch_rejects_spoofed_sender(conn, monkeypatch):
+def test_collect_batch_rejects_spoofed_sender(conn, monkeypatch, store_dir):
     ids = _save_papers(conn, 1)
     _save_recs(conn, "a@x.com", "2026-07-28", [(ids[0], 60)])
     msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 1\n",
                sender="attacker@evil.com")
-    recorded, _ = _run_collect(conn, [msg], monkeypatch)
+    recorded, _ = _run_collect(conn, [msg], monkeypatch, store_dir)
     assert recorded == 0
     assert conn.execute("SELECT COUNT(*) c FROM feedback").fetchone()["c"] == 0
+    assert _pending_files(store_dir) == []
 
 
-def test_collect_batch_plus_terms_still_work(conn, monkeypatch):
+def test_collect_batch_plus_terms_still_work(conn, monkeypatch, store_dir):
     """批量回信中的 "+关键词" 行同样追加到自动词表（B4 与 B6 共存）。"""
     ids = _save_papers(conn, 1)
     _save_recs(conn, "a@x.com", "2026-07-28", [(ids[0], 60)])
@@ -277,6 +314,6 @@ def test_collect_batch_plus_terms_still_work(conn, monkeypatch):
     monkeypatch.setattr("feedback.collector.add_feedback_terms",
                         lambda email, terms: calls.append((email, terms)))
     msg = _msg("[FB] u=a@x.com d=2026-07-28", "01: 4\n+CRISPR\n+\n")
-    recorded, _ = _run_collect(conn, [msg], monkeypatch)
+    recorded, _ = _run_collect(conn, [msg], monkeypatch, store_dir)
     assert recorded == 1
     assert calls == [("a@x.com", ["CRISPR"])]  # 单独的 "+" 解析为空，不产生词

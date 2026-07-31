@@ -1,5 +1,9 @@
 """反馈学习闭环（Phase 5 核心）：把用户标注转化为学习词表更新，全自动无人工审核。
 
+待学习反馈来自 feedback_data/pending 文件队列（collector 双写，见 feedback/store.py）；
+学后文件归档 processed/YYYY-MM，并把 feedback 表对应行标 processed=1
+（db 表保留给周/月报统计，学习队列以文件为准）。
+
 规则（五星标注，B2 起替代旧四值；spec 见 PROJECT.md Phase 5）：
 - 正反馈（⭐4 / ⭐5）→ LLM 从摘要提炼新词 → 同一新词在 ≥promote_support
   篇正反馈论文中出现才提权（防漂移）；已有学习词被文本命中也累计支持并提权；
@@ -18,9 +22,9 @@ from datetime import date, datetime, timezone
 from pathlib import Path
 
 from database.db import (
-    get_learned_term, get_unprocessed_feedback, load_learned_terms,
-    mark_feedback_processed, upsert_learned_term,
+    get_learned_term, load_learned_terms, mark_feedback_processed, upsert_learned_term,
 )
+from feedback import store
 from processing.llm import load_prompt
 
 logger = logging.getLogger(__name__)
@@ -174,22 +178,39 @@ def _learn_negative(conn, row, cfg: dict) -> None:
 
 
 def learn_from_feedback(conn, user: dict, llm, cfg: dict,
-                        today: date | None = None) -> dict:
-    """处理该用户全部未学习反馈，返回统计 {"positive": n, "negative": n, "skipped": n}。"""
+                        today: date | None = None,
+                        base_dir: Path = store.DEFAULT_BASE_DIR) -> dict:
+    """处理该用户在 pending 队列中的全部反馈，返回统计
+    {"positive": n, "negative": n, "skipped": n}；学后文件归档 processed/YYYY-MM，
+    对应 feedback 表行同步标 processed=1（保持 db 语义一致）。"""
     today_str = (today or date.today()).isoformat()
-    rows = get_unprocessed_feedback(conn, user["email"])
+    entries = [e for e in store.load_pending(base_dir) if e["user_email"] == user["email"]]
     stats = {"positive": 0, "negative": 0, "skipped": 0}
-    done = []
-    for row in rows:
-        if row["value"] in POSITIVE_VALUES:
-            _learn_positive(conn, user, row, cfg, llm, today_str)
-            stats["positive"] += 1
-        elif row["value"] in NEGATIVE_VALUES:
-            _learn_negative(conn, row, cfg)
-            stats["negative"] += 1
-        else:
+    done_paths = []
+    done_ids = []
+    for entry in entries:
+        paper = conn.execute("SELECT title, abstract FROM papers WHERE id = ?",
+                             (entry["paper_id"],)).fetchone()
+        if paper is None:
+            logger.warning("反馈指向不存在的论文 id=%s，归档跳过", entry["paper_id"])
             stats["skipped"] += 1
-        done.append(row["id"])
-    if done:
-        mark_feedback_processed(conn, done)
+        else:
+            row = {**entry, "title": paper["title"], "abstract": paper["abstract"]}
+            if entry["value"] in POSITIVE_VALUES:
+                _learn_positive(conn, user, row, cfg, llm, today_str)
+                stats["positive"] += 1
+            elif entry["value"] in NEGATIVE_VALUES:
+                _learn_negative(conn, row, cfg)
+                stats["negative"] += 1
+            else:
+                stats["skipped"] += 1
+        done_paths.append(entry["path"])
+        done_ids += [r["id"] for r in conn.execute(
+            """SELECT id FROM feedback
+               WHERE user_email = ? AND paper_id = ? AND value = ? AND processed = 0""",
+            (entry["user_email"], entry["paper_id"], entry["value"])).fetchall()]
+    for path in done_paths:
+        store.mark_processed(path, base_dir)
+    if done_ids:
+        mark_feedback_processed(conn, done_ids)
     return stats

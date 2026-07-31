@@ -1,7 +1,3 @@
-import re
-from urllib.parse import parse_qs, urlparse
-
-from feedback.tokens import check_token
 from mailer.digest_builder import build_digest_html
 from sources.paper import Paper
 
@@ -172,56 +168,31 @@ def test_overview_block_absent_when_none():
     assert "全库新增" not in html
 
 
-HTTP_CFG = {"feedback_base_url": "http://10.0.0.2:8710", "feedback_secret": "s3cret"}
-
-
-def _build_http(items, user_email="a@x.com", config=None):
-    cfg = {**HTTP_CFG, **(config or {})}
-    return build_digest_html("轩亚冰", "2025-07-22", items, "总结。", cfg,
-                             user_email=user_email)
-
-
-def test_http_mode_star_links_in_each_card():
+def test_star_links_mailto_in_each_card():
     item = {**make_item(), "paper_id": 42}
-    html = _build_http([item])
+    html = _build_with_feedback([item])
     assert 'class="stars"' in html
-    hrefs = re.findall(r'href="([^"]*/fb\?[^"]+)"', html)
-    assert len(hrefs) == 5
-    for n, href in enumerate(hrefs, 1):
-        q = parse_qs(urlparse(href).query)
-        assert q["u"] == ["a@x.com"] and q["p"] == ["42"] and q["v"] == [str(n)]
-        assert check_token("s3cret", q["t"][0], "a@x.com", "42", str(n))
-    # HTTP 模式不再出现批量 mailto 反馈
-    assert "mailto:" not in html
-    assert "一键标注" not in html
+    # ⭐1-5 五个 mailto 链接，主题预填 [FB] u=<邮箱> p=<论文id> v=<星级>（URL 编码）
+    for n in (1, 2, 3, 4, 5):
+        assert (f'mailto:bot@x.com?subject=%5BFB%5D%20u%3Da%40x.com%20p%3D42%20v%3D{n}'
+                in html)
+    assert "点击后发送邮件即完成反馈" in html
 
 
-def test_http_mode_stars_outside_details():
+def test_stars_outside_details():
     # 五星反馈在折叠区外：不展开详情也能直接点击
     item = {**make_item(), "paper_id": 42}
-    html = _build_http([item])
+    html = _build_with_feedback([item])
     assert html.index("</details>") < html.index('class="stars"')
 
 
-def test_http_mode_part3_keyword_entry():
-    item = {**make_item(), "paper_id": 42}
-    html = _build_http([item])
-    assert "新增关注关键词" in html
-    href = re.search(r'href="([^"]*/kw\?[^"]+)"', html).group(1)
-    q = parse_qs(urlparse(href).query)
-    assert q["u"] == ["a@x.com"]
-    assert check_token("s3cret", q["t"][0], "a@x.com", "kw")
-
-
-def test_http_mode_no_paper_id_no_stars():
-    html = _build_http([make_item()])  # dry-run 情形：item 无 paper_id
+def test_stars_absent_without_paper_id():
+    html = _build_with_feedback([make_item()])  # dry-run 情形：item 无 paper_id
     assert 'class="stars"' not in html
-    assert "/fb?" not in html
-    assert "新增关注关键词" in html  # Part 4 关键词入口仍渲染
 
 
-def test_mailto_fallback_when_secret_missing():
-    # 只有 base_url 没有 secret：回退批量 mailto（_build_with_feedback 带 feedback_email）
-    html = _build_with_feedback([make_item()], config={"feedback_base_url": "http://10.0.0.2:8710"})
-    assert html.count("mailto:") == 1
+def test_stars_absent_without_feedback_email():
+    html = build_digest_html("轩亚冰", "2025-07-22", [{**make_item(), "paper_id": 42}],
+                             "总结。", {}, user_email="a@x.com")
     assert 'class="stars"' not in html
+    assert "mailto:" not in html  # 未配 feedback_email：星标与 Part 3 批量入口都不渲染

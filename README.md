@@ -94,17 +94,20 @@ python weekly_report.py --user user001 --days 7
 
 ## 反馈学习（Phase 5）
 
-每日邮件的论文卡片底部带 4 个反馈链接（相关 / 不相关 / 已读 / 收藏），点击生成回信草稿，
-发送即完成标注。每日主流程前运行收集与学习：
+每日邮件的论文卡片底部内嵌 ⭐1–⭐5 mailto 反馈链接，点星生成预填回信
+（主题 `[FB] u=<邮箱> p=<论文id> v=<星级>`），发送即完成标注；日报 Part 3 另有
+批量标注入口（一封回信按编号给全天论文打星）。每日主流程前运行收集与学习：
 
 ```bash
 python -m feedback            # IMAP 收集回信 + 学习闭环
-python -m feedback --learn-only   # 只学习已收集的反馈（不连邮箱）
+python -m feedback --learn-only   # 只学习 feedback_data/pending 中待学习的反馈（不连邮箱）
 ```
 
 - 需在 `.env` 配置 `IMAP_HOST`（发件邮箱开启 IMAP；`IMAP_USER`/`IMAP_PASSWORD` 缺省回退 SMTP 配置）
-- 高分标注（相关/收藏）→ LLM 提炼新检索词，同一词在 ≥2 篇高分论文出现才提权生效；
-  低分标注（不相关）只对命中的学习词降权，不触碰手配词表
+- 收集到的反馈双写：`feedback_data/pending/` 文件队列（一文件一条 YAML，学习闭环数据源）
+  + feedback 表（周/月报统计）；学习后文件按月归档 `feedback_data/processed/YYYY-MM/`
+- 高分标注（⭐4/⭐5）→ LLM 提炼新检索词，同一词在 ≥2 篇高分论文出现才提权生效；
+  低分标注（⭐1/⭐2）只对命中的学习词降权，不触碰手配词表
 - 学习词按半衰期 30 天衰减，作用于检索查询与粗筛打分；全部变更写 `logs/feedback_learning.log` 审计
 - 学习参数见 `config/scoring.yaml` 的 `learned` 节
 

@@ -3,8 +3,9 @@
 > 版本：V4（按当前工作区实际状态编写）· 更新日期：2026-07-30
 > 部署环境：macOS · 项目根目录 `~/lab-literature-inteligence` · Python 3.13，一律使用 `.venv/bin/python`
 > 状态：批 1–3、批 5 全部落地并提交；批 6（2026-07-29）：邮件卡片内嵌 ⭐1–⭐5 五星反馈链接
-> （HTTP 反馈服务 `feedback/server.py` 点星即记录、浏览器显示"已反馈"，HMAC token 防伪造；
-> 未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 时自动回退为批量回信标注）。
+> （2026-07-31 起改为 mailto 点星——主题预填 `[FB] u=<邮箱> p=<论文id> v=<星级>`，
+> 发送即完成反馈，经 IMAP 收集落 `feedback_data/` 文件队列再学习；
+> 批 6 的 HTTP 反馈服务已移除，恢复零入站端口，见批 6 历史记录标注）。
 > 批 7（2026-07-29）：顶刊直采通道（`sources/top_journals.py`，按 journals.yaml 刊名直抓
 > 绕过关键词召回，解决全局池零 CNS）+ 推送下限（`ranker.thresholds.push_floor`，低分论文不进邮件）。
 > 批 11（2026-07-29）：性能改造——LLM 并发（model.yaml `max_workers=8`，产物生成与精排批次并行）、
@@ -61,8 +62,7 @@
         ▼                           ▼                             ▼
   mailer/digest_builder.py   weekly_report.py（周报/月报）       feedback/（学习闭环）
   （总览块+四段式日报 HTML，  （统计+阅读趋势+趋势总结+清单）    collector.py  IMAP 收集 [FB] 回信
-   卡片内嵌 ⭐1-5 反馈链接）                              server.py     HTTP 五星反馈服务(8710)
-        │                                                     tokens.py     链接 HMAC 签名/校验
+   卡片内嵌 ⭐1-5 mailto 链接）                         store.py      feedback_data 文件队列
         │                                                     learner.py    五星反馈学习
         ▼                                                     vocab.py      半衰期衰减读取
   mailer/sender.py（SMTP 发信）
@@ -101,11 +101,10 @@
 | `processing/translator.py` | 标题中译 + 中文四段结构化摘要（背景/研究方法/研究结果/研究意义，prompt `paper_translation.txt`；由 email.yaml `show_translation` 控制，开启时邮件只展示中文四段摘要） |
 | `processing/daily_summary_generator.py` | 日报末尾"今日价值总结"（LLM 生成） |
 | `database/db.py` | SQLite（`literature_agent.db`）：papers（dedup_key UNIQUE，全局共享）、paper_analysis、paper_news_summary、paper_translation（四段摘要，全局共享）、recommendations（user_email+paper_id UNIQUE，sent_date/category/score）、feedback（UNIQUE(user,paper,value)，processed 标记）、learned_terms（weight/support/last_seen）；全部幂等写入 |
-| `mailer/digest_builder.py` | 日报 HTML（模板 `templates/daily_digest.html`）：开头总览块（窗口内全库新增/命中关键词/推送篇数与定级分布）+ 三段式；每篇论文一张卡片，默认显示一句话新闻概要，`<details>` 折叠作者/DOI/关键词/推荐理由/中文四段摘要（不支持的客户端默认全展开）；反馈按配置双模式——HTTP 模式（`.env` 配 FEEDBACK_BASE_URL+FEEDBACK_SECRET）：每张卡片底部内嵌 ⭐1–⭐5 链接（带 HMAC token，点击即由 feedback/server.py 落库），Part 3 收窄为"新增关注关键词"入口；回退模式（未配置）：Part 3 单个 mailto 按钮（主题 `[FB] u=<邮箱> d=<日期>`，正文预填当天编号行，按编号填 ⭐1–⭐5） |
+| `mailer/digest_builder.py` | 日报 HTML（模板 `templates/daily_digest.html`）：开头总览块（窗口内全库新增/命中关键词/推送篇数与定级分布）+ 三段式；每篇论文一张卡片，默认显示一句话新闻概要，`<details>` 折叠作者/DOI/关键词/推荐理由/中文四段摘要（不支持的客户端默认全展开）；反馈为纯 mailto 模式——每张卡片底部内嵌 ⭐1–⭐5 mailto 链接（主题预填 `[FB] u=<邮箱> p=<论文id> v=<星级>`，发送即完成反馈，由 feedback/collector.py 经 IMAP 收取）；Part 3 单个批量标注 mailto 按钮（主题 `[FB] u=<邮箱> d=<日期>`，正文预填当天编号行，按编号填 ⭐1–⭐5） |
 | `mailer/sender.py` | SMTP 发信：凭据全部来自 `.env`（SMTP_HOST/PORT/USER/PASSWORD/DIGEST_FROM_EMAIL），缺失即报错列出缺项；465 走 SSL，其余 starttls |
-| `feedback/server.py` | HTTP 五星反馈接收服务（`python -m feedback.server`，默认 0.0.0.0:8710，随 run_daily.sh 自动拉起）：`GET /fb` 点星即写 feedback 表并返回"已反馈"确认页（附关键词表单）；`GET /kw` 新增关键词表单/提交（写入 auto_terms feedback_added）；`GET /health`；所有写操作要求 HMAC token，缺 FEEDBACK_SECRET 拒绝启动 |
-| `feedback/tokens.py` | 反馈链接 HMAC-SHA256 签名/校验（digest_builder 生成侧与 server 校验侧共用；签名覆盖用户|论文|星级，篡改任一参数即 403） |
-| `feedback/collector.py` | IMAP 轮询发件箱，解析两种 `[FB]` 回信：批量格式 `u=<邮箱> d=<日期>`（正文编号行 `NN: 1-5`，编号经 recommendations 表按展示序映射回 paper_id）+ 旧逐篇格式 `u=<邮箱> p=<id> v=<1..5>`（向后兼容）；写 feedback 表并标记已读；From 防伪造校验（发件人须与主题标注用户一致）；正文 `+关键词` 行经 `add_feedback_terms` 入 auto_terms；需 `.env` 配 IMAP_HOST（IMAP_USER/PASSWORD 缺省回退 SMTP 配置）。HTTP 模式下为备用反馈通道 |
+| `feedback/collector.py` | IMAP 轮询发件箱，解析两种 `[FB]` 回信：逐篇格式 `u=<邮箱> p=<id> v=<1..5>`（日报卡片 ⭐1-5 mailto 链接）+ 批量格式 `u=<邮箱> d=<日期>`（正文编号行 `NN: 1-5`，编号经 recommendations 表按展示序映射回 paper_id）；双写 feedback_data/pending 文件队列（学习数据源）与 feedback 表（周/月报统计）并标记已读；From 防伪造校验（发件人须与主题标注用户一致）；正文 `+关键词` 行经 `add_feedback_terms` 入 auto_terms；需 `.env` 配 IMAP_HOST（IMAP_USER/PASSWORD 缺省回退 SMTP 配置） |
+| `feedback/store.py` | 反馈文件队列（`feedback_data/`）：collector 双写时先落盘 `pending/`（一文件一条 YAML，文件名 `u<邮箱哈希>_p<id>_v<星级>` 去重幂等）；learner 学后按月归档 `processed/YYYY-MM/`；学习闭环以文件队列为准，db feedback 表仅供周/月报统计 |
 | `feedback/learner.py` | 全自动学习四档映射：⭐4/5 LLM 提炼新词（≥2 篇支持才提权）、⭐3 只记录、⭐2 命中学习词 ×0.5、⭐1 ×0.25 且同词累计 2 次写 exclude_candidate 审计；审计 `logs/feedback_learning.log`（JSONL） |
 | `feedback/vocab.py` | 学习词读取侧：有效权重=原始权重×0.5^(天数/半衰期 30 天)，低于 0.3 失效；读取时计算不回写 |
 | `config/users/<slug>.yaml` | 个人画像：name/email/active + 四组检索词 + exclude + aliases；**新增成员只需加一个 yaml，不改代码** |
@@ -114,11 +113,11 @@
 | `config/lab.yaml` | 实验室公共方向 topics（批 14：87 个"演化框架×组学方法"短语词，按示例文献 9 大主题分组，经 PubMed 90 天命中验证）+ aliases（17 条拼写变体）；`apply_lab_profile` 并入每个用户（个人配置优先），参与全局召回（批 12 起）与精排 lab 维度打分；不参与粗筛打分（批 13，共享词表淹没个人区分度） |
 | `config/scoring.yaml` | 全部打分行为开关：粗筛等权/tie-break、ranker 六维权重与定级阈值（含 push_floor 推送下限、batch_size 精排批处理大小）、journal_channel 顶刊直采通道开关（enabled/tiers/max_per_user/retmax_per_journal）、learned 学习护栏（含 negative_factor_weak/strong，详见第 4、9 节） |
 | `config/journals.yaml` | 期刊分层 T0（CNS 正刊+顶级子刊 22 本）/ T1（综合强刊、基因组、进化生态、昆虫领域强刊）；仅用于精排 journal 维度与周报统计 |
-| `config/email.yaml` | daily_paper_number 15 / show_translation / show_keywords / show_doi（`feedback_email`、`feedback_base_url`、`feedback_secret` 非 yaml 键，由 main.py 运行时从 `.env` 的 DIGEST_FROM_EMAIL / FEEDBACK_BASE_URL / FEEDBACK_SECRET 注入） |
+| `config/email.yaml` | daily_paper_number 15 / show_translation / show_keywords / show_doi（`feedback_email` 非 yaml 键，由 main.py 运行时从 `.env` 的 DIGEST_FROM_EMAIL 注入） |
 | `prompts/` | 10 个 prompt 文件：paper_analysis / paper_news_summary / paper_translation / daily_value_summary / recommendation_reason / recommendation_reason_batch（精排批处理，批 11）/ feedback_term_extraction / term_expansion / topic_clustering / weekly_report |
-| `run_daily.sh` / `run_weekly.sh` / `run_monthly.sh` | cron 入口脚本（日报/周报/月报），均前置节假日判断（当日节假日记日志跳过；日报节后经 `--days` 合并补发）；run_daily.sh 另会先确保 feedback/server.py 反馈服务已在后台运行（pgrep 检查，未运行则 nohup 拉起，缺 FEEDBACK_SECRET 时进程自行退出不影响主流水线）；日志 `logs/pipeline.log`、`logs/cron.log`、`logs/feedback_server.log` |
+| `run_daily.sh` / `run_weekly.sh` / `run_monthly.sh` | cron 入口脚本（日报/周报/月报），均前置节假日判断（当日节假日记日志跳过；日报节后经 `--days` 合并补发）；日志 `logs/pipeline.log`、`logs/cron.log` |
 | `scripts/list_papers.py` | 查看入库文献的命令行工具：`--today`（默认）/ `--date` 按入库日 / `--pub-date` 按发表日 / `--days N` 最近 N 天分组 / `--count-only`（只读查询） |
-| `tests/` | 241 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
+| `tests/` | 258 个测试全 mock 无网络依赖，`.venv/bin/python -m pytest tests/ -q` |
 
 ---
 
@@ -245,28 +244,25 @@ weekly_report.py --days 30        # 月报（run_monthly.sh，cron 每月 1 日�
 研究结果/研究意义，`show_translation` 开启时只展示中文、不再显示英文摘要，关闭回退英文摘要），
 不支持 `<details>` 的邮件客户端默认全部展开、可读性不受影响；⭐ 重要性反馈在折叠区外，
 不展开即可点击；Part 2 今日价值总结；Part 3 反馈入口
-（HTTP 模式为"新增关注关键词"，回退模式为批量标注 mailto，见下）。
+（批量标注 mailto 入口，见下）。
 
 **周报/月报（四段式）**：Part 1 LLM 趋势总结；Part 2 分布统计（定级/期刊分层/Top 期刊/高频词）；
 Part 3 阅读趋势（窗口内反馈正/中/负分桶 + 当前有效学习词 Top）；Part 4 重点论文清单
 （周报/月报清单不带反馈入口，反馈入口只在日报）。
 
-**反馈 · HTTP 模式（默认，批 6 起）**：`.env` 配置 `FEEDBACK_BASE_URL` + `FEEDBACK_SECRET` 后，
-日报每张卡片底部内嵌 **⭐1–⭐5 五个链接**（⭐1 完全不相关 / ⭐2 不太相关 / ⭐3 一般 /
-⭐4 比较重要 / ⭐5 非常重要），接收人点一下即完成反馈——链接指向 `feedback/server.py` 的
-`/fb` 端点（`u=邮箱&p=paper_id&v=星级&t=HMAC token`），落库 feedback 表（幂等去重）后浏览器
-直接显示"✓ 已反馈"确认页（附论文标题与新增关键词表单），**无需再发任何邮件**；
-Part 3 收窄为单个"新增关注关键词"按钮（`/kw` 表单，提交写入 auto_terms feedback_added，
-次日进检索）。token 覆盖 用户|论文|星级 全参数，篡改即 403，无 FEEDBACK_SECRET 无法伪造
-（防污染他人学习词表）；服务随 `run_daily.sh` 自动拉起（pgrep 检查 + nohup）。
+**反馈 · 逐篇点星（2026-07-31 起，取代批 6 HTTP 服务）**：日报每张卡片底部内嵌
+**⭐1–⭐5 五个 mailto 链接**（⭐1 完全不相关 / ⭐2 不太相关 / ⭐3 一般 /
+⭐4 比较重要 / ⭐5 非常重要），接收人点星生成预填回信（主题
+`[FB] u=<邮箱> p=<论文id> v=<星级>`），发送即完成反馈；collector 经 IMAP 收取后
+双写 `feedback_data/pending/` 文件队列（学习数据源）与 feedback 表（周/月报统计）。
+全程零入站端口，防伪造靠收取时的 From 校验（发件人须与主题标注用户一致）。
 
-**反馈 · 回退模式（未配置 FEEDBACK_*）**：日报 Part 3 单个 mailto 按钮，主题
+**反馈 · 批量标注（Part 3）**：日报 Part 3 单个 mailto 按钮，主题
 `[FB] u=<用户邮箱> d=<日期>`；正文预填当天全部编号行（`01:`–`NN:`，编号与卡片展示序一致），
 在想评的编号后填 1-5，其余留空即可；collector 按编号经 recommendations 表
 （user_email + sent_date，按分数展示序）映射回 paper_id。正文其余行可自由填写原因（可选）；
 另起一行以 `+` 开头可新增检索词（如 `+CRISPR, 单细胞测序`，逗号兼容中英文），校验发件人后
 追加进该用户 auto_terms 的 feedback_added，次日进检索（见第 9 节）。
-旧逐篇格式 `[FB] u=<邮箱> p=<id> v=<1..5>` 的回信 collector 仍兼容收集。
 
 **发信**：SMTP（凭据在 `.env`，不入库不入文档），465 SSL 或 starttls。
 
@@ -294,19 +290,20 @@ Part 3 收窄为单个"新增关注关键词"按钮（`/kw` 表单，提交写�
 
 ## 9. 反馈学习闭环（全自动，五星制）
 
-1. 反馈采集（双通道，同一 feedback 表幂等汇合）：
-   - **HTTP 模式（默认）**：用户在日报卡片底部直接点 ⭐1–⭐5 → `feedback/server.py` 校验
-     HMAC token → 写 feedback 表 → 浏览器显示"已反馈"确认页（附新增关键词表单，
-     提交经 `/kw` 写入 auto_terms 的 `feedback_added`，次日进检索）；全程无需发邮件；
-   - **回退模式**：用户在日报末尾 Part 3 点 **一键反馈** → 邮件客户端生成 `[FB]` 回信草稿
-     （主题带 `d=<日期>`，正文预填当天全部编号行），在想评的编号后填 ⭐1–⭐5 发出；
-     正文可填原因（非必填），另起一行 `+关键词` 可新增检索词。
+1. 反馈采集（单一 mailto 通道，2026-07-31 起取代批 6 HTTP 服务）：
+   - **逐篇点星**：用户在日报卡片底部点 ⭐1–⭐5 → 邮件客户端生成预填回信
+     （主题 `[FB] u=<邮箱> p=<论文id> v=<星级>`），发送即完成反馈；
+   - **批量标注**：用户在日报末尾 Part 3 点 **一键反馈** → 回信草稿主题带 `d=<日期>`、
+     正文预填当天全部编号行，在想评的编号后填 ⭐1–⭐5 发出；
+   - 两种回信正文均可填原因（非必填），另起一行 `+关键词` 可新增检索词。
 2. 每日流水线**之前** `python -m feedback`：IMAP 收取未读 `[FB]` 回信 →
    **校验发件人 From 与主题标注用户一致**（不符拒绝记录，防伪造污染他人词表）→
    批量格式按编号经 recommendations 表映射回 paper_id（越界编号跳过并告警）→
-   写 feedback 表（幂等：同人同篇同评级去重）→ 标记已读；
+   **双写**：`feedback_data/pending/` 文件队列（学习闭环数据源，一文件一条 YAML，
+   文件名去重幂等）+ feedback 表（周/月报统计，同人同篇同评级去重）→ 标记已读；
    校验通过后正文 `+关键词` 行经清洗去重追加到该用户 auto_terms 的 `feedback_added`，次日进检索。
-   随后执行 `learner.learn_from_feedback`（HTTP 通道写入的未处理行同样在此进入学习），按星级四档映射：
+   随后执行 `learner.learn_from_feedback` 从 pending 队列逐条学习（学后文件按月归档
+   `feedback_data/processed/YYYY-MM/`，对应 feedback 表行同步标 processed=1），按星级四档映射：
    - ⭐4 / ⭐5（正）：LLM 从论文提炼候选新词；同一词需 **≥2 篇**高分论文支持才提权
      （初始 1.0，每多一篇 +0.5，上限 3.0）——防漂移护栏；
    - ⭐3（中性）：只记录，不调整；
@@ -331,16 +328,14 @@ collector 按非法值忽略；周报阅读趋势统计通过 `normalize_feedbac
 ```bash
 cd ~/lab-literature-inteligence
 
-.venv/bin/python -m pytest tests/ -q        # 全量测试（当前 237 passed）
+.venv/bin/python -m pytest tests/ -q        # 全量测试（当前 258 passed）
 .venv/bin/python main.py --dry-run          # 全用户试跑：不发信，HTML 落 logs/
 .venv/bin/python main.py --user user001 --days 3   # 单用户调试，回溯 3 天
 .venv/bin/python weekly_report.py --dry-run        # 周报预览
 .venv/bin/python weekly_report.py --days 30 --dry-run   # 月报预览
 .venv/bin/python -m feedback --learn-only          # 跳过 IMAP 只重跑学习
-.venv/bin/python -m feedback.server                # 启动五星反馈服务（0.0.0.0:8710，run_daily.sh 会自动拉起）
 .venv/bin/python -m scheduler.holiday              # 打印今日回溯天数（0=节假日跳过）
 tail -f logs/pipeline.log                          # 流水线日志
-tail -f logs/feedback_server.log                   # 反馈服务访问日志
 ```
 
 crontab 示例（日报每天、周报每周一、月报每月 1 日；脚本均内置节假日闸门）：
@@ -357,10 +352,7 @@ crontab 示例（日报每天、周报每周一、月报每月 1 日；脚本均
   `config/journals.yaml`（期刊分层）、`config/email.yaml`（篇数与展示开关），不改代码。
 - 节假日表：每年初按国务院放假安排手工维护 `config/holidays.yaml` 一次。
 - 换模型：改 `config/model.yaml` + `.env` 的 `OPENAI_API_KEY` / `OPENAI_BASE_URL`。
-- 五星反馈服务：`.env` 配 `FEEDBACK_BASE_URL`（接收人设备可访问本机的地址，查本机局域网 IP：
-  `ipconfig getifaddr en0`，如 `http://192.168.1.10:8710`）与 `FEEDBACK_SECRET`
-  （`openssl rand -hex 32` 生成）；不配则邮件自动回退为批量回信标注模式，两通道可同时工作。
-- 密钥全部在 `.env`（SMTP/IMAP/OPENAI/FEEDBACK_SECRET），已 gitignore；`.env.example` 为模板。
+- 密钥全部在 `.env`（SMTP/IMAP/OPENAI），已 gitignore；`.env.example` 为模板。
 
 ---
 
@@ -395,8 +387,10 @@ journal_fallback 低相关兜底退役、LLM 自动扩展词每日缓存。
 （批 6，`feedback/server.py`）。原约束缓解方式：服务仅监听一个端口、所有写操作要求
 HMAC token（密钥在 `.env`，不入库不入文档）、参数强校验、页面输出全转义；
 未配置 `FEEDBACK_BASE_URL`/`FEEDBACK_SECRET` 时整体回退为零入站端口的回信模式。
-安全攻击面：SMTP/IMAP/OPENAI/FEEDBACK_SECRET 凭据（`.env` + gitignore）、
-From 伪造校验（回信通道）与 HMAC token 校验（HTTP 通道）。
+**（2026-07-31 再次回到零入站端口）**：HTTP 服务移除（`feedback/server.py`/`tokens.py` 删除），
+卡片 ⭐1–⭐5 改为 mailto 点星（主题预填 `[FB] u=<邮箱> p=<论文id> v=<星级>`），
+反馈经 IMAP 收集后落 `feedback_data/` 文件队列再学习，恢复决策 1 原约束。
+安全攻击面：SMTP/IMAP/OPENAI 凭据（`.env` + gitignore）、From 伪造校验（回信通道）。
 
 **决策 2 · 五星反馈**（替代 relevant / not_relevant / already_read / save 四键）：
 日报末尾 Part 3 一键反馈——单个 mailto 按钮生成一封回信，主题 `[FB] u=<邮箱> d=<日期>`，
@@ -441,7 +435,7 @@ holidays: ["2026-01-01", "2026-02-16", "..."]
 | 批 2 全局池 | 全局词表合并 → LLM 主题聚类（7 天缓存）→ 每簇一条 PubMed 查询合并全局池 → 按人本地粗筛分发；LLM 产物按并集 shortlist 只算一次并 SQLite 缓存复用（解决第 11 节 #2、#3 剩余子项） | ✅ 已完成（2026-07-28，`5113b0d`） |
 | 批 3 产品功能 | B6 中文四段结构化摘要（`fbc94ef`）→ B7 邮件开头总览（同 `fbc94ef`）→ B1 权重落地（`ed34425`+`fbd8b2c`）→ B5 节假日静态表（`aa5074d`）→ B3 月报·30 天阅读趋势+领域总结（`0d161e9`）→ B2+B4 五星反馈与关键词回信语法（`6b61269`） | ✅ 已完成（2026-07-28，195 passed） |
 | 批 5 检索与反馈 | 检索改扁平 OR：簇内全部关键词等权、命中任一词即召回，去掉"物种 AND 其余词"分组与严格/宽松降级重试（`global_pool.py` / `biorxiv.py` 全局路径；`pubmed.py` 逐人路径留作遗留不在主流水线）；反馈合并为日报末尾 Part 4 一封批量邮件（编号填 ⭐1–⭐5，编号经 recommendations 展示序映射；旧逐篇格式兼容收集） | ✅ 已完成（2026-07-29，207 passed） |
-| 批 6 邮件内五星反馈 | 撤销决策 1 零入站端口约束，引入 HTTP 反馈服务：日报每张卡片内嵌 ⭐1–⭐5 链接（`feedback/server.py` /fb 点星即落库、浏览器显示"已反馈"页+关键词表单；/kw 独立关键词入口；`feedback/tokens.py` HMAC 签名防伪造）；未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 回退批 5 批量回信；服务随 run_daily.sh 自动拉起 | ✅ 已完成（2026-07-29，219 passed） |
+| 批 6 邮件内五星反馈 | 撤销决策 1 零入站端口约束，引入 HTTP 反馈服务：日报每张卡片内嵌 ⭐1–⭐5 链接（`feedback/server.py` /fb 点星即落库、浏览器显示"已反馈"页+关键词表单；/kw 独立关键词入口；`feedback/tokens.py` HMAC 签名防伪造）；未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 回退批 5 批量回信；服务随 run_daily.sh 自动拉起。**（2026-07-31 起被 mailto 点星 + `feedback_data/` 文件队列取代，HTTP 服务移除，恢复零入站端口）** | ✅ 已完成（2026-07-29，219 passed） |
 | 批 7 召回与推送质量 | 顶刊直采通道（`sources/top_journals.py`：按 journals.yaml 分层刊名 `"<刊名>"[jour]` 逐刊直抓 PubMed 并入全局池，绕过关键词召回解决全局池零 CNS；`global_pool.fetch_global_pool` 新增 journal_channel 参数；main.py top-N 后按刊名补入通道候选，每用户上限 max_per_user=10）+ 推送下限（`ranker.thresholds.push_floor`：低分论文不进邮件，过滤后为空则当日跳过发信）；配置均在 scoring.yaml `journal_channel` / `ranker.thresholds` | ✅ 已完成（2026-07-29，225 passed） |
 | 批 8 精排权重调整 | recency 权重 10→0 并入 personal（20→30）：journal 30 / personal 30 / lab 20 / method 10 / novelty 10 / recency 0；push_floor 随顶刊得分变化 40→30（不相关 T0 顶刊现仅 journal 30 分，保持露面机会）；recency 维度仍计算，配置调回即恢复 | ✅ 已完成（2026-07-29） |
 | 批 9 bioRxiv 窗口修复 | bioRxiv 按日期区间全量拉取，抓取窗口向前多覆盖一天，修复预印本时间分布导致新文长期捞不到、推送零 bioRxiv（`855728a`） | ✅ 已完成（2026-07-29，225 passed） |

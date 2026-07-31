@@ -3,10 +3,6 @@
 # 两步故意用顺序执行而非 &&：反馈收集失败（如邮箱 IMAP 临时不可用）
 # 不应阻断当天的文献推送。
 cd "$(dirname "$0")"
-# 五星反馈服务（卡片内 ⭐1-5 链接的接收端）：未运行则后台拉起；
-# .env 缺 FEEDBACK_SECRET 时进程会自行退出并记日志，不影响主流水线
-pgrep -f "feedback.server" >/dev/null 2>&1 || \
-  nohup .venv/bin/python -m feedback.server >> logs/feedback_server.log 2>&1 &
 # 节假日判断：0 表示今天是法定节假日，整天跳过（反馈收集也一并跳过，
 # 节后首次运行会收到累积的反馈回信）；否则 DAYS 为回溯天数（覆盖节假日空窗）。
 DAYS=$(.venv/bin/python -m scheduler.holiday)

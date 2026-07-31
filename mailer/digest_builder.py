@@ -3,14 +3,12 @@
 每篇论文一张卡片：默认只显示一句话新闻概要，卡片内 <details> 折叠完整信息
 （作者 / 摘要 / 推荐理由）；不支持 <details> 的邮件客户端会默认全部展开，可读性不受影响。
 
-反馈（两种模式，按配置自动切换）：
-- HTTP 模式（config 含 feedback_base_url 与 feedback_secret）：每张卡片底部内嵌
-  ⭐1-5 星级链接，接收人点击即由 feedback/server.py 落库并显示"已反馈"页；
-  Part 3 收窄为一个"新增关注关键词"入口（/kw 表单）。链接带 HMAC token 防伪造。
-- 回退模式（未配置 base_url/secret）：整封邮件一个"一键反馈"mailto（Part 3），
-  回信主题带 [FB] token 与日期，正文按编号标注 1-5 星、以 "+" 开头的行是新增关键词，
-  由 python -m feedback 收集学习。
-两种模式都要求调用方提供 user_email 且 items 非空。
+反馈入口（全部由 python -m feedback 经 IMAP 收集学习）：
+- 逐篇五星：每张卡片底部内嵌 ⭐1-5 mailto 链接（主题预填
+  "[FB] u=<用户邮箱> p=<论文id> v=<星级>"），接收人点击拉起邮件草稿，发送即完成反馈；
+- 批量标注：整封邮件一个"一键反馈"mailto（Part 3），回信主题带 [FB] token 与日期，
+  正文按编号标注 1-5 星、以 "+" 开头的行是新增关键词。
+两条路汇入同一个反馈收件箱（feedback_email），都要求调用方提供 user_email 且 items 非空。
 """
 
 from pathlib import Path
@@ -18,7 +16,6 @@ from urllib.parse import quote
 
 import yaml
 
-from feedback.tokens import make_token
 from mailer.template_renderer import escape, render
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,8 +27,6 @@ _DEFAULT_CONFIG = {
     "show_keywords": True,
     "show_doi": True,
     "feedback_email": "",
-    "feedback_base_url": "",
-    "feedback_secret": "",
 }
 
 _CATEGORY_CLASS = {
@@ -96,25 +91,10 @@ def _badge(category: str) -> str:
     return f'<span class="badge {cls}">{escape(category or "Reference")}</span>'
 
 
-def _http_mode(cfg: dict) -> bool:
-    """配置了 feedback_base_url + feedback_secret 时走 HTTP 五星反馈服务。"""
-    return bool(cfg.get("feedback_base_url") and cfg.get("feedback_secret"))
-
-
 def _feedback_block(user_email: str, digest_date: str, count: int, cfg: dict) -> str:
-    """Part 3 反馈入口：HTTP 模式收窄为关键词表单链接；回退模式为批量标注 mailto。"""
+    """Part 3 批量标注入口：一封 mailto 按编号标注星级（正文预填编号行与 +关键词 行）。"""
     if not user_email or count <= 0:
         return ""
-    if _http_mode(cfg):
-        base = cfg["feedback_base_url"].rstrip("/")
-        token = make_token(cfg["feedback_secret"], user_email, "kw")
-        href = f"{base}/kw?u={quote(user_email)}&t={token}"
-        return f"""    <h2>Part 3 · 反馈与关键词</h2>
-    <p class="section-sub">在每张卡片下方点 ⭐ 即完成反馈（无需回信）</p>
-    <div class="feedback-box">
-      有希望我们持续跟踪的新方向？<br>
-      <a class="feedback-btn" href="{href}">新增关注关键词</a>
-    </div>"""
     if not cfg["feedback_email"]:
         return ""
     subject = quote(f"[FB] u={user_email} d={digest_date}")
@@ -142,20 +122,18 @@ _RATING_LABELS = {1: "完全不相关", 2: "不太相关", 3: "一般", 4: "比�
 
 
 def _star_row(user_email: str, paper_id, cfg: dict) -> str:
-    """卡片底部 ⭐1-5 反馈链接（HTTP 模式专用）；缺配置或 paper_id 时不渲染。"""
-    if not (_http_mode(cfg) and user_email and paper_id):
+    """卡片底部 ⭐1-5 反馈链接（mailto：点击拉起预填主题的邮件草稿，发送即完成反馈）；
+    未配置 feedback_email、缺 user_email 或 paper_id（dry-run）时不渲染。"""
+    if not (cfg["feedback_email"] and user_email and paper_id):
         return ""
-    base = cfg["feedback_base_url"].rstrip("/")
-    secret = cfg["feedback_secret"]
-    pid = str(paper_id)
     links = []
     for n in (1, 2, 3, 4, 5):
-        token = make_token(secret, user_email, pid, str(n))
-        href = f"{base}/fb?u={quote(user_email)}&p={pid}&v={n}&t={token}"
+        subject = quote(f"[FB] u={user_email} p={paper_id} v={n}")
+        href = f"mailto:{cfg['feedback_email']}?subject={subject}"
         links.append(f'<a class="star" href="{href}" title="{_RATING_LABELS[n]}">⭐{n}</a>')
     return ('<div class="stars"><span class="abs-label">重要性反馈</span>'
             + " ".join(links)
-            + '<span class="stars-hint">点击即提交 · ⭐1 完全不相关 – ⭐5 非常重要</span></div>')
+            + '<span class="stars-hint">点击后发送邮件即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span></div>')
 
 
 def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "") -> str:

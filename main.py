@@ -18,9 +18,8 @@
       分批一次调用评判多篇、批次间并发；按 Final Score 绝对阈值定级
       Must Read / Important / Reference，低于 push_floor 推送下限的不进邮件，
       超过 --limit 时按 Final Score 截断封顶，宁缺毋滥）→ 每日价值总结 → HTML 邮件
-      （卡片内嵌 ⭐1-5 反馈链接，由 python -m feedback.server 收集；
-      未配置 FEEDBACK_BASE_URL/FEEDBACK_SECRET 时回退为批量回信标注，
-      由 python -m feedback 收集学习）；
+      （卡片内嵌 ⭐1-5 mailto 反馈链接 + Part 3 批量标注回信入口，
+      均由 python -m feedback 经 IMAP 收集学习）；
       论文与产物入库 SQLite，推荐记录写入 recommendations 表
       （用户之间去重互不影响）。LLM 日预算耗尽时快速失败，不发空壳邮件。
 
@@ -222,10 +221,8 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
 def main() -> int:
     email_cfg = load_email_config()
     load_dotenv()
+    # 反馈收件箱（卡片 ⭐1-5 mailto 与 Part 3 批量回信都发往这里，由 IMAP 收集）
     email_cfg["feedback_email"] = os.environ.get("DIGEST_FROM_EMAIL", "")
-    # HTTP 五星反馈服务（feedback/server.py）；未配置时邮件回退为批量回信标注
-    email_cfg["feedback_base_url"] = os.environ.get("FEEDBACK_BASE_URL", "").rstrip("/")
-    email_cfg["feedback_secret"] = os.environ.get("FEEDBACK_SECRET", "")
 
     parser = argparse.ArgumentParser(description="每日文献情报流水线")
     parser.add_argument("--user", default=None,

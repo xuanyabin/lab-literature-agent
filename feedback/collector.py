@@ -1,16 +1,17 @@
 """反馈收集（Phase 5）：IMAP 轮询发件邮箱，解析用户的回信标注。
 
 支持两种回信格式，主题都带 [FB] tag：
-1. 批量反馈（B6 起，日报 Part 4 一键反馈）：`[FB] u=<用户邮箱> d=<日期>`，
+1. 批量反馈（B6 起，日报 Part 3 一键反馈）：`[FB] u=<用户邮箱> d=<日期>`，
    正文按编号标注星级（如 "03: 5"，编号对应该日邮件里的论文顺序，
    经 recommendations 表映射回 paper_id）；
-2. 逐篇反馈（旧版卡片链接，向后兼容）：`[FB] u=<用户邮箱> p=<论文id> v=<1-5>`。
+2. 逐篇反馈（日报卡片 ⭐1-5 mailto 链接）：`[FB] u=<用户邮箱> p=<论文id> v=<1-5>`。
 正文以 "+" 开头的行是新增检索词（B4，如 "+CRISPR, 单细胞测序"，逗号兼容
 中英文），解析后交给 term_expander.add_feedback_terms 追加到该用户自动词表。
-本模块轮询收件箱中未读的 "[FB]" 回信，解析后写入 feedback 表并标记已读；
-无法解析的回信记录日志后同样标记已读（避免毒消息反复重试）。回信主题中的
-用户标注可被任何人填写，因此记录前必须校验实际发件人与标注用户一致，防止
-伪造回信污染他人学习词表。
+本模块轮询收件箱中未读的 "[FB]" 回信，解析后双写——feedback_data/pending
+文件队列（学习闭环的数据源，见 feedback/store.py）与 feedback 表（周/月报
+get_feedback_since 统计用）——并标记已读；无法解析的回信记录日志后同样标记
+已读（避免毒消息反复重试）。回信主题中的用户标注可被任何人填写，因此记录前
+必须校验实际发件人与标注用户一致，防止伪造回信污染他人学习词表。
 
 IMAP 配置来自 .env：IMAP_HOST 必填（缺失时跳过收集并告警）；
 IMAP_PORT 默认 993；IMAP_USER / IMAP_PASSWORD 缺省回退 SMTP_USER / SMTP_PASSWORD。
@@ -23,10 +24,12 @@ import imaplib
 import logging
 import os
 import re
+from pathlib import Path
 
 from dotenv import load_dotenv
 
 from database.db import get_recommendation_paper_ids, save_feedback
+from feedback import store
 from processing.term_expander import add_feedback_terms
 
 logger = logging.getLogger(__name__)
@@ -128,8 +131,9 @@ def parse_added_terms(msg: email.message.Message) -> list[str]:
     return terms
 
 
-def collect(conn, imap_factory=imaplib.IMAP4_SSL) -> int:
-    """轮询收件箱，把 "[FB]" 回信写入 feedback 表，返回新记录的条数。"""
+def collect(conn, imap_factory=imaplib.IMAP4_SSL,
+            base_dir: Path = store.DEFAULT_BASE_DIR) -> int:
+    """轮询收件箱，把 "[FB]" 回信双写入反馈文件队列与 feedback 表，返回新记录的条数。"""
     load_dotenv()
     host = os.environ.get("IMAP_HOST", "")
     if not host:
@@ -170,11 +174,10 @@ def collect(conn, imap_factory=imaplib.IMAP4_SSL) -> int:
                                               (parsed["paper_id"],)).fetchone()
                         if not exists:
                             logger.warning("反馈指向不存在的论文 id=%d，跳过", parsed["paper_id"])
-                        elif save_feedback(conn, parsed["user_email"], parsed["paper_id"],
-                                           parsed["value"], parsed["reason"]):
+                        elif _record_one(conn, parsed, base_dir):
                             recorded += 1
                     else:
-                        recorded += _record_batch(conn, batch, msg_id)
+                        recorded += _record_batch(conn, batch, msg_id, base_dir)
             client.store(msg_id, "+FLAGS", "\\Seen")
         return recorded
     finally:
@@ -184,8 +187,17 @@ def collect(conn, imap_factory=imaplib.IMAP4_SSL) -> int:
             logger.debug("IMAP logout 失败（连接可能已断开）", exc_info=True)
 
 
-def _record_batch(conn, batch: dict, msg_id: bytes) -> int:
-    """把批量反馈的编号星级映射回论文并写入 feedback 表，返回新记录条数。"""
+def _record_one(conn, entry: dict, base_dir: Path) -> bool:
+    """双写一条反馈：pending 文件队列（学习闭环数据源）+ feedback 表（周/月报统计），
+    返回是否为新记录（以文件队列为准；db 侧 INSERT OR IGNORE 幂等）。"""
+    new = store.save_pending(entry, base_dir) is not None
+    save_feedback(conn, entry["user_email"], entry["paper_id"], entry["value"],
+                  entry.get("reason", ""))
+    return new
+
+
+def _record_batch(conn, batch: dict, msg_id: bytes, base_dir: Path) -> int:
+    """把批量反馈的编号星级映射回论文并双写记录，返回新记录条数。"""
     paper_ids = get_recommendation_paper_ids(conn, batch["user_email"], batch["date"])
     if not paper_ids:
         logger.warning("批量反馈（msgid %s）对应 %s 无推荐记录（用户 %s），跳过",
@@ -197,7 +209,8 @@ def _record_batch(conn, batch: dict, msg_id: bytes) -> int:
             logger.warning("批量反馈编号 %02d 超出 %s 推送范围（共 %d 篇），跳过",
                            idx, batch["date"], len(paper_ids))
             continue
-        if save_feedback(conn, batch["user_email"], paper_ids[idx - 1],
-                         value, batch["reason"]):
+        entry = {"user_email": batch["user_email"], "paper_id": paper_ids[idx - 1],
+                 "value": value, "reason": batch["reason"], "source": "batch"}
+        if _record_one(conn, entry, base_dir):
             recorded += 1
     return recorded

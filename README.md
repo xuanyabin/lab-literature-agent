@@ -34,6 +34,33 @@ pip install -r requirements.txt
 cp .env.example .env   # 填入 OPENAI_API_KEY 与 SMTP 配置
 ```
 
+## GitHub 部署（定时流水线）
+
+日/周/月流水线由 GitHub Actions 托管（`.github/workflows/`，取代本地 cron）：
+
+- `daily.yml`：每天 UTC 23:30（北京时间 07:30）跑反馈收集 + 每日推荐
+- `weekly.yml`：每周日 UTC 23:53（北京时间周一 07:53）跑周报
+- `monthly.yml`：每月 1 日 UTC 00:26（北京时间 08:26）跑月报
+
+运行状态（`literature_agent.db`、`config/users/auto_terms/`、`logs/.llm_usage.json`）
+不进 main 分支，由 `scripts/pull_state.sh` / `scripts/push_state.sh` 以孤儿 commit
+强推到 `state` 分支托管；`feedback_data/`（用户反馈小文件）每日提交回 main。
+
+**仓库必须设为 Private**：state 分支含 SQLite 主库（用户邮箱、反馈记录）等敏感数据。
+
+一次性部署步骤：
+
+1. 在 GitHub 建 **Private** 仓库并 push main 分支
+2. Settings → Secrets and variables → Actions，配置 12 个 Repository Secrets
+   （与 `.env.example` 同名）：`OPENAI_API_KEY`、`OPENAI_MODEL`、`OPENAI_BASE_URL`、
+   `SMTP_HOST`、`SMTP_PORT`、`SMTP_USER`、`SMTP_PASSWORD`、`DIGEST_FROM_EMAIL`、
+   `IMAP_HOST`、`IMAP_PORT`、`IMAP_USER`、`IMAP_PASSWORD`
+3. Actions 页手动触发 `daily-pipeline`（workflow_dispatch）首跑，自动创建 state 分支
+4. 本地停用原 crontab：`crontab -e` 删除三条（每天 07:30 `run_daily.sh`、
+   周一 07:53 `run_weekly.sh`、每月 1 日 07:26 `run_monthly.sh`）
+
+本地 `run_daily.sh` / `run_weekly.sh` / `run_monthly.sh` 保留为手动备用，可继续使用。
+
 ## 配置驱动原则
 
 - 新增用户：仅新增 `config/users/xxx.yaml`

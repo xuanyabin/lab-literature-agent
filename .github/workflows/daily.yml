@@ -1,0 +1,105 @@
+# 每日文献推荐流水线（取代本地 cron：每天 07:30 run_daily.sh）
+# GitHub Actions cron 只支持 UTC：23:30 UTC = 北京时间 07:30
+name: daily-pipeline
+
+on:
+  schedule:
+    - cron: "30 23 * * *"
+  workflow_dispatch:  # 允许 Actions 页手动触发（首跑自动建 state 分支）
+
+permissions:
+  contents: write  # 需要 push main（feedback_data 回流）与强推 state 分支
+
+concurrency:
+  group: daily-pipeline
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # pull_state / push_state / feedback 回流需要完整远端信息
+
+      - name: Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 还原运行状态（state 分支）
+        run: bash scripts/pull_state.sh
+
+      - name: 节假日守卫
+        id: holiday
+        run: |
+          DAYS=$(python -m scheduler.holiday)
+          echo "days=$DAYS" >> "$GITHUB_OUTPUT"
+          echo "回溯天数 DAYS=$DAYS（0 = 法定节假日，当日整体跳过）"
+
+      - name: 反馈收集与学习
+        if: steps.holiday.outputs.days != '0'
+        # 对应本地 run_daily.sh 的顺序执行语义：反馈失败（如 IMAP 临时不可用）不阻断推送
+        continue-on-error: true
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          DIGEST_FROM_EMAIL: ${{ secrets.DIGEST_FROM_EMAIL }}
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          IMAP_PORT: ${{ secrets.IMAP_PORT }}
+          IMAP_USER: ${{ secrets.IMAP_USER }}
+          IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
+        run: python -m feedback
+
+      - name: 每日推荐主流程
+        if: steps.holiday.outputs.days != '0'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          DIGEST_FROM_EMAIL: ${{ secrets.DIGEST_FROM_EMAIL }}
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          IMAP_PORT: ${{ secrets.IMAP_PORT }}
+          IMAP_USER: ${{ secrets.IMAP_USER }}
+          IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
+        run: python main.py --days "${{ steps.holiday.outputs.days }}"
+
+      - name: 反馈数据回流 main
+        if: steps.holiday.outputs.days != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add feedback_data/
+          if git diff --cached --quiet; then
+            echo "feedback_data 无变更，跳过提交"
+          else
+            git commit -m "chore(feedback): 每日反馈数据回流"
+            git pull --rebase origin main
+            git push
+          fi
+
+      - name: 推送运行状态（state 分支）
+        if: steps.holiday.outputs.days != '0'
+        run: bash scripts/push_state.sh
+
+      - name: 上传日志
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-logs-${{ github.run_id }}
+          path: logs/
+          if-no-files-found: ignore

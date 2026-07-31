@@ -1,0 +1,73 @@
+# 每月情报报告（取代本地 cron：每月 1 日 07:26 run_monthly.sh）
+# GitHub Actions cron 只支持 UTC：每月 1 日 00:26 UTC = 北京时间 08:26，
+# 比本地原时间（07:26）晚 1 小时，错开月初 UTC 0 点整的调度高峰以降低延迟。
+name: monthly-pipeline
+
+on:
+  schedule:
+    - cron: "26 0 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write  # 强推 state 分支
+
+concurrency:
+  group: monthly-pipeline
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # pull_state / push_state 需要完整远端信息
+
+      - name: Python 3.13
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: 安装依赖
+        run: pip install -r requirements.txt
+
+      - name: 还原运行状态（state 分支）
+        run: bash scripts/pull_state.sh
+
+      - name: 节假日守卫（法定节假日当月月报跳过，workflow 直接成功结束）
+        id: holiday
+        run: |
+          DAYS=$(python -m scheduler.holiday)
+          echo "days=$DAYS" >> "$GITHUB_OUTPUT"
+          echo "DAYS=$DAYS（0 = 法定节假日，当月月报跳过）"
+
+      - name: 每月情报报告（聚合最近 30 天）
+        if: steps.holiday.outputs.days != '0'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
+          OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          DIGEST_FROM_EMAIL: ${{ secrets.DIGEST_FROM_EMAIL }}
+          IMAP_HOST: ${{ secrets.IMAP_HOST }}
+          IMAP_PORT: ${{ secrets.IMAP_PORT }}
+          IMAP_USER: ${{ secrets.IMAP_USER }}
+          IMAP_PASSWORD: ${{ secrets.IMAP_PASSWORD }}
+        run: python weekly_report.py --days 30
+
+      - name: 推送运行状态（state 分支）
+        if: steps.holiday.outputs.days != '0'
+        run: bash scripts/push_state.sh
+
+      - name: 上传日志
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: monthly-logs-${{ github.run_id }}
+          path: logs/
+          if-no-files-found: ignore

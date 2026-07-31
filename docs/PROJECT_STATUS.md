@@ -1,4 +1,4 @@
-# 项目状态（截至 2026-07-28）
+# 项目状态（截至 2026-07-31）
 
 Lab Literature Intelligence System：面向多用户的个性化文献情报平台。
 PROJECT.md 规划的 Phase 0–6 已全部完成，V4 粗筛改造进行中（已完成：去期刊化 + 等权 +
@@ -6,7 +6,13 @@ PROJECT.md 规划的 Phase 0–6 已全部完成，V4 粗筛改造进行中（�
 
 ## 当前架构
 
-### 每日流水线（`main.py`，cron 经 `run_daily.sh` 触发）
+### 每日流水线（`main.py`，GitHub Actions `.github/workflows/daily.yml` 触发）
+
+调度：每天 UTC `30 23 * * *`（北京时间 07:30，对齐原本地 cron），支持 workflow_dispatch 手动触发。
+运行状态托管：`scripts/pull_state.sh` 运行前从孤儿 `state` 分支还原
+`literature_agent.db`、`config/users/auto_terms/`、`logs/.llm_usage.json`，
+结束后 `scripts/push_state.sh` 以单 commit 强推回 state 分支（历史不累积）；
+`feedback_data/`（用户反馈小文件）每日提交回 main。本地 `run_daily.sh` 保留为手动备用。
 
 ```
 python -m feedback          # 先跑：IMAP 收集反馈回信 → 学习闭环更新 learned 词表
@@ -23,7 +29,12 @@ python main.py              # 再跑：对每个 active 用户（config/users/*.
   └─ 每日价值总结 → 三段式 HTML 邮件（卡片带反馈链接，回信即标注）
 ```
 
-### 每周流水线（`weekly_report.py`，cron 经 `run_weekly.sh` 触发，建议周一）
+### 每周流水线（`weekly_report.py`，GitHub Actions `.github/workflows/weekly.yml` 触发）
+
+调度：每周日 UTC `53 23 * * 0`（北京时间周一 07:53）；月报为 `.github/workflows/monthly.yml`，
+每月 1 日 UTC `26 0 1 * *`（北京时间 08:26，比本地原时间晚 1 小时以错开月初调度高峰），
+跑 `weekly_report.py --days 30`。周/月报不学习反馈（无 feedback 步骤与 feedback_data 回流），
+但同样经 pull_state / push_state 读写 state 分支（推荐记录写 db）。
 
 ```
 对每个 active 用户：聚合 SQLite 最近 7 天推荐记录（不重新检索分析）
@@ -68,7 +79,8 @@ python main.py              # 再跑：对每个 active 用户（config/users/*.
 - 周报趋势总结只读一句话新闻（控制 token），不参考原始摘要，深度有限
 - 交付与反馈唯一通道是邮件，无 Web 端查看入口
 - SQLite 单文件存储，不支持多机部署或并发写
-- 日报/周报 cron 需手动 `crontab -e` 安装，仓库只提供 `run_daily.sh` / `run_weekly.sh`
+- 定时调度已迁移 GitHub Actions（仓库需 Private）：运行状态靠 state 分支单 commit 强推托管，
+  强推丢失风险存在（无历史）；SMTP 587 出站在 GitHub runner 一般可用，若被拦截需改用 API 发信
 
 ## 下一步计划
 

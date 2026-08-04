@@ -28,7 +28,7 @@ def main() -> int:
 
     from database.db import connect
     from feedback import store
-    from feedback.collector import collect
+    from feedback.collector import collect, collect_keyword_queue
     from feedback.learner import learn_from_feedback
     from feedback.vocab import load_learned_config
     from main import apply_lab_profile, load_lab_profile, load_users
@@ -39,6 +39,7 @@ def main() -> int:
             log.info("learn-only：跳过 IMAP 收集")
         else:
             log.info("收集到 %d 条新反馈", collect(conn))
+        log.info("网页端关键词队列：%d 条新增关键词入词表", collect_keyword_queue())
 
         lab = load_lab_profile()
         users = [(slug, apply_lab_profile(user, lab)) for slug, user in load_users()]

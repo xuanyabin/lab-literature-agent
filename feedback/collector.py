@@ -15,6 +15,12 @@ get_feedback_since 统计用）——并标记已读；无法解析的回信记�
 
 IMAP 配置来自 .env：IMAP_HOST 必填（缺失时跳过收集并告警）；
 IMAP_PORT 默认 993；IMAP_USER / IMAP_PASSWORD 缺省回退 SMTP_USER / SMTP_PASSWORD。
+
+另有网页端关键词队列（collect_keyword_queue）：Cloudflare Worker
+（worker/feedback.js /kw 端点）把网页版报告里用户直接填写的关键词直写仓库
+feedback_data/keywords/pending/（独立目录，不进星标 pending 队列，文件契约见
+Worker 文件头注释），本函数解析后同样交给 add_feedback_terms 落地到该用户
+自动词表 feedback_added——与邮件 "+关键词" 行完全同一通道，次日检索生效。
 """
 
 import email
@@ -26,11 +32,12 @@ import os
 import re
 from pathlib import Path
 
+import yaml
 from dotenv import load_dotenv
 
 from database.db import get_recommendation_paper_ids, save_feedback
 from feedback import store
-from processing.term_expander import add_feedback_terms
+from processing.term_expander import AUTO_TERMS_DIR, USERS_DIR, add_feedback_terms
 
 logger = logging.getLogger(__name__)
 
@@ -129,6 +136,45 @@ def parse_added_terms(msg: email.message.Message) -> list[str]:
             continue
         terms.extend(part.strip() for part in re.split(r"[,，]", ln[1:]) if part.strip())
     return terms
+
+
+KEYWORD_QUEUE_DIR = store.DEFAULT_BASE_DIR / "keywords"
+
+
+def collect_keyword_queue(base_dir: Path = KEYWORD_QUEUE_DIR,
+                          users_dir: Path = USERS_DIR,
+                          cache_dir: Path = AUTO_TERMS_DIR) -> int:
+    """消费网页端（Worker /kw）直写的关键词队列 feedback_data/keywords/pending/，
+    返回实际新增关键词的文件条数。
+
+    每个文件含 user_email / keyword（逗号兼容中英文，可多个词，切分后与邮件
+    "+关键词" 行同语义）/ date / source / timestamp；清洗去重落盘由
+    add_feedback_terms 负责。处理后归档 keywords/processed/YYYY-MM/（复用
+    store.mark_processed）；损坏文件记日志后留在原地人工排查（同 store.load_pending
+    语义）；缺字段或用户不匹配的文件归档跳过（避免毒消息反复重试）。
+    """
+    pending = Path(base_dir) / "pending"
+    if not pending.is_dir():
+        return 0
+    applied = 0
+    for path in sorted(pending.glob("*.yaml")):
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError:
+            logger.warning("关键词反馈文件损坏，跳过：%s", path)
+            continue
+        user_email = str(data.get("user_email") or "").strip()
+        terms = [t.strip() for t in re.split(r"[,，]", str(data.get("keyword") or ""))
+                 if t.strip()]
+        if not user_email or not terms:
+            logger.warning("关键词反馈文件缺 user_email/keyword 字段，归档跳过：%s", path)
+        else:
+            added = add_feedback_terms(user_email, terms, users_dir, cache_dir)
+            if added:
+                applied += 1
+                logger.info("网页端新增关键词已入词表（%s）：%s", user_email, "、".join(added))
+        store.mark_processed(path, base_dir)
+    return applied
 
 
 def collect(conn, imap_factory=imaplib.IMAP4_SSL,

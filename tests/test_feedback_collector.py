@@ -6,7 +6,7 @@ import pytest
 import yaml
 
 from database.db import connect, save_paper, save_recommendation
-from feedback.collector import (collect, parse_added_terms,
+from feedback.collector import (collect, collect_keyword_queue, parse_added_terms,
                                 parse_batch_feedback_message, parse_feedback_message)
 from sources.paper import Paper
 
@@ -317,3 +317,79 @@ def test_collect_batch_plus_terms_still_work(conn, monkeypatch, store_dir):
     recorded, _ = _run_collect(conn, [msg], monkeypatch, store_dir)
     assert recorded == 1
     assert calls == [("a@x.com", ["CRISPR"])]  # 单独的 "+" 解析为空，不产生词
+
+
+# ---------- 网页端关键词队列（Worker /kw 直写 feedback_data/keywords/pending/） ----------
+
+
+def _kw_dir(tmp_path):
+    """隔离的网页端关键词队列目录 + 用户目录/自动词表缓存目录。"""
+    users_dir = tmp_path / "users"
+    users_dir.mkdir()
+    (users_dir / "user001.yaml").write_text("email: a@x.com\n", encoding="utf-8")
+    return tmp_path / "feedback_data" / "keywords", users_dir, tmp_path / "auto_terms"
+
+
+def _write_kw(base_dir, name, record=None, raw=None):
+    pending = base_dir / "pending"
+    pending.mkdir(parents=True, exist_ok=True)
+    text = raw if raw is not None else yaml.safe_dump(record, allow_unicode=True)
+    (pending / name).write_text(text, encoding="utf-8")
+
+
+def test_keyword_queue_applies_terms_and_archives(tmp_path):
+    """正常关键词文件：切分（逗号兼容中英文）→ 清洗入自动词表 feedback_added → 归档。"""
+    base_dir, users_dir, cache_dir = _kw_dir(tmp_path)
+    _write_kw(base_dir, "kw_u00000000_abc.yaml", {
+        "user_email": "a@x.com", "keyword": "CRISPR, 单细胞测序",
+        "date": "2026-08-04", "source": "keyword_webhook",
+        "timestamp": "2026-08-04T01:02:03+00:00",
+    })
+    applied = collect_keyword_queue(base_dir, users_dir, cache_dir)
+    assert applied == 1
+    auto = yaml.safe_load((cache_dir / "user001.yaml").read_text(encoding="utf-8"))
+    assert auto["feedback_added"] == ["CRISPR", "单细胞测序"]
+    assert list((base_dir / "pending").glob("*.yaml")) == []
+    assert [p.name for p in (base_dir / "processed" / "2026-08").glob("*.yaml")] == \
+        ["kw_u00000000_abc.yaml"]
+
+
+def test_keyword_queue_corrupt_file_stays(tmp_path):
+    """损坏文件记日志后留在 pending 原地（同 store.load_pending 语义），不阻塞后续文件。"""
+    base_dir, users_dir, cache_dir = _kw_dir(tmp_path)
+    _write_kw(base_dir, "kw_bad.yaml", raw="{ not: valid: yaml: [")
+    _write_kw(base_dir, "kw_ok.yaml", {
+        "user_email": "a@x.com", "keyword": "atac-seq", "date": "2026-08-04",
+        "timestamp": "2026-08-04T01:02:03+00:00",
+    })
+    applied = collect_keyword_queue(base_dir, users_dir, cache_dir)
+    assert applied == 1
+    assert [p.name for p in (base_dir / "pending").glob("*.yaml")] == ["kw_bad.yaml"]
+
+
+def test_keyword_queue_missing_fields_archived(tmp_path):
+    """缺 user_email/keyword 的文件归档跳过（避免毒消息反复重试），不入词表。"""
+    base_dir, users_dir, cache_dir = _kw_dir(tmp_path)
+    _write_kw(base_dir, "kw_empty.yaml", {"user_email": "a@x.com", "keyword": ""})
+    applied = collect_keyword_queue(base_dir, users_dir, cache_dir)
+    assert applied == 0
+    assert list((base_dir / "pending").glob("*.yaml")) == []
+    assert not (cache_dir / "user001.yaml").exists()
+
+
+def test_keyword_queue_unknown_user_archived(tmp_path, caplog):
+    """email 不匹配任何用户 yaml 时归档跳过（add_feedback_terms 自身记 warning）。"""
+    base_dir, users_dir, cache_dir = _kw_dir(tmp_path)
+    _write_kw(base_dir, "kw_unknown.yaml", {
+        "user_email": "ghost@x.com", "keyword": "CRISPR",
+        "timestamp": "2026-08-04T01:02:03+00:00",
+    })
+    applied = collect_keyword_queue(base_dir, users_dir, cache_dir)
+    assert applied == 0
+    assert list((base_dir / "pending").glob("*.yaml")) == []
+
+
+def test_keyword_queue_no_pending_dir(tmp_path):
+    """队列目录不存在（从未有网页端提交）时静默返回 0。"""
+    base_dir, users_dir, cache_dir = _kw_dir(tmp_path)
+    assert collect_keyword_queue(base_dir, users_dir, cache_dir) == 0

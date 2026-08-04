@@ -9,7 +9,7 @@
 
 网页版完整报告（build_page_html，模板 daily_page.html，发布到 GitHub Pages）：
 总览块 + 完整卡片（<details> 默认折叠，浏览器可展开收起）+ 今日价值总结 +
-新增关键词入口（mailto 回信，"+" 开头的行由 python -m feedback 收集学习）。
+新增关键词入口（webhook 配置时页内直接填写提交，否则降级 mailto 回信）。
 
 反馈入口（⭐1-5 与新增关键词最终都由 python -m feedback 学习闭环消费）：
 - 逐篇五星：卡片底部 ⭐1-5，两种模式按优先级取一——
@@ -22,7 +22,10 @@
     点击拉起邮件草稿，发送后经 IMAP 收集（webhook 未配置时的降级通道）；
 - 批量标注（仅完整邮件）：整封邮件一个"一键反馈"mailto（Part 3），回信主题带
   [FB] token 与日期，正文按编号标注 1-5 星、以 "+" 开头的行是新增关键词；
-  网页版对应新增关键词入口 mailto（正文只保留 + 关键词行）。
+- 新增关键词（仅网页版）：webhook 配置时页内输入框直接提交，JS fetch Worker
+  /kw 端点（签名 msg 为 "<邮箱>|<日期>"，见 _webhook_keyword_url），Worker 直写
+  feedback_data/keywords/pending/，由 python -m feedback 的 collect_keyword_queue
+  消费进自动词表；webhook 未配置时降级 mailto（正文只保留 + 关键词行）。
 两条路都要求调用方提供 user_email 且 items 非空。
 """
 
@@ -245,11 +248,37 @@ def _page_star_row(user_email: str, paper_id, cfg: dict) -> str:
             + '<span class="stars-status"></span></div>')
 
 
+def _webhook_keyword_url(base_url: str, secret: str, user_email: str, digest_date: str) -> str:
+    """网页版新增关键词提交链接（不含关键词本体，页内 JS 提交时追加 &k=<关键词>）。
+    签名：HMAC-SHA256(key=FEEDBACK_SECRET, msg="<邮箱>|<日期>") 取 hex 前 16 位——
+    不覆盖关键词内容（用户运行时输入，页面生成时无法预知），与 worker/feedback.js
+    /kw 端点的校验算法必须严格一致，改动需两侧同步。"""
+    msg = f"{user_email}|{digest_date}".encode("utf-8")
+    sig = hmac.new(secret.encode("utf-8"), msg, hashlib.sha256).hexdigest()[:16]
+    return (f"{base_url.rstrip('/')}/kw?u={quote(str(user_email))}"
+            f"&d={quote(str(digest_date))}&s={sig}")
+
+
 def _keyword_entry(user_email: str, digest_date: str, cfg: dict) -> str:
-    """网页版新增关键词入口：mailto 回信（正文 "+" 开头的行由 python -m feedback
-    收集学习；说明行沿用"如需新增关键词"前缀，collector 会过滤掉它）。
-    未配 feedback_email 或缺 user_email 时不渲染。"""
-    if not (user_email and cfg["feedback_email"]):
+    """网页版新增关键词入口：webhook（feedback_webhook_url + feedback_secret 均配置）
+    优先——页内输入框直接填写提交，JS fetch Worker /kw 无感记录（签名 URL 预算好
+    嵌入 data-url），Worker 直写仓库关键词队列，次日检索生效；webhook 未配置时降级
+    mailto 回信（正文 "+" 开头的行由 python -m feedback 收集学习；说明行沿用
+    "如需新增关键词"前缀，collector 会过滤掉它）。两者都未配置或缺 user_email 时不渲染。"""
+    if not user_email:
+        return ""
+    if cfg["feedback_webhook_url"] and cfg["feedback_secret"]:
+        url = _webhook_keyword_url(cfg["feedback_webhook_url"], cfg["feedback_secret"],
+                                   user_email, digest_date)
+        return f"""    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="{escape(url)}">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>"""
+    if not cfg["feedback_email"]:
         return ""
     subject = quote(f"[FB] u={user_email} d={digest_date}")
     body = quote("\n".join([

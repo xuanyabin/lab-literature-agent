@@ -1,8 +1,22 @@
 /**
- * 星标一键反馈 Worker：GET /fb?u=<邮箱>&p=<论文id>&v=<1-5>&s=<签名>
+ * 反馈 Worker，两个端点：
+ *
+ * 1) 星标一键反馈：GET /fb?u=<邮箱>&p=<论文id>&v=<1-5>&s=<签名>
  * 校验 HMAC 签名后用 GitHub API 把反馈 YAML 提交到仓库 main 的
  * feedback_data/pending/；每日流水线 checkout 时随 main 带回，
  * 由 python -m feedback 的学习闭环直接消费（与 IMAP 收集的反馈同一队列）。
+ *
+ * 2) 网页版新增关键词：GET /kw?u=<邮箱>&d=<日期>&k=<关键词>&s=<签名>
+ * 校验签名后把关键词 YAML 提交到 feedback_data/keywords/pending/（独立目录，
+ * 与星标 pending 队列互不干扰），由 python -m feedback 的
+ * feedback/collector.py collect_keyword_queue 消费：清洗去重后经
+ * processing/term_expander.add_feedback_terms 追加到该用户自动词表的
+ * feedback_added，次日检索即生效（与邮件 "+关键词" 行同一落地通道）。
+ * 文件名 kw_u<sha256(邮箱) 前 8 位>_<sha256(关键词) 前 12 位>.yaml——同一
+ * （用户, 关键词）重复提交幂等；关键词本身只进文件内容不进文件名。
+ * 签名 msg 为 "<邮箱>|<日期>"，不覆盖关键词内容（关键词是用户运行时输入，
+ * 页面生成时无法预知；与星标同理，签名 URL 本身即凭证）——与
+ * mailer/digest_builder.py 的 _webhook_keyword_url 必须严格一致，改动需两侧同步。
  *
  * 响应两种模式（签名校验与幂等逻辑两模式完全一致）：
  *   - HTML 确认页（默认）：邮件里星标链接点开看到的中文结果页（向后兼容旧邮件）；
@@ -40,6 +54,9 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders() });
     }
     const json = wantsJson(request, url);
+    if (url.pathname === "/kw") {
+      return handleKeyword(env, url, json);
+    }
     if (url.pathname !== "/fb") {
       return respond(404, json, "页面不存在");
     }
@@ -87,6 +104,52 @@ export default {
     }
   },
 };
+
+// /kw 新增关键词（网页版报告页内 fetch）：签名 msg "<邮箱>|<日期>"（见文件头注释），
+// 落盘 feedback_data/keywords/pending/，由 collect_keyword_queue 消费进自动词表
+async function handleKeyword(env, url, json) {
+  const u = url.searchParams.get("u") || "";
+  const d = url.searchParams.get("d") || "";
+  const k = (url.searchParams.get("k") || "").trim();
+  const s = (url.searchParams.get("s") || "").toLowerCase();
+
+  // 参数白名单校验（k 只进文件内容不进文件名，限长防滥用；清洗/去重在 Python 消费侧）
+  if (!u.includes("@") || !/^\d{4}-\d{2}-\d{2}$/.test(d) || !k || k.length > 200 ||
+      !/^[0-9a-f]{16}$/.test(s)) {
+    return respond(400, json, "链接参数无效", "请从当日网页版报告底部的新增关键词入口提交。");
+  }
+  if (!env.GITHUB_TOKEN || !env.GITHUB_REPO || !env.FEEDBACK_SECRET) {
+    return respond(500, json, "服务未配置完成", "Worker 缺少环境变量，请联系管理员。");
+  }
+  const expected = await hmacHex16(env.FEEDBACK_SECRET, `${u}|${d}`);
+  if (!timingSafeEqual(expected, s)) {
+    return respond(403, json, "签名无效", "该链接未通过校验，请从当日网页版报告重新提交。");
+  }
+
+  // 文件名只含哈希（关键词可能含任意字符）；字段约定见文件头注释
+  const name = `kw_u${(await sha256Hex(u)).slice(0, 8)}_${(await sha256Hex(k)).slice(0, 12)}.yaml`;
+  const yaml = [
+    `user_email: ${JSON.stringify(u)}`,
+    `keyword: ${JSON.stringify(k)}`,
+    `date: ${JSON.stringify(d)}`,
+    `source: "keyword_webhook"`,
+    `timestamp: ${JSON.stringify(new Date().toISOString())}`,
+  ].join("\n") + "\n";
+
+  const branch = env.GITHUB_BRANCH || "main";
+  try {
+    const result = await commitToGitHub(
+      env, `feedback_data/keywords/pending/${name}`, yaml, branch, "feedback: 新增关键词");
+    const detail = result === "skipped"
+      ? "相同关键词已提交过，无需重复提交。"
+      : "次日检索即生效，可随时继续补充。";
+    return respond(200, json, "关键词已提交，次日检索生效", detail,
+                   { keyword: k, result });
+  } catch (err) {
+    console.error("GitHub 提交失败：", err);
+    return respond(502, json, "提交失败，请稍后重试", "反馈服务暂时不可用，稍后再提交一次即可。");
+  }
+}
 
 // 网页版报告（GitHub Pages）页内 fetch 跨域调用所需；签名即凭证，放开 Origin 无额外风险
 function corsHeaders() {

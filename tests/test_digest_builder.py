@@ -313,10 +313,38 @@ def test_page_keyword_entry_mailto():
     assert "mailto:bot@x.com?subject=%5BFB%5D" in html and "d%3D2025-07-22" in html
 
 
+def _keyword_sig(user_email, digest_date, secret="s3cret"):
+    """与 worker/feedback.js /kw 一致的本地签名：msg 为 "<邮箱>|<日期>"。"""
+    msg = f"{user_email}|{digest_date}".encode("utf-8")
+    return hmac.new(secret.encode("utf-8"), msg, hashlib.sha256).hexdigest()[:16]
+
+
+def test_page_keyword_entry_webhook_signed_url():
+    """webhook 配置时渲染页内输入框 + 提交按钮（签名 /kw URL 嵌入 data-url），
+    不再渲染 mailto 降级入口。"""
+    cfg = {"feedback_webhook_url": "https://fb.workers.dev", "feedback_secret": "s3cret"}
+    html = _build_page([{**make_item(), "paper_id": 42}], config=cfg)
+    sig = _keyword_sig("a@x.com", "2025-07-22")
+    assert 'class="kw-input"' in html and 'class="feedback-btn kw-submit"' in html
+    assert (f'data-url="https://fb.workers.dev/kw?u=a%40x.com&amp;d=2025-07-22&amp;s={sig}"'
+            in html)
+    assert "&k=" in html and "已提交，次日检索生效" in html and "提交失败，请重试" in html
+    assert "mailto:bot@x.com?subject=%5BFB%5D" not in html
+
+
+def test_page_keyword_entry_webhook_without_secret_falls_back_to_mailto():
+    """webhook 只配了一半（缺 secret）时按未配置处理，降级 mailto。"""
+    html = _build_page([{**make_item(), "paper_id": 42}],
+                       config={"feedback_webhook_url": "https://fb.workers.dev"})
+    assert "mailto:bot@x.com?subject=%5BFB%5D" in html
+    assert 'class="kw-submit"' not in html
+
+
 def test_page_keyword_entry_absent_without_feedback_email():
     html = build_page_html("轩亚冰", "2025-07-22", [make_item()], "总结。", {},
                            user_email="a@x.com")
-    assert "新增关键词" not in html
+    assert "<h2>新增关键词</h2>" not in html
+    assert 'class="kw-submit"' not in html and "mailto:" not in html
 
 
 def test_page_stars_fall_back_to_mailto_without_webhook():

@@ -1,7 +1,8 @@
 import hashlib
 import hmac
+from pathlib import Path
 
-from mailer.digest_builder import build_digest_html
+from mailer.digest_builder import build_digest_html, build_page_html
 from sources.paper import Paper
 
 
@@ -45,10 +46,17 @@ def test_digest_merged_card_and_summary_parts():
 
 def test_card_collapsible_details_and_title_appears_once():
     html = build([make_item()])
-    assert '<details class="card-details">' in html
-    assert "展开详情" in html
+    assert '<details class="card-details" open>' in html
+    assert "详情 · 作者 / 摘要 / 推荐理由" in html
     # 合并后标题只出现一次（旧版新闻表与详情卡各出现一次）
     assert html.count("Atlas of &lt;Apis&gt; &amp; friends") == 1
+
+
+def test_daily_template_keeps_native_details_marker_for_wps():
+    template = Path("templates/daily_digest.html").read_text(encoding="utf-8")
+    assert "display: list-item" in template
+    assert "::-webkit-details-marker" not in template
+    assert "list-style: none" not in template
 
 
 def test_digest_contains_full_card_fields():
@@ -245,3 +253,79 @@ def test_star_links_fall_back_to_mailto_when_webhook_incomplete():
     assert ("mailto:bot@x.com?subject=%5BFB%5D%20u%3Da%40x.com%20p%3D42%20v%3D1"
             in html)
     assert "点击后发送邮件即完成反馈" in html
+
+
+# ---------- 瘦身邮件（pages_base_url 已配置）与网页版完整报告 ----------
+
+WEB_URL = "https://xuanyabin.github.io/lab-literature-agent/daily/2025-07-22/user001.html"
+
+
+def _build_slim(items, web_url=WEB_URL, **kwargs):
+    return build_digest_html("轩亚冰", "2025-07-22", items, "今日趋势总结。", None,
+                             web_url=web_url, **kwargs)
+
+
+def test_slim_email_drops_details_stars_part2_part3():
+    html = _build_slim([{**make_item(), "paper_id": 42}], user_email="a@x.com")
+    assert "<details" not in html
+    assert 'class="stars"' not in html
+    assert "今日推荐文献价值总结" not in html
+    assert "一键反馈" not in html and "mailto:" not in html
+    assert "今日趋势总结。" not in html
+
+
+def test_slim_email_links_to_web_page_and_keeps_rows():
+    html = _build_slim([make_item()], overview=OVERVIEW)
+    assert "展开详情 · 网页版完整报告" in html and f'href="{WEB_URL}"' in html
+    assert "昨日全库新增 132 篇" in html
+    assert 'class="badge cat-must"' in html
+    assert ('<a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/40123456/">'
+            "Atlas of &lt;Apis&gt; &amp; friends</a>") in html
+    assert "为解决X问题" in html
+    assert "Nature Communications · 2025-07-16" in html
+
+
+def _build_page(items, user_email="a@x.com", config=None, **kwargs):
+    cfg = {"feedback_email": "bot@x.com", **(config or {})}
+    return build_page_html("轩亚冰", "2025-07-22", items, "今日趋势总结。", cfg,
+                           user_email=user_email, **kwargs)
+
+
+def test_page_contains_details_summary_and_signed_star_urls():
+    item = {**make_item(), "paper_id": 42}
+    cfg = {"feedback_webhook_url": "https://fb.workers.dev", "feedback_secret": "s3cret"}
+    html = _build_page([item], config=cfg, overview=OVERVIEW)
+    assert '<details class="card-details">' in html
+    assert '<details class="card-details" open>' not in html  # 网页版默认折叠
+    assert "背景内容" in html and "Zhang Wei" in html
+    assert "今日推荐文献价值总结" in html and "今日趋势总结。" in html
+    assert "昨日全库新增 132 篇" in html
+    for n in (1, 2, 3, 4, 5):
+        sig = _webhook_sig("a@x.com", 42, n)
+        assert (f'data-url="https://fb.workers.dev/fb?u=a%40x.com&amp;p=42&amp;v={n}&amp;s={sig}"'
+                in html)
+    assert "format=json" in html and "已记录" in html and "请重试" in html
+
+
+def test_page_keyword_entry_mailto():
+    html = _build_page([{**make_item(), "paper_id": 42}])
+    assert "新增关键词" in html
+    assert "mailto:bot@x.com?subject=%5BFB%5D" in html and "d%3D2025-07-22" in html
+
+
+def test_page_keyword_entry_absent_without_feedback_email():
+    html = build_page_html("轩亚冰", "2025-07-22", [make_item()], "总结。", {},
+                           user_email="a@x.com")
+    assert "新增关键词" not in html
+
+
+def test_page_stars_fall_back_to_mailto_without_webhook():
+    html = _build_page([{**make_item(), "paper_id": 42}])
+    assert 'class="stars"' in html and 'class="star-btn"' not in html
+    assert "mailto:bot@x.com?subject=%5BFB%5D%20u%3Da%40x.com%20p%3D42%20v%3D1" in html
+
+
+def test_page_stars_absent_without_paper_id():
+    html = _build_page([make_item()], config={"feedback_webhook_url": "https://fb.workers.dev",
+                                              "feedback_secret": "s3cret"})
+    assert 'class="star-btn"' not in html and 'class="stars"' not in html

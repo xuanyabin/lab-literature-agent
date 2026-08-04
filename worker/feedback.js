@@ -4,6 +4,15 @@
  * feedback_data/pending/；每日流水线 checkout 时随 main 带回，
  * 由 python -m feedback 的学习闭环直接消费（与 IMAP 收集的反馈同一队列）。
  *
+ * 响应两种模式（签名校验与幂等逻辑两模式完全一致）：
+ *   - HTML 确认页（默认）：邮件里星标链接点开看到的中文结果页（向后兼容旧邮件）；
+ *   - JSON（查询参数 format=json，或请求头 Accept: application/json）：
+ *     网页版完整报告（GitHub Pages）卡片内五星按钮的页内 fetch 使用，
+ *     形如 { ok, status, message, detail }，成功时另带 value / result。
+ * 所有响应带 CORS 头（Access-Control-Allow-Origin: *；端点安全由 HMAC 签名
+ * 保证，星标 URL 本身即凭证），OPTIONS 预检返回 204。网页版 fetch 只带
+ * safelisted 的 Accept 头，实际不会触发预检。
+ *
  * 环境变量（Worker Settings → Variables）：
  *   GITHUB_TOKEN    fine-grained PAT，仅授权本仓库 Contents: Read and write（Secret 类型）
  *   GITHUB_REPO     owner/name
@@ -18,6 +27,8 @@
  *   反馈，文件内容相同则跳过提交（幂等）；字段 user_email / paper_id / value(字符串) /
  *   reason / source / timestamp(UTC ISO)，字符串值用 JSON.stringify 双引号包裹（合法
  *   YAML 标量，yaml.safe_load 解析结果与 Python 侧一致），source 固定 "star_webhook"。
+ *
+ * 注意：本文件改动后需重新部署 Worker（wrangler deploy / Dashboard 部署）才生效。
  */
 
 const GITHUB_API = "https://api.github.com";
@@ -25,8 +36,12 @@ const GITHUB_API = "https://api.github.com";
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (request.method === "OPTIONS") {  // CORS 预检（网页版 fetch 实际用不到，兜底）
+      return new Response(null, { status: 204, headers: corsHeaders() });
+    }
+    const json = wantsJson(request, url);
     if (url.pathname !== "/fb") {
-      return page(404, "页面不存在");
+      return respond(404, json, "页面不存在");
     }
     const u = url.searchParams.get("u") || "";
     const p = url.searchParams.get("p") || "";
@@ -36,14 +51,14 @@ export default {
     // 参数白名单校验（p 进文件名，论文 id 即 SQLite 自增 id，只允许数字）
     if (!u.includes("@") || !/^\d+$/.test(p) || !/^[1-5]$/.test(v) ||
         !/^[0-9a-f]{16}$/.test(s)) {
-      return page(400, "链接参数无效", "请从每日推荐邮件的论文卡片中点击星标链接。");
+      return respond(400, json, "链接参数无效", "请从每日推荐邮件或网页版报告中点击星标。");
     }
     if (!env.GITHUB_TOKEN || !env.GITHUB_REPO || !env.FEEDBACK_SECRET) {
-      return page(500, "服务未配置完成", "Worker 缺少环境变量，请联系管理员。");
+      return respond(500, json, "服务未配置完成", "Worker 缺少环境变量，请联系管理员。");
     }
     const expected = await hmacHex16(env.FEEDBACK_SECRET, `${u}|${p}|${v}`);
     if (!timingSafeEqual(expected, s)) {
-      return page(403, "签名无效", "该链接未通过校验，请从每日推荐邮件中重新点击星标。");
+      return respond(403, json, "签名无效", "该链接未通过校验，请从每日推荐邮件中重新点击星标。");
     }
 
     // 文件名 / YAML 字段与 feedback/store.py save_pending 一一对应（见文件头注释）
@@ -64,13 +79,39 @@ export default {
       const detail = result === "skipped"
         ? "相同反馈已存在，无需重复提交。"
         : "感谢反馈，推荐会越推越准。";
-      return page(200, `⭐${v} 反馈已记录，可关闭本页`, detail);
+      return respond(200, json, `⭐${v} 反馈已记录，可关闭本页`, detail,
+                     { value: Number(v), result });
     } catch (err) {
       console.error("GitHub 提交失败：", err);
-      return page(502, "记录失败，请稍后重试", "反馈服务暂时不可用，稍后再点一次星标即可。");
+      return respond(502, json, "记录失败，请稍后重试", "反馈服务暂时不可用，稍后再点一次星标即可。");
     }
   },
 };
+
+// 网页版报告（GitHub Pages）页内 fetch 跨域调用所需；签名即凭证，放开 Origin 无额外风险
+function corsHeaders() {
+  return {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, OPTIONS",
+    "Access-Control-Allow-Headers": "Accept, Content-Type",
+  };
+}
+
+// JSON 模式：format=json 查询参数或 Accept: application/json 请求头（网页版 fetch 两者都带）
+function wantsJson(request, url) {
+  return (url.searchParams.get("format") || "").toLowerCase() === "json" ||
+    (request.headers.get("Accept") || "").includes("application/json");
+}
+
+// json=true 返回 JSON（网页版页内 fetch）；否则返回原中文 HTML 确认页（邮件链接向后兼容）
+function respond(status, json, title, detail = "", extra = {}) {
+  if (json) {
+    return new Response(
+      JSON.stringify({ ok: status < 400, status, message: title, detail, ...extra }),
+      { status, headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders() } });
+  }
+  return page(status, title, detail);
+}
 
 // HMAC-SHA256 hex 前 16 位，对应 mailer/digest_builder.py _webhook_star_url
 async function hmacHex16(secret, message) {
@@ -161,6 +202,6 @@ function page(status, title, detail = "") {
 </html>`;
   return new Response(html, {
     status,
-    headers: { "Content-Type": "text/html; charset=utf-8" },
+    headers: { "Content-Type": "text/html; charset=utf-8", ...corsHeaders() },
   });
 }

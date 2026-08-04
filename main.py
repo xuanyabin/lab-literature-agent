@@ -18,8 +18,12 @@
       （六维加权 Final Score + AI 推荐理由；LLM 判断按 scoring.yaml ranker.batch_size
       分批一次调用评判多篇、批次间并发；按 Final Score 绝对阈值定级
       Must Read / Important / Reference，低于 push_floor 推送下限的不进邮件，
-      超过 --limit 时按 Final Score 截断到最终邮件篇数，宁缺毋滥）→ 每日价值总结 → HTML 邮件
-      （卡片内嵌 ⭐1-5 mailto 反馈链接 + Part 3 批量标注回信入口，
+      超过 --limit 时按 Final Score 截断到最终邮件篇数，宁缺毋滥）→ 每日价值总结 → 投递：
+      配置 pages_base_url 时邮件为瘦身版（总览 + 一句话摘要列表 + 网页版入口按钮），
+      完整报告（卡片详情 / ⭐1-5 页内反馈 / 价值总结 / 新增关键词入口）生成为
+      daily/<date>/<slug>.html，由 daily.yml 发布到 gh-pages（GitHub Pages）；
+      未配置 pages_base_url 时降级为完整版 HTML 邮件
+      （卡片内嵌 ⭐1-5 反馈链接 + Part 3 批量标注回信入口，
       均由 python -m feedback 经 IMAP 收集学习）；
       论文与产物入库 SQLite，推荐记录写入 recommendations 表
       （用户之间去重互不影响）。LLM 日预算耗尽时快速失败，不发空壳邮件。
@@ -44,7 +48,7 @@ from dotenv import load_dotenv
 
 from database.db import connect, dedup_key, get_seen_keys, save_recommendation
 from feedback.vocab import load_active_terms
-from mailer.digest_builder import build_digest_html, load_email_config
+from mailer.digest_builder import build_digest_html, build_page_html, load_email_config
 from mailer.sender import send_email
 from processing.artifacts import ensure_artifacts
 from processing.daily_summary_generator import generate_daily_summary
@@ -245,14 +249,33 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
         log.warning("今日价值总结生成失败，邮件照常发送", exc_info=True)
         daily_summary = ""
 
+    # 网页版入口 URL：pages_base_url + daily/<date>/<slug>.html（与 daily.yml 发布目录一致）；
+    # 未配置 pages_base_url 时为空，邮件降级为完整版（不得发带死链的瘦身邮件）
+    pages_base = (email_cfg.get("pages_base_url") or "").rstrip("/")
+    web_url = f"{pages_base}/daily/{today}/{slug}.html" if pages_base else ""
+
     html = build_digest_html(user["name"], today, items, daily_summary, email_cfg,
-                             user_email=user["email"], overview=overview)
+                             user_email=user["email"], overview=overview, web_url=web_url)
+    # 网页版完整报告：仅在配置 pages_base_url 时生成（未配置则邮件为完整版，无网页版）
+    page_html = ""
+    if web_url:
+        page_html = build_page_html(user["name"], today, items, daily_summary, email_cfg,
+                                    user_email=user["email"], overview=overview)
 
     if args.dry_run:
         out = LOG_DIR / f"digest_{today}_{slug}.html"
         out.write_text(html, encoding="utf-8")
         log.info("dry-run：邮件 HTML 已写入 %s", out)
+        if page_html:
+            page_out = LOG_DIR / f"page_{today}_{slug}.html"
+            page_out.write_text(page_html, encoding="utf-8")
+            log.info("dry-run：网页版 HTML 已写入 %s", page_out)
     else:
+        if page_html:
+            page_out = BASE_DIR / "daily" / today / f"{slug}.html"
+            page_out.parent.mkdir(parents=True, exist_ok=True)
+            page_out.write_text(page_html, encoding="utf-8")
+            log.info("网页版报告已写入 %s（发布后：%s）", page_out, web_url)
         send_email(user["email"], f"Daily Literature Intelligence Report · {today}", html)
         log.info("邮件已发送至 %s", user["email"])
 
@@ -286,6 +309,9 @@ def main() -> int:
         ],
     )
     log = logging.getLogger("main")
+
+    if not (email_cfg.get("pages_base_url") or "").strip():
+        log.warning("config/email.yaml 未配置 pages_base_url：邮件降级为完整版，不生成网页版报告")
 
     if args.user:
         users = [(args.user, load_user(USERS_DIR / f"{args.user}.yaml"))]

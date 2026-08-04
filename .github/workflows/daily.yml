@@ -98,6 +98,18 @@ jobs:
         if: steps.holiday.outputs.days != '0'
         run: bash scripts/push_state.sh
 
+      - name: 发布网页版报告（gh-pages 分支）
+        # 隐含 success()：只在主流程成功后执行；hashFiles 确认有页面产出。
+        # 失败会让 workflow 标红（便于人工重跑），不做 continue-on-error。
+        if: steps.holiday.outputs.days != '0' && hashFiles('daily/**/*.html') != ''
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./daily        # 主流程写入 daily/<date>/<slug>.html
+          destination_dir: daily      # 站点路径保持 /daily/<date>/<slug>.html
+          keep_files: true            # 历史日期页面累积保留，不清理
+          commit_message: "chore(pages): 每日网页版报告 run ${{ github.run_id }}"
+
       - name: 上传日志
         if: always()
         uses: actions/upload-artifact@v4

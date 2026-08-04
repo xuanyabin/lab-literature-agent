@@ -34,7 +34,14 @@
   .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
   .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
   .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
   .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
   .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
   a { color: #0969da; }
 </style>
@@ -42,20 +49,49 @@
 <body>
   <div class="container">
     <h1>Daily Literature Intelligence Report · $date</h1>
-    <p class="hello">$user_name，你好。今日为你筛选出 $count 篇论文：每张卡片直接展示作者、摘要与推荐理由；支持折叠的邮件客户端可收起详情，卡片底部可直接进行重要性反馈，邮件末尾为今日整体趋势总结。</p>
+    <p class="hello">$user_name，你好。今日为你筛选出 $count 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
 $overview_block
 
-    <h2>Part 1 · 今日论文（$count 篇）</h2>
-    <p class="section-sub">按推荐排序 · 详情默认展示，支持折叠的客户端可收起</p>
+    <h2>今日论文（$count 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
 $paper_cards
 
-    <h2>Part 2 · 今日推荐文献价值总结</h2>
+    <h2>今日推荐文献价值总结</h2>
     <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
     <div class="summary-box">$daily_summary</div>
 
-$feedback_block
+$keyword_entry
 
     <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
   </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+</script>
 </body>
 </html>

@@ -152,3 +152,47 @@ def test_apply_auto_terms_appends_feedback_added_dedup():
     auto = {"expansion": {}, "feedback_added": ["honeybee", "microbiome"]}
     merged = apply_auto_terms(user, auto)
     assert merged["keywords"] == ["Honeybee", "microbiome"]
+
+
+def _write_fresh_cache(tmp_path, expansion, feedback_added):
+    cache_dir = tmp_path / "auto_terms"
+    cache_dir.mkdir()
+    (cache_dir / "user001.yaml").write_text(
+        yaml.dump({"updated": "2026-08-01", "expansion": expansion,
+                   "feedback_added": feedback_added}),
+        encoding="utf-8",
+    )
+    return cache_dir
+
+
+def test_refresh_expands_new_feedback_terms(tmp_path):
+    """反馈词无扩展记录时补生成 LLM 扩展词，经 aliases 等权生效。"""
+    _write_fresh_cache(tmp_path, {"honeybee": ["apis"]}, ["microbiome"])
+    llm = FakeLLM({"microbiome": ["microbiota", "microbial community"]})
+    auto = _refresh(tmp_path, llm, None)
+    assert llm.calls == 1  # 缓存新鲜，只有反馈词一批调用
+    assert auto["expansion"]["microbiome"] == ["microbiota", "microbial community"]
+    merged = apply_auto_terms({"keywords": []}, auto)
+    assert merged["aliases"]["microbiome"] == ["microbiota", "microbial community"]
+
+
+def test_refresh_skips_already_expanded_feedback_terms(tmp_path):
+    """反馈词已有扩展记录（含大小写差异）时不重复调 LLM。"""
+    _write_fresh_cache(tmp_path, {"Microbiome": ["microbiota"]}, ["microbiome"])
+    llm = FakeLLM({"microbiome": ["changed"]})
+    auto = _refresh(tmp_path, llm, None)
+    assert llm.calls == 0
+    assert auto["expansion"] == {"Microbiome": ["microbiota"]}
+
+
+def test_refresh_feedback_expansion_failure_keeps_cache(tmp_path):
+    """反馈词扩展 LLM 失败：旧缓存原样保留，不中断流水线，下次运行重试。"""
+    _write_fresh_cache(tmp_path, {"honeybee": ["apis"]}, ["microbiome"])
+
+    class BadLLM:
+        def complete(self, prompt):
+            raise RuntimeError("LLM down")
+
+    auto = _refresh(tmp_path, BadLLM(), None)
+    assert auto["expansion"] == {"honeybee": ["apis"]}
+    assert auto["feedback_added"] == ["microbiome"]  # 词不丢，留待下次扩展

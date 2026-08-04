@@ -5,9 +5,11 @@
     - expansion：LLM 为个人检索词生成的同义词/拉丁学名/缩写等扩展词，
       只为召回兜底（不漏文献），等权参与检索与粗筛，不写回个人 yaml；
     - feedback_added：反馈渠道新增的 keywords（回信 "+关键词" 行经
-      add_feedback_terms 追加），等权追加到 keywords。
-    触发刷新条件：缓存缺失 / 用户 yaml 有修改 / 缓存超过 7 天；
-    LLM 失败时保留旧缓存，不中断流水线。
+      add_feedback_terms 追加），等权追加到 keywords；refresh 时为尚无
+      扩展记录的反馈词补生成 LLM 扩展词并入 expansion（解决反馈词
+      表述过窄/不标准导致的漏召回），与用户原词扩展同规则等权生效。
+    触发刷新条件：缓存缺失 / 用户 yaml 有修改 / 缓存超过 7 天 /
+    有未扩展的反馈词；LLM 失败时保留旧缓存，不中断流水线。
 
 离线工具（非每日流程，保持人工审核）：
     python -m processing.term_expander config/users/user001.yaml
@@ -116,12 +118,37 @@ def _needs_refresh(cache: Path, user_path: Path | None, now: float) -> bool:
     return now - cache_mtime > AUTO_TERMS_TTL_SECONDS
 
 
+def _expand_feedback_terms(feedback_added: list, expansion: dict, llm) -> dict | None:
+    """为尚无扩展记录的反馈关键词补生成 LLM 扩展词。
+
+    反馈词原样进 keywords 只匹配字面，表述过窄/不标准会漏召回；此处复用
+    expand_terms 为其生成同义词/学名/缩写，并入 expansion 后由
+    apply_auto_terms 按 aliases 等权生效。有新增时返回并入后的 expansion；
+    无待扩展词、LLM 失败或输出无新增时返回 None（保留旧缓存，下次重试）。
+    """
+    known = {str(k).lower() for k in expansion}
+    pending = [t for t in feedback_added or [] if t and str(t).lower() not in known]
+    if not pending:
+        return None
+    try:
+        new = expand_terms({"keywords": pending}, llm)
+    except Exception:
+        logger.warning("反馈关键词扩展生成异常，沿用旧缓存", exc_info=True)
+        return None
+    new = {k: v[:MAX_ALIASES_PER_TERM] for k, v in new.items() if k not in expansion}
+    if not new:
+        return None
+    logger.info("反馈关键词扩展已生成：%d 个词（%s）", len(new), "、".join(new))
+    return {**expansion, **new}
+
+
 def refresh_auto_terms(slug: str, user: dict, user_path: Path | None, llm,
                        cache_dir: Path = AUTO_TERMS_DIR) -> dict:
     """按需刷新 LLM 扩展词缓存并返回当前生效的自动词表。
 
     LLM 调用失败或输出无效时保留旧缓存（不中断流水线）；feedback_added
-    字段在刷新时原样保留（由反馈渠道维护）。
+    字段在刷新时原样保留（由反馈渠道维护）。全量刷新后 feedback 词的旧扩展
+    会随 expansion 重建而丢失，由 _expand_feedback_terms 在同次运行内补回。
     """
     cache = _auto_path(slug, cache_dir)
     if _needs_refresh(cache, user_path, time.time()):
@@ -138,6 +165,10 @@ def refresh_auto_terms(slug: str, user: dict, user_path: Path | None, llm,
             logger.warning("扩展词生成失败（用户 %s），沿用旧缓存", slug)
         else:
             logger.warning("扩展词生成失败且无旧缓存（用户 %s），本次不使用扩展词", slug)
+    auto = load_auto_terms(slug, cache_dir)
+    expanded = _expand_feedback_terms(auto["feedback_added"], auto["expansion"], llm)
+    if expanded is not None:
+        _write_auto_terms(cache, expanded, auto["feedback_added"])
     return load_auto_terms(slug, cache_dir)
 
 

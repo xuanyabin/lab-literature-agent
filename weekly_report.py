@@ -35,7 +35,8 @@ from recommendation.scorer import load_journal_tiers
 
 def run_for_user(slug: str, user: dict, args: argparse.Namespace,
                  log: logging.Logger) -> None:
-    """单用户周报：聚合本周推荐记录 → 统计 + 趋势总结 → 生成并投递邮件。"""
+    """单用户周报/月报：聚合窗口内推荐记录 → 统计 + 趋势总结 → 生成并投递邮件。"""
+    label = "月报" if args.days >= 28 else "周报"
     log.info("用户：%s <%s>", user["name"], user["email"])
 
     today = date.today().isoformat()
@@ -65,11 +66,12 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     if args.dry_run:
         out = LOG_DIR / f"weekly_{today}_{slug}.html"
         out.write_text(html, encoding="utf-8")
-        log.info("dry-run：周报 HTML 已写入 %s", out)
+        log.info("dry-run：%s HTML 已写入 %s", label, out)
     else:
+        subject_label = "Monthly" if args.days >= 28 else "Weekly"
         send_email(user["email"],
-                   f"Weekly Literature Intelligence Report · {since} ~ {today}", html)
-        log.info("周报已发送至 %s", user["email"])
+                   f"{subject_label} Literature Intelligence Report · {since} ~ {today}", html)
+        log.info("%s已发送至 %s", label, user["email"])
 
 
 def main() -> int:
@@ -108,7 +110,8 @@ def main() -> int:
             run_for_user(slug, user, args, log)
         except Exception:
             failed.append(slug)
-            log.exception("用户 %s 周报失败，继续下一个用户", slug)
+            label = "月报" if args.days >= 28 else "周报"
+            log.exception("用户 %s %s失败，继续下一个用户", slug, label)
     if failed:
         log.error("本次执行有 %d 个用户失败：%s", len(failed), ", ".join(failed))
         return 1

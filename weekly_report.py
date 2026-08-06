@@ -16,18 +16,20 @@
 """
 
 import argparse
+import json
 import logging
 import sys
 from datetime import date, timedelta
 
 from dotenv import load_dotenv
 
-from database.db import connect, get_feedback_since, get_week_recommendations
+from database.db import connect, get_analysis, get_feedback_since, get_week_recommendations
 from feedback.vocab import load_active_terms
 from mailer.sender import send_email
 from mailer.weekly_builder import build_weekly_html
-from main import LOG_DIR, USERS_DIR, load_user, load_users
+from main import LOG_DIR, USERS_DIR, apply_lab_profile, load_lab_profile, load_user, load_users
 from processing.llm import LLMClient
+from processing.module_groups import assign_module, group_label
 from processing.weekly_stats import compute_reading_trends, compute_stats
 from processing.weekly_summary_generator import generate_weekly_summary
 from recommendation.scorer import load_journal_tiers
@@ -50,6 +52,22 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     log.info("聚合 %s ~ %s 推荐记录：%d 篇", since, today, len(rows))
     feedback_rows = get_feedback_since(conn, user["email"], since)
     active_terms = load_active_terms(conn, user["email"])
+
+    # 分模块展示 + 文献类型 badge：归属在渲染前计算（不落库），paper_type 读分析缓存
+    rows = [dict(r) for r in rows]
+    u = apply_lab_profile(user, load_lab_profile())
+    for row in rows:
+        try:
+            kw_list = json.loads(row["keywords"] or "[]")
+        except (TypeError, ValueError):
+            kw_list = []
+        text = f"{row['title']} {' '.join(kw_list)}"
+        row["module_label"] = group_label(
+            u.get("group_labels"),
+            assign_module(text, u.get("lab_groups"),
+                          u.get("subscribed_groups"), u.get("aliases")))
+        ana = get_analysis(conn, row["paper_id"]) or {}
+        row["paper_type"] = ana.get("paper_type", "")
     conn.close()
 
     stats = compute_stats(rows, load_journal_tiers())

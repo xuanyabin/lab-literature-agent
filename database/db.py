@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS paper_analysis (
     finding TEXT,
     methods TEXT,
     organisms TEXT,
+    paper_type TEXT,
     created_time TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS paper_news_summary (
@@ -91,6 +92,7 @@ def connect(db_path: Path = DEFAULT_DB_PATH) -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     conn.executescript(_SCHEMA)
     _migrate_translation_table(conn)
+    _migrate_analysis_table(conn)
     return conn
 
 
@@ -106,6 +108,15 @@ def _migrate_translation_table(conn: sqlite3.Connection) -> None:
         if name not in existing:
             conn.execute(f"ALTER TABLE paper_translation ADD COLUMN {name} TEXT")
     conn.commit()
+
+
+def _migrate_analysis_table(conn: sqlite3.Connection) -> None:
+    """旧库 paper_analysis 无 paper_type 列时 ALTER TABLE 补齐
+    （旧行保持 NULL，读取时回退为 ""，不补跑 LLM）。"""
+    existing = {row["name"] for row in conn.execute("PRAGMA table_info(paper_analysis)")}
+    if "paper_type" not in existing:
+        conn.execute("ALTER TABLE paper_analysis ADD COLUMN paper_type TEXT")
+        conn.commit()
 
 
 def dedup_key(paper: Paper) -> str:
@@ -153,8 +164,8 @@ def save_paper(conn: sqlite3.Connection, paper: Paper) -> int:
 def save_analysis(conn: sqlite3.Connection, paper_id: int, analysis: dict) -> None:
     conn.execute(
         """INSERT OR REPLACE INTO paper_analysis
-           (paper_id, problem, solution, finding, methods, organisms, created_time)
-           VALUES (?, ?, ?, ?, ?, ?, ?)""",
+           (paper_id, problem, solution, finding, methods, organisms, paper_type, created_time)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             paper_id,
             analysis.get("problem", ""),
@@ -162,6 +173,7 @@ def save_analysis(conn: sqlite3.Connection, paper_id: int, analysis: dict) -> No
             analysis.get("finding", ""),
             json.dumps(analysis.get("methods", []), ensure_ascii=False),
             json.dumps(analysis.get("organisms", []), ensure_ascii=False),
+            analysis.get("paper_type", ""),
             datetime.now(timezone.utc).isoformat(),
         ),
     )
@@ -192,6 +204,7 @@ def get_analysis(conn: sqlite3.Connection, paper_id: int) -> dict | None:
         "finding": row["finding"] or "",
         "methods": json.loads(row["methods"] or "[]"),
         "organisms": json.loads(row["organisms"] or "[]"),
+        "paper_type": row["paper_type"] or "",
     }
 
 

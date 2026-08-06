@@ -114,6 +114,30 @@ def fetch_by_pmids(pmids: list[str]) -> list[Paper]:
     return parse_efetch_xml(_efetch(pmids))
 
 
+def pmid_for_doi(doi: str) -> str | None:
+    """经 PubMed esearch 把 DOI 转换为 PMID；查不到返回 None。
+
+    供"文献输入优化关键词"队列消费：用户粘贴 DOI 时先转成 PMID 再 efetch。
+    与 _esearch 不同，这里不限定日期窗口（文献可以是任意年份）。
+    """
+    doi = (doi or "").strip()
+    if not doi:
+        return None
+    resp = _get_with_retry(
+        f"{EUTILS_BASE}/esearch.fcgi",
+        params={
+            "db": "pubmed",
+            "term": f"{doi}[doi]",
+            "retmode": "json",
+            "retmax": 1,
+            "tool": _TOOL,
+        },
+        timeout=30,
+    )
+    ids = resp.json()["esearchresult"].get("idlist", [])
+    return ids[0] if ids else None
+
+
 def _esearch(query: str, days: int, retmax: int) -> list[str]:
     resp = _get_with_retry(
         f"{EUTILS_BASE}/esearch.fcgi",
@@ -200,6 +224,10 @@ def _parse_article(article) -> Paper:
 
     keywords = [_text(k) for k in article.findall(".//KeywordList/Keyword")]
 
+    publication_types = [
+        _text(pt) for pt in article.findall(".//PublicationTypeList/PublicationType")
+    ]
+
     return Paper(
         title=_text(article.find(".//ArticleTitle")),
         abstract=abstract,
@@ -209,6 +237,7 @@ def _parse_article(article) -> Paper:
         doi=doi,
         url=f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else "",
         keywords=[k for k in keywords if k],
+        publication_types=[pt for pt in publication_types if pt],
     )
 
 

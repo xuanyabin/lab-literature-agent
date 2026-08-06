@@ -172,6 +172,47 @@ def test_build_weekly_html_fallback_when_no_trend_summary():
     assert '<td class="stats-label">学习热词</td>' not in html  # 无有效学习词时不渲染该行
 
 
+# ---------- 分模块展示 + 文献类型 badge ----------
+
+def _stats_trends(rows):
+    stats = compute_stats(rows, {})
+    trends = {"feedback": {"positive": 0, "neutral": 0, "negative": 0, "total": 0},
+              "top_terms": []}
+    return stats, trends
+
+
+def test_weekly_groups_by_module_with_badges():
+    rows = [
+        {**_row("Must Read", "Nature", "[]", title="A"),
+         "module_label": "空间组学", "paper_type": "方法学"},
+        {**_row("Important", "Cell", "[]", title="B"),
+         "module_label": "空间组学", "paper_type": ""},
+        {**_row("Must Read", "Cell", "[]", title="C"),
+         "module_label": "其他", "paper_type": "综述"},
+    ]
+    stats, trends = _stats_trends(rows)
+    html = build_weekly_html("User", "2026-07-16", "2026-07-22", rows, "", stats, trends)
+    assert '<td colspan="2" class="module-head">空间组学</td>' in html
+    assert '<td colspan="2" class="module-head">其他</td>' in html
+    assert html.index("空间组学</td>") < html.index("其他</td>")  # "其他"沉底
+    assert '<span class="badge cat-module">空间组学</span>' in html
+    assert '<span class="badge cat-type">方法学</span>' in html
+    assert '<span class="badge cat-type">综述</span>' in html
+    assert "1. " not in html  # 序号走 <td class="num">，跨组连续
+    assert '<td class="num">1</td>' in html and '<td class="num">3</td>' in html
+
+
+def test_weekly_no_module_head_and_badges_for_legacy_rows():
+    rows = [_row("Must Read", "Nature", "[]", title="A"),
+            _row("Important", "Cell", "[]", title="B")]  # 无 module_label / paper_type
+    stats, trends = _stats_trends(rows)
+    html = build_weekly_html("User", "2026-07-16", "2026-07-22", rows, "", stats, trends)
+    assert '<td colspan="2" class="module-head">' not in html  # 仅"其他"一组不渲染小标题
+    assert 'class="badge cat-module"' not in html
+    assert 'class="badge cat-type"' not in html  # 旧缓存无 paper_type 不渲染标签
+    assert "A" in html and "B" in html
+
+
 # ---------- B3 阅读趋势：反馈归一化（兼容旧四值与新五星） ----------
 
 def test_normalize_feedback_value_legacy_four_values():

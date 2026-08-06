@@ -1,5 +1,6 @@
 """组装每周情报报告 HTML 邮件。"""
 
+from mailer.digest_builder import _group_items, _show_module_heads
 from mailer.template_renderer import escape, render
 
 _CATEGORY_CLASS = {
@@ -9,28 +10,50 @@ _CATEGORY_CLASS = {
     "Ignore": "cat-ignore",
 }
 
+
+def _badges(row):
+    """模块名 + 文献类型两个 badge：module_label / paper_type 缺失时不渲染（旧数据回退）。"""
+    out = ""
+    label = row.get("module_label") or ""
+    if label:
+        out += f'<span class="badge cat-module">{escape(label)}</span>'
+    paper_type = row.get("paper_type") or ""
+    if paper_type:
+        out += f'<span class="badge cat-type">{escape(paper_type)}</span>'
+    return out
+
+
 def _paper_rows(rows):
-    """本周 Must Read / Important 论文清单（行格式与日报 news-table 一致）。"""
+    """本周 Must Read / Important 论文清单（行格式与日报 news-table 一致）。
+
+    按 module_label 分组（组序=首现序、"其他"沉底、仅"其他"一组时不渲染小标题），
+    序号跨组连续；每行标题前加模块名 + 文献类型 badge。"""
     items = [r for r in rows if r["category"] in ("Must Read", "Important")]
     if not items:
         return '<tr><td colspan="2">本周没有 Must Read / Important 论文</td></tr>'
+    groups = _group_items(items)
+    show_heads = _show_module_heads(groups)
     parts = []
-    for index, row in enumerate(items, 1):
-        category = row["category"]
-        badge_cls = _CATEGORY_CLASS.get(category, "cat-reference")
-        news = escape(row["news"]) if row["news"] else "本周暂无新闻解读"
-        parts.append(
-            "      <tr>\n"
-            f'        <td class="num">{index}</td>\n'
-            "        <td>\n"
-            f'          <div class="news-head"><span class="badge {badge_cls}">{escape(category)}</span>\n'
-            f'            <a class="title-link" href="{escape(row["url"])}">{escape(row["title"])}</a></div>\n'
-            f'          <div class="news">{news}</div>\n'
-            f'          <div class="meta">{escape(row["journal"] or "")} · '
-            f'{escape(row["sent_date"] or row["date"] or "")}</div>\n'
-            "        </td>\n"
-            "      </tr>"
-        )
+    for label, group in groups:
+        if show_heads:
+            parts.append(f'      <tr><td colspan="2" class="module-head">{escape(label)}</td></tr>')
+        for index, row in group:
+            category = row["category"]
+            badge_cls = _CATEGORY_CLASS.get(category, "cat-reference")
+            news = escape(row["news"]) if row["news"] else "本周暂无新闻解读"
+            parts.append(
+                "      <tr>\n"
+                f'        <td class="num">{index}</td>\n'
+                "        <td>\n"
+                f'          <div class="news-head"><span class="badge {badge_cls}">{escape(category)}</span>'
+                f'{_badges(row)}\n'
+                f'            <a class="title-link" href="{escape(row["url"])}">{escape(row["title"])}</a></div>\n'
+                f'          <div class="news">{news}</div>\n'
+                f'          <div class="meta">{escape(row["journal"] or "")} · '
+                f'{escape(row["sent_date"] or row["date"] or "")}</div>\n'
+                "        </td>\n"
+                "      </tr>"
+            )
     return "\n".join(parts)
 
 

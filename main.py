@@ -53,6 +53,7 @@ from mailer.sender import send_email
 from processing.artifacts import ensure_artifacts
 from processing.daily_summary_generator import generate_daily_summary
 from processing.llm import BudgetExhaustedError, LLMClient
+from processing.module_groups import assign_module, group_label
 from processing.term_expander import apply_auto_terms, refresh_auto_terms
 from recommendation.ranker import (
     load_ranker_batch_size, load_ranker_gating, load_ranker_thresholds,
@@ -122,6 +123,10 @@ def apply_lab_profile(user: dict, lab: dict) -> dict:
     merged["lab_topics"] = lab_topics
     merged["noise_terms"] = list(lab.get("noise_terms") or [])
     merged["aliases"] = {**(lab.get("aliases") or {}), **(user.get("aliases") or {})}
+    # 模块分组展示（日报/周报/月报）：组表、订阅组与中文显示名，供渲染时归属计算
+    merged["lab_groups"] = groups
+    merged["subscribed_groups"] = subscribed
+    merged["group_labels"] = lab.get("group_labels") or {}
     return merged
 
 
@@ -219,6 +224,14 @@ def deliver(slug: str, user: dict, shortlist: list, artifacts: dict,
         log.info("超过每日上限 %d 篇，按 Final Score 截断（%d → %d）",
                  args.limit, len(items), args.limit)
         items = items[:args.limit]
+    # 模块归属（渲染时计算，不落库）：按 lab.yaml topic_groups 命中取主模块，
+    # 中文显示名写入 item["module_label"] 供邮件/网页分组展示
+    for it in items:
+        p = it["paper"]
+        text = f"{p.title} {p.abstract} {' '.join(p.keywords)}"
+        module = assign_module(text, user.get("lab_groups"),
+                               user.get("subscribed_groups"), user.get("aliases"))
+        it["module_label"] = group_label(user.get("group_labels"), module)
     n_must = sum(1 for it in items if it["category"] == "Must Read")
     n_important = sum(1 for it in items if it["category"] == "Important")
     log.info("精排定级：Must Read %d / Important %d / Reference %d",

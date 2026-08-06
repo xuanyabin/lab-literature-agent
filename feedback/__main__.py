@@ -28,7 +28,9 @@ def main() -> int:
 
     from database.db import connect
     from feedback import store
-    from feedback.collector import collect, collect_keyword_queue
+    from feedback.collector import (
+        SEED_PAPERS_QUEUE_DIR, collect, collect_keyword_queue, collect_seed_papers_queue,
+    )
     from feedback.learner import learn_from_feedback
     from feedback.vocab import load_learned_config
     from main import apply_lab_profile, load_lab_profile, load_users
@@ -46,13 +48,18 @@ def main() -> int:
         entries = store.load_pending()
         pending = {u["email"]: [e for e in entries if e["user_email"] == u["email"]]
                    for _, u in users}
-        if not any(pending.values()):
+        seed_pending_dir = SEED_PAPERS_QUEUE_DIR / "pending"
+        seed_pending = seed_pending_dir.is_dir() and any(seed_pending_dir.glob("*.yaml"))
+        if not any(pending.values()) and not seed_pending:
             log.info("没有待学习的反馈，流程结束")
             return 0
 
         from processing.llm import LLMClient
 
         llm = LLMClient()
+        if seed_pending:
+            log.info("文献输入队列：%d 条提交有新检索词入词表",
+                     collect_seed_papers_queue([u for _, u in users], conn, llm))
         cfg = load_learned_config()
         for slug, user in users:
             if not pending[user["email"]]:

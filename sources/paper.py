@@ -14,6 +14,9 @@ class Paper:
     doi: str
     url: str
     keywords: list[str] = field(default_factory=list)
+    # 来源自带的文献类型（如 PubMed PublicationType: "Review" / "Journal Article"）。
+    # 抓取侧能拿到就填；拿不到保持空列表，analyzer 再交给 LLM 判断。
+    publication_types: list[str] = field(default_factory=list)
 
 
 def expand_with_aliases(terms, aliases: dict | None) -> list[str]:

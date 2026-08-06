@@ -1,5 +1,5 @@
 /**
- * 反馈 Worker，两个端点：
+ * 反馈 Worker，三个端点：
  *
  * 1) 星标一键反馈：GET /fb?u=<邮箱>&p=<论文id>&v=<1-5>&s=<签名>
  * 校验 HMAC 签名后用 GitHub API 把反馈 YAML 提交到仓库 main 的
@@ -17,6 +17,20 @@
  * 签名 msg 为 "<邮箱>|<日期>"，不覆盖关键词内容（关键词是用户运行时输入，
  * 页面生成时无法预知；与星标同理，签名 URL 本身即凭证）——与
  * mailer/digest_builder.py 的 _webhook_keyword_url 必须严格一致，改动需两侧同步。
+ *
+ * 3) 网页版"用文献优化关键词"：GET /sp?u=<邮箱>&d=<日期>&sp=<URL编码的文献列表>&s=<签名>
+ * 镜像 /kw：用户粘贴自己领域感兴趣的文献（DOI 或 PMID，每行一个，一次 ≤10 篇，
+ * 前端已逐行校验格式），提交到 feedback_data/seed_papers/pending/，由
+ * python -m feedback 的 feedback/collector.py collect_seed_papers_queue 消费：
+ * 逐条抓标题摘要 → LLM 提炼检索词 → add_feedback_terms 落 feedback_added。
+ * 文件名 sp_u<sha256(邮箱) 前 8 位>_<sha256(文献列表) 前 12 位>.yaml——同一
+ * （用户, 文献列表）重复提交幂等；文献列表只进文件内容不进文件名。
+ * 签名 msg 同为 "<邮箱>|<日期>"（与 /kw 同构），与 mailer/digest_builder.py 的
+ * _webhook_seed_papers_url 必须严格一致，改动需两侧同步。
+ * YAML 字段 user_email / papers(多行原文，JSON.stringify 双引号包裹，\n 转义，
+ * Python 侧 yaml.safe_load 还原) / date / source("seed_papers_webhook") /
+ * timestamp——与 feedback/collector.py collect_seed_papers_queue 逐字段对应，
+ * 改动需两侧同步。
  *
  * 响应两种模式（签名校验与幂等逻辑两模式完全一致）：
  *   - HTML 确认页（默认）：邮件里星标链接点开看到的中文结果页（向后兼容旧邮件）；
@@ -56,6 +70,9 @@ export default {
     const json = wantsJson(request, url);
     if (url.pathname === "/kw") {
       return handleKeyword(env, url, json);
+    }
+    if (url.pathname === "/sp") {
+      return handleSeedPapers(env, url, json);
     }
     if (url.pathname !== "/fb") {
       return respond(404, json, "页面不存在");
@@ -145,6 +162,53 @@ async function handleKeyword(env, url, json) {
       : "次日检索即生效，可随时继续补充。";
     return respond(200, json, "关键词已提交，次日检索生效", detail,
                    { keyword: k, result });
+  } catch (err) {
+    console.error("GitHub 提交失败：", err);
+    return respond(502, json, "提交失败，请稍后重试", "反馈服务暂时不可用，稍后再提交一次即可。");
+  }
+}
+
+// /sp 文献输入优化关键词（网页版报告页内 fetch）：签名 msg "<邮箱>|<日期>" 与 /kw 同构
+// （见文件头注释），落盘 feedback_data/seed_papers/pending/，由
+// collect_seed_papers_queue 抓取文献并提炼检索词进自动词表
+async function handleSeedPapers(env, url, json) {
+  const u = url.searchParams.get("u") || "";
+  const d = url.searchParams.get("d") || "";
+  const sp = (url.searchParams.get("sp") || "").trim();
+  const s = (url.searchParams.get("s") || "").toLowerCase();
+
+  // 参数白名单校验（sp 只进文件内容不进文件名，限长防滥用；逐条解析在 Python 消费侧）
+  if (!u.includes("@") || !/^\d{4}-\d{2}-\d{2}$/.test(d) || !sp || sp.length > 2000 ||
+      !/^[0-9a-f]{16}$/.test(s)) {
+    return respond(400, json, "链接参数无效", "请从当日网页版报告的文献输入入口提交。");
+  }
+  if (!env.GITHUB_TOKEN || !env.GITHUB_REPO || !env.FEEDBACK_SECRET) {
+    return respond(500, json, "服务未配置完成", "Worker 缺少环境变量，请联系管理员。");
+  }
+  const expected = await hmacHex16(env.FEEDBACK_SECRET, `${u}|${d}`);
+  if (!timingSafeEqual(expected, s)) {
+    return respond(403, json, "签名无效", "该链接未通过校验，请从当日网页版报告重新提交。");
+  }
+
+  // 文件名只含哈希（文献列表可能含任意字符）；字段约定见文件头注释
+  const name = `sp_u${(await sha256Hex(u)).slice(0, 8)}_${(await sha256Hex(sp)).slice(0, 12)}.yaml`;
+  const yaml = [
+    `user_email: ${JSON.stringify(u)}`,
+    `papers: ${JSON.stringify(sp)}`,
+    `date: ${JSON.stringify(d)}`,
+    `source: "seed_papers_webhook"`,
+    `timestamp: ${JSON.stringify(new Date().toISOString())}`,
+  ].join("\n") + "\n";
+
+  const branch = env.GITHUB_BRANCH || "main";
+  try {
+    const result = await commitToGitHub(
+      env, `feedback_data/seed_papers/pending/${name}`, yaml, branch,
+      "feedback: 文献输入优化关键词");
+    const detail = result === "skipped"
+      ? "相同文献列表已提交过，无需重复提交。"
+      : "提炼出的新检索词次日生效。";
+    return respond(200, json, "文献已提交，明日生效", detail, { result });
   } catch (err) {
     console.error("GitHub 提交失败：", err);
     return respond(502, json, "提交失败，请稍后重试", "反馈服务暂时不可用，稍后再提交一次即可。");

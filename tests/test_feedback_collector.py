@@ -1,13 +1,17 @@
 """feedback.collector 的 IMAP 反馈收集测试（用假 IMAP，不碰真实服务器与 feedback_data/）。"""
 
+import json
 from email.message import EmailMessage
 
 import pytest
 import yaml
 
+import feedback.collector as collector_mod
+import feedback.learner as learner_mod
 from database.db import connect, save_paper, save_recommendation
-from feedback.collector import (collect, collect_keyword_queue, parse_added_terms,
-                                parse_batch_feedback_message, parse_feedback_message)
+from feedback.collector import (collect, collect_keyword_queue, collect_seed_papers_queue,
+                                parse_added_terms, parse_batch_feedback_message,
+                                parse_feedback_message, parse_seed_paper_lines)
 from sources.paper import Paper
 
 
@@ -393,3 +397,169 @@ def test_keyword_queue_no_pending_dir(tmp_path):
     """队列目录不存在（从未有网页端提交）时静默返回 0。"""
     base_dir, users_dir, cache_dir = _kw_dir(tmp_path)
     assert collect_keyword_queue(base_dir, users_dir, cache_dir) == 0
+
+
+# ---------- 网页端"用文献优化关键词"队列（Worker /sp 直写 seed_papers/pending/） ----------
+
+
+def _sp_setup(tmp_path):
+    """隔离的文献输入队列目录 + 用户目录/自动词表缓存目录 + 内存 db。"""
+    users_dir = tmp_path / "users"
+    users_dir.mkdir()
+    (users_dir / "user001.yaml").write_text("email: a@x.com\n", encoding="utf-8")
+    conn = connect(tmp_path / "test.db")
+    return tmp_path / "feedback_data" / "seed_papers", users_dir, \
+        tmp_path / "auto_terms", conn
+
+
+def _write_sp(base_dir, name, record=None, raw=None):
+    pending = base_dir / "pending"
+    pending.mkdir(parents=True, exist_ok=True)
+    text = raw if raw is not None else yaml.safe_dump(record, allow_unicode=True)
+    (pending / name).write_text(text, encoding="utf-8")
+
+
+class _TermLLM:
+    """extract_terms 走真实 JSON 解析：每次调用返回固定两个新词。"""
+
+    def __init__(self, terms=("spatial transcriptomics", "cell segmentation")):
+        self.terms = terms
+
+    def complete(self, prompt):
+        return json.dumps(list(self.terms))
+
+
+def _fake_fetch(pmids):
+    return [Paper(title=f"Paper {pmids[0]}", abstract="abs", authors="Au",
+                  journal="J", date="2026-08-01", doi="", url="http://x",
+                  keywords=[])]
+
+
+def test_parse_seed_paper_lines_valid_invalid_and_cap():
+    valid, invalid = parse_seed_paper_lines(
+        "12345678\n10.1038/s41586-023-0001\n\nnot a doi\n10.1/no space allowed x\n")
+    assert valid == [("pmid", "12345678"), ("doi", "10.1038/s41586-023-0001")]
+    assert invalid == ["not a doi", "10.1/no space allowed x"]
+    many = "\n".join(str(10000000 + i) for i in range(15))
+    valid, _ = parse_seed_paper_lines(many)
+    assert len(valid) == 10  # 单次提交上限 10 篇
+
+
+def test_seed_papers_queue_extracts_terms_and_archives(tmp_path, monkeypatch):
+    """2 篇 PMID + 1 非法行：PMID 提词落 feedback_added、非法行跳过、文件归档、审计记录来源。"""
+    base_dir, users_dir, cache_dir, conn = _sp_setup(tmp_path)
+    audit = tmp_path / "audit.log"
+    monkeypatch.setattr(learner_mod, "AUDIT_LOG", audit)
+    monkeypatch.setattr(collector_mod, "fetch_by_pmids", _fake_fetch)
+    monkeypatch.setattr(collector_mod, "pmid_for_doi",
+                        lambda doi: "999" if doi == "10.1/x" else None)
+    _write_sp(base_dir, "sp_u00000000_abc.yaml", {
+        "user_email": "a@x.com", "papers": "12345678\n87654321\nnot-a-doi",
+        "date": "2026-08-04", "source": "seed_papers_webhook",
+        "timestamp": "2026-08-04T01:02:03+00:00",
+    })
+    users = [{"email": "a@x.com"}]
+    applied = collect_seed_papers_queue(users, conn, _TermLLM(), base_dir,
+                                        users_dir, cache_dir)
+    assert applied == 1
+    auto = yaml.safe_load((cache_dir / "user001.yaml").read_text(encoding="utf-8"))
+    assert auto["feedback_added"] == ["spatial transcriptomics", "cell segmentation"]
+    assert list((base_dir / "pending").glob("*.yaml")) == []
+    assert [p.name for p in (base_dir / "processed" / "2026-08").glob("*.yaml")] == \
+        ["sp_u00000000_abc.yaml"]
+    records = [json.loads(ln) for ln in audit.read_text(encoding="utf-8").splitlines()]
+    assert {r["action"] for r in records} == {"seed_term"}
+    assert {r["source_ref"] for r in records} == {"pmid:12345678"}
+    conn.close()
+
+
+def test_seed_papers_queue_doi_not_found_skipped(tmp_path, monkeypatch, caplog):
+    """DOI 转 PMID 失败：跳过该篇记日志，不影响同批其余文献，文件仍归档。"""
+    base_dir, users_dir, cache_dir, conn = _sp_setup(tmp_path)
+    audit = tmp_path / "audit.log"
+    monkeypatch.setattr(learner_mod, "AUDIT_LOG", audit)
+    monkeypatch.setattr(collector_mod, "fetch_by_pmids", _fake_fetch)
+    monkeypatch.setattr(collector_mod, "pmid_for_doi", lambda doi: None)
+    _write_sp(base_dir, "sp_a.yaml", {
+        "user_email": "a@x.com", "papers": "10.1/unknown\n12345678",
+        "timestamp": "2026-08-04T01:02:03+00:00",
+    })
+    applied = collect_seed_papers_queue([{"email": "a@x.com"}], conn, _TermLLM(),
+                                        base_dir, users_dir, cache_dir)
+    assert applied == 1  # PMID 那篇仍提炼成功
+    auto = yaml.safe_load((cache_dir / "user001.yaml").read_text(encoding="utf-8"))
+    assert auto["feedback_added"] == ["spatial transcriptomics", "cell segmentation"]
+    assert list((base_dir / "pending").glob("*.yaml")) == []
+    conn.close()
+
+
+def test_seed_papers_queue_terms_capped_at_20(tmp_path, monkeypatch):
+    """单次提交总量封顶 20 词（每篇 ≤5 词由 extract_terms 保证，这里 10 篇 × 3 词 = 30 → 20）。"""
+    base_dir, users_dir, cache_dir, conn = _sp_setup(tmp_path)
+    audit = tmp_path / "audit.log"
+    monkeypatch.setattr(learner_mod, "AUDIT_LOG", audit)
+    monkeypatch.setattr(collector_mod, "fetch_by_pmids", _fake_fetch)
+    papers = "\n".join(str(10000000 + i) for i in range(10))
+
+    class _CountingLLM:
+        """每次调用返回 3 个新词，避免被去重逻辑吞掉。"""
+        calls = 0
+
+        def complete(self, prompt):
+            self.calls += 1
+            n = self.calls
+            return json.dumps([f"term {n}a", f"term {n}b", f"term {n}c"])
+
+    llm = _CountingLLM()
+    _write_sp(base_dir, "sp_cap.yaml", {
+        "user_email": "a@x.com", "papers": papers,
+        "timestamp": "2026-08-04T01:02:03+00:00",
+    })
+    applied = collect_seed_papers_queue([{"email": "a@x.com"}], conn, llm,
+                                        base_dir, users_dir, cache_dir)
+    assert applied == 1
+    auto = yaml.safe_load((cache_dir / "user001.yaml").read_text(encoding="utf-8"))
+    assert len(auto["feedback_added"]) == 20
+    conn.close()
+
+
+def test_seed_papers_queue_all_failed_warns_but_archives(tmp_path, monkeypatch, caplog):
+    """全部文献抓取失败：只告警不抛异常，文件归档，不写词表。"""
+    base_dir, users_dir, cache_dir, conn = _sp_setup(tmp_path)
+    monkeypatch.setattr(learner_mod, "AUDIT_LOG", tmp_path / "audit.log")
+    monkeypatch.setattr(collector_mod, "fetch_by_pmids", lambda pmids: [])
+    _write_sp(base_dir, "sp_fail.yaml", {
+        "user_email": "a@x.com", "papers": "12345678",
+        "timestamp": "2026-08-04T01:02:03+00:00",
+    })
+    with caplog.at_level("WARNING"):
+        applied = collect_seed_papers_queue([{"email": "a@x.com"}], conn,
+                                            _TermLLM(), base_dir, users_dir, cache_dir)
+    assert applied == 0
+    assert not (cache_dir / "user001.yaml").exists()
+    assert list((base_dir / "pending").glob("*.yaml")) == []
+    assert "未提炼出任何新检索词" in caplog.text
+    conn.close()
+
+
+def test_seed_papers_queue_corrupt_and_unknown_user(tmp_path, monkeypatch):
+    """损坏文件留原地；用户不匹配的归档跳过。"""
+    base_dir, users_dir, cache_dir, conn = _sp_setup(tmp_path)
+    monkeypatch.setattr(learner_mod, "AUDIT_LOG", tmp_path / "audit.log")
+    _write_sp(base_dir, "sp_bad.yaml", raw="{ not: valid: yaml: [")
+    _write_sp(base_dir, "sp_unknown.yaml", {
+        "user_email": "ghost@x.com", "papers": "12345678",
+        "timestamp": "2026-08-04T01:02:03+00:00",
+    })
+    applied = collect_seed_papers_queue([{"email": "a@x.com"}], conn, _TermLLM(),
+                                        base_dir, users_dir, cache_dir)
+    assert applied == 0
+    assert [p.name for p in (base_dir / "pending").glob("*.yaml")] == ["sp_bad.yaml"]
+    conn.close()
+
+
+def test_seed_papers_queue_no_pending_dir(tmp_path):
+    base_dir, users_dir, cache_dir, conn = _sp_setup(tmp_path)
+    assert collect_seed_papers_queue([{"email": "a@x.com"}], conn, _TermLLM(),
+                                     base_dir, users_dir, cache_dir) == 0
+    conn.close()

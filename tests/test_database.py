@@ -115,8 +115,42 @@ def test_get_analysis_roundtrip(conn):
                               "methods": ["scRNA-seq"], "organisms": ["Apis"]})
     assert get_analysis(conn, pid) == {
         "field": "", "problem": "P", "solution": "S", "finding": "F",
-        "methods": ["scRNA-seq"], "organisms": ["Apis"],
+        "methods": ["scRNA-seq"], "organisms": ["Apis"], "paper_type": "",
     }
+
+
+def test_analysis_paper_type_roundtrip(conn):
+    pid = save_paper(conn, _paper())
+    save_analysis(conn, pid, {"problem": "P", "paper_type": "综述"})
+    assert get_analysis(conn, pid)["paper_type"] == "综述"
+
+
+def test_analysis_table_migration_adds_paper_type(tmp_path):
+    # 旧形库（无 paper_type 列）重连后应补齐该列，旧行读取回退 ""
+    db = tmp_path / "old.db"
+    raw = sqlite3.connect(db)
+    raw.executescript("""CREATE TABLE papers (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL, abstract TEXT, authors TEXT, journal TEXT,
+        date TEXT, doi TEXT, url TEXT, keywords TEXT,
+        dedup_key TEXT NOT NULL UNIQUE, first_seen TEXT NOT NULL);
+    CREATE TABLE paper_analysis (
+        paper_id INTEGER PRIMARY KEY REFERENCES papers(id),
+        problem TEXT, solution TEXT, finding TEXT, methods TEXT, organisms TEXT,
+        created_time TEXT NOT NULL);
+    INSERT INTO papers (title, dedup_key, first_seen) VALUES ('t', 'doi:10.1/x', '2026-07-01');
+    INSERT INTO paper_analysis VALUES (1, 'P', 'S', 'F', '[]', '[]', '2026-07-01');
+    """)
+    raw.commit()
+    raw.close()
+
+    c = connect(db)
+    analysis = get_analysis(c, 1)
+    assert analysis["problem"] == "P"
+    assert analysis["paper_type"] == ""        # 旧行无值，不补跑 LLM
+    save_analysis(c, 1, {"problem": "P2", "paper_type": "研究"})  # 新接口可写
+    assert get_analysis(c, 1)["paper_type"] == "研究"
+    c.close()
 
 
 def test_get_news_summary_roundtrip(conn):

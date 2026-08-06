@@ -16,17 +16,31 @@ EMPTY_ANALYSIS = {
     "finding": "",
     "methods": [],
     "organisms": [],
+    # 文献类型：方法学 / 研究 / 综述 三值；"" 表示未知（不渲染标签）。
+    "paper_type": "",
 }
+
+#: paper_type 合法取值；LLM 输出其他值一律按解析失败处理（回退 ""）。
+PAPER_TYPES = ("方法学", "研究", "综述")
 
 
 def analyze_paper(paper: Paper, llm) -> dict:
-    """输出 {field, problem, solution, finding, methods[], organisms[]}。"""
+    """输出 {field, problem, solution, finding, methods[], organisms[], paper_type}。"""
     prompt = load_prompt("paper_analysis").safe_substitute(
         title=paper.title,
         abstract=paper.abstract or "（无摘要）",
         keywords=", ".join(paper.keywords) or "（无）",
     )
-    return _parse_json(llm.complete(prompt))
+    result = _parse_json(llm.complete(prompt))
+    # 抓取元数据（如 PubMed PublicationType）已标明 Review 时优先采信，
+    # LLM 只在无此元数据时判断；非法值按解析失败回退为 ""。
+    if any("review" in str(pt).lower() for pt in paper.publication_types):
+        result["paper_type"] = "综述"
+    elif result.get("paper_type") not in PAPER_TYPES:
+        if result.get("paper_type"):
+            logger.warning("paper_type 非法值 %r，按解析失败回退为空", result["paper_type"])
+        result["paper_type"] = ""
+    return result
 
 
 def _parse_json(raw: str) -> dict:

@@ -138,6 +138,26 @@ def _learn_positive(conn, user: dict, row, cfg: dict, llm, today: str) -> None:
             _reinforce(conn, user_email, term, paper_id, value, cfg, today)
 
 
+def audit_seed_term(user_email: str, term: str, source_ref: str) -> None:
+    """"用文献优化关键词"提炼词的审计记录（同一 AUDIT_LOG，JSON Lines 可回滚）：
+    action 固定 seed_term，source_ref 记录来源文献标识（如 "pmid:12345678" /
+    "doi:10.xxxx/yyy"），paper_id/weight/support 占位为 0。"""
+    record = {
+        "time": datetime.now(timezone.utc).isoformat(),
+        "user": user_email,
+        "action": "seed_term",
+        "term": term,
+        "paper_id": 0,
+        "weight": 0,
+        "support": 0,
+        "feedback": "seed_paper",
+        "source_ref": source_ref,
+    }
+    AUDIT_LOG.parent.mkdir(exist_ok=True)
+    with AUDIT_LOG.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(record, ensure_ascii=False) + "\n")
+
+
 def _strong_negative_count(user_email: str, term: str) -> int:
     """扫描审计日志，统计同一（用户, 词）的强负（⭐1）降权事件累计次数（含刚写入的本次）。"""
     if not AUDIT_LOG.exists():

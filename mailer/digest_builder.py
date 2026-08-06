@@ -25,7 +25,18 @@
 - 新增关键词（仅网页版）：webhook 配置时页内输入框直接提交，JS fetch Worker
   /kw 端点（签名 msg 为 "<邮箱>|<日期>"，见 _webhook_keyword_url），Worker 直写
   feedback_data/keywords/pending/，由 python -m feedback 的 collect_keyword_queue
-  消费进自动词表；webhook 未配置时降级 mailto（正文只保留 + 关键词行）。
+  消费进自动词表；webhook 未配置时降级 mailto（正文只保留 + 关键词行）；
+- 文献输入优化关键词（仅网页版，webhook 配置时）：页内多行文本框粘贴 DOI/PMID，
+  JS fetch Worker /sp 端点（签名 msg 与 /kw 同构，见 _webhook_seed_papers_url），
+  Worker 直写 feedback_data/seed_papers/pending/，由 python -m feedback 的
+  collect_seed_papers_queue 抓取提炼进自动词表。
+
+模块分组与文献类型（日报瘦身邮件 / 网页版 / 周报月报共用约定）：
+- items 可带 "module_label"（调用方用 processing.module_groups 按 lab.yaml
+  topic_groups 归属后写入的中文显示名）；列表按它分组渲染组小标题，缺省/未命中
+  归入"其他"且沉底，仅"其他"一组时不渲染小标题；
+- analysis["paper_type"]（方法学/研究/综述）非空时标题前渲染类型 badge；
+  空值（旧缓存或解析失败）不渲染。
 两条路都要求调用方提供 user_email 且 items 非空。
 """
 
@@ -92,7 +103,7 @@ def build_digest_html(user_name: str, digest_date: str, items: list[dict],
             "date": escape(digest_date),
             "count": str(len(items)),
             "overview_block": _overview_block(overview) if overview else "",
-            "paper_rows": "\n".join(_paper_row(i, it) for i, it in enumerate(items, 1)),
+            "paper_rows": _paper_rows_grouped(items),
             "web_url": escape(web_url),
         }
         return render("daily_digest_slim.html", context)
@@ -120,14 +131,27 @@ def build_page_html(user_name: str, digest_date: str, items: list[dict],
         "date": escape(digest_date),
         "count": str(len(items)),
         "overview_block": _overview_block(overview) if overview else "",
-        "paper_cards": "\n".join(
-            _paper_card(i, it, cfg, user_email, open_details=False,
-                        star_row=_page_star_row(user_email, it.get("paper_id"), cfg))
-            for i, it in enumerate(items, 1)),
+        "paper_cards": _paper_cards_grouped(items, cfg, user_email),
         "daily_summary": escape(daily_summary) if daily_summary else "（今日价值总结生成失败，请查看上方论文列表。）",
         "keyword_entry": _keyword_entry(user_email, digest_date, cfg),
+        "seed_papers_entry": _seed_papers_entry(user_email, digest_date, cfg),
     }
     return render("daily_page.html", context)
+
+
+def _paper_cards_grouped(items: list[dict], cfg: dict, user_email: str) -> str:
+    """网页版卡片列表：按 module_label 分区（组间插小标题，序号跨组连续）。"""
+    groups = _group_items(items)
+    show_heads = _show_module_heads(groups)
+    parts = []
+    for label, members in groups:
+        if show_heads:
+            parts.append(f'    <h2 class="module-head">{escape(label)}</h2>')
+        parts.extend(
+            _paper_card(i, it, cfg, user_email, open_details=False,
+                        star_row=_page_star_row(user_email, it.get("paper_id"), cfg))
+            for i, it in members)
+    return "\n".join(parts)
 
 
 def _overview_block(overview: dict) -> str:
@@ -149,15 +173,65 @@ def _badge(category: str) -> str:
     return f'<span class="badge {cls}">{escape(category or "Reference")}</span>'
 
 
+def _module_badge(label: str) -> str:
+    """模块（topic_groups 中文显示名）badge；空标签不渲染。"""
+    if not label:
+        return ""
+    return f'<span class="badge cat-module">{escape(label)}</span>'
+
+
+def _type_badge(it: dict) -> str:
+    """文献类型 badge（方法学/研究/综述）；analysis 无该字段或为空（旧缓存/
+    解析失败）时不渲染。"""
+    paper_type = (it.get("analysis") or {}).get("paper_type") or ""
+    if not paper_type:
+        return ""
+    return f'<span class="badge cat-type">{escape(paper_type)}</span>'
+
+
+def _group_items(items: list[dict]) -> list:
+    """按 module_label 分组：[(label, [(全局序号, item), ...]), ...]。
+    组序 = 首次出现序，"其他"固定沉底（稳定排序）；缺 module_label 归入"其他"。"""
+    groups: list = []
+    index: dict = {}
+    for i, it in enumerate(items, 1):
+        label = it.get("module_label") or "其他"
+        if label not in index:
+            index[label] = len(groups)
+            groups.append([label, []])
+        groups[index[label]][1].append((i, it))
+    groups.sort(key=lambda g: g[0] == "其他")
+    return groups
+
+
+def _show_module_heads(groups: list) -> bool:
+    """只有"其他"一组时不渲染分组小标题（等于未分组，保持版面干净）。"""
+    return len(groups) > 1 or (groups and groups[0][0] != "其他")
+
+
 def _paper_row(i: int, it: dict) -> str:
-    """瘦身邮件的一行：序号 + 定级徽章 + 论文标题（链到原文）+ news 一句话概要 + 期刊·日期。"""
+    """瘦身邮件的一行：序号 + 定级徽章 + 类型 badge + 论文标题（链到原文）
+    + news 一句话概要 + 期刊·日期。"""
     p = it["paper"]
     rows = [f'<div class="row-title">{i}. {_badge(it.get("category", "Reference"))}'
+            f'{_type_badge(it)}'
             f'<a class="title-link" href="{escape(p.url)}">{escape(p.title)}</a></div>']
     if it.get("news"):
         rows.append(f'<div class="news">{escape(it["news"])}</div>')
     rows.append(f'<div class="meta">{escape(p.journal)} · {escape(p.date)}</div>')
     return '    <div class="row">\n      ' + "\n      ".join(rows) + '\n    </div>'
+
+
+def _paper_rows_grouped(items: list[dict]) -> str:
+    """瘦身邮件的一句话列表：按 module_label 分组渲染（组间插小标题，序号跨组连续）。"""
+    groups = _group_items(items)
+    show_heads = _show_module_heads(groups)
+    parts = []
+    for label, members in groups:
+        if show_heads:
+            parts.append(f'    <div class="module-head">{escape(label)}</div>')
+        parts.extend(_paper_row(i, it) for i, it in members)
+    return "\n".join(parts)
 
 
 def _feedback_block(user_email: str, digest_date: str, count: int, cfg: dict) -> str:
@@ -294,6 +368,39 @@ def _keyword_entry(user_email: str, digest_date: str, cfg: dict) -> str:
     </div>"""
 
 
+def _webhook_seed_papers_url(base_url: str, secret: str, user_email: str, digest_date: str) -> str:
+    """网页版"文献输入"提交链接（不含文献列表本体，页内 JS 提交时追加
+    &sp=<URL编码的文献列表>）。签名 msg "<邮箱>|<日期>" 与 /kw 同构——
+    与 worker/feedback.js /sp 端点的校验算法必须严格一致，改动需两侧同步。"""
+    msg = f"{user_email}|{digest_date}".encode("utf-8")
+    sig = hmac.new(secret.encode("utf-8"), msg, hashlib.sha256).hexdigest()[:16]
+    return (f"{base_url.rstrip('/')}/sp?u={quote(str(user_email))}"
+            f"&d={quote(str(digest_date))}&s={sig}")
+
+
+def _seed_papers_entry(user_email: str, digest_date: str, cfg: dict) -> str:
+    """网页版"用文献优化关键词"入口：仅 webhook（feedback_webhook_url +
+    feedback_secret 均配置）时渲染——多行文本框粘贴 DOI/PMID（每行一个，≤10 篇），
+    JS fetch Worker /sp 无感提交（签名 URL 预算好嵌入 data-url），Worker 直写
+    seed_papers 队列，由 python -m feedback 提炼进自动词表，次日检索生效；
+    webhook 未配置或缺 user_email 时不渲染（文献输入无 mailto 降级通道）。"""
+    if not user_email:
+        return ""
+    if not (cfg["feedback_webhook_url"] and cfg["feedback_secret"]):
+        return ""
+    url = _webhook_seed_papers_url(cfg["feedback_webhook_url"], cfg["feedback_secret"],
+                                   user_email, digest_date)
+    return f"""    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="{escape(url)}">提交文献</button>
+      <span class="sp-status"></span>
+    </div>"""
+
+
+
 def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "",
                 open_details: bool = True, star_row: str | None = None) -> str:
     """单篇论文卡片：标题 + 一句话新闻概要 + 期刊日期默认可见。
@@ -308,7 +415,9 @@ def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "",
         head += f' · {it["score"]} 分'
     rows = [
         f'<div class="card-head">{head}</div>',
-        f'<div class="card-title"><a class="title-link" href="{escape(p.url)}">{escape(p.title)}</a></div>',
+        f'<div class="card-title">{_module_badge(it.get("module_label") or "")}'
+        f'{_type_badge(it)}'
+        f'<a class="title-link" href="{escape(p.url)}">{escape(p.title)}</a></div>',
     ]
     if cfg["show_translation"] and it.get("title_zh"):
         rows.append(f'<div class="card-title-zh">{escape(it["title_zh"])}</div>')

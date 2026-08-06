@@ -21,6 +21,16 @@ IMAP_PORT 默认 993；IMAP_USER / IMAP_PASSWORD 缺省回退 SMTP_USER / SMTP_P
 feedback_data/keywords/pending/（独立目录，不进星标 pending 队列，文件契约见
 Worker 文件头注释），本函数解析后同样交给 add_feedback_terms 落地到该用户
 自动词表 feedback_added——与邮件 "+关键词" 行完全同一通道，次日检索生效。
+
+另有网页端"用文献优化关键词"队列（collect_seed_papers_queue）：Worker /sp 端点
+把用户粘贴的文献列表（DOI 或 PMID，每行一个）直写
+feedback_data/seed_papers/pending/，本函数逐条抓取标题与摘要（PMID 直接 efetch；
+DOI 先经 PubMed esearch 转 PMID），复用 learner.extract_terms 提炼新检索词
+（与该用户手配词表 + 已提权学习词去重，每篇 ≤5 词、单次提交总量封顶 20 词），
+经 add_feedback_terms 落 feedback_added——与 "+关键词" 同一通道，次日生效；
+每个词的来源文献标识写审计日志 logs/feedback_learning.log（learner.audit_seed_term）。
+文件契约与 Worker /sp 端点逐字段对应（见 worker/feedback.js 文件头注释），
+改动需两侧同步。
 """
 
 import email
@@ -37,7 +47,9 @@ from dotenv import load_dotenv
 
 from database.db import get_recommendation_paper_ids, save_feedback
 from feedback import store
+from feedback.learner import _known_terms, audit_seed_term, extract_terms
 from processing.term_expander import AUTO_TERMS_DIR, USERS_DIR, add_feedback_terms
+from sources.pubmed import fetch_by_pmids, pmid_for_doi
 
 logger = logging.getLogger(__name__)
 
@@ -173,6 +185,109 @@ def collect_keyword_queue(base_dir: Path = KEYWORD_QUEUE_DIR,
             if added:
                 applied += 1
                 logger.info("网页端新增关键词已入词表（%s）：%s", user_email, "、".join(added))
+        store.mark_processed(path, base_dir)
+    return applied
+
+
+SEED_PAPERS_QUEUE_DIR = store.DEFAULT_BASE_DIR / "seed_papers"
+SEED_PAPERS_MAX = 10   # 单次提交文献上限（与网页版前端校验一致）
+SEED_TERMS_MAX = 20    # 单次提交提炼词总量封顶
+
+_SEED_PMID = re.compile(r"^\d+$")
+_SEED_DOI = re.compile(r"^10\.\d{4,9}/\S+$")
+
+
+def parse_seed_paper_lines(text: str) -> tuple[list[tuple[str, str]], list[str]]:
+    """解析"用文献优化关键词"输入框的多行文本：每行一个 DOI（10.xxxx/... 形态）
+    或 PMID（纯数字），空行忽略。返回 (合法条目 [(kind, value), ...] 截取前
+    SEED_PAPERS_MAX 条, 非法行原文列表)。"""
+    valid: list[tuple[str, str]] = []
+    invalid: list[str] = []
+    for ln in (text or "").splitlines():
+        ln = ln.strip()
+        if not ln:
+            continue
+        if _SEED_PMID.match(ln):
+            valid.append(("pmid", ln))
+        elif _SEED_DOI.match(ln):
+            valid.append(("doi", ln))
+        else:
+            invalid.append(ln)
+    return valid[:SEED_PAPERS_MAX], invalid
+
+
+def collect_seed_papers_queue(users: list[dict], conn, llm,
+                              base_dir: Path = SEED_PAPERS_QUEUE_DIR,
+                              users_dir: Path = USERS_DIR,
+                              cache_dir: Path = AUTO_TERMS_DIR) -> int:
+    """消费"用文献优化关键词"队列 feedback_data/seed_papers/pending/，返回实际
+    有新检索词入词表的提交文件数。镜像 collect_keyword_queue 的队列语义：
+    损坏文件记日志留原地；缺字段 / 用户不匹配的归档跳过；处理后归档
+    seed_papers/processed/YYYY-MM/（复用 store.mark_processed）。
+
+    每个文件含 user_email / papers（多行 DOI/PMID 原文）/ date / source /
+    timestamp（契约见 worker/feedback.js 文件头注释，两侧逐字段对应）。
+    逐条解析（parse_seed_paper_lines）→ 抓取标题摘要（PMID 直接 efetch；DOI 经
+    pmid_for_doi 转换）→ learner.extract_terms 提炼新词（每篇 ≤5 词，与手配词表 +
+    已提权学习词 + 本批已提词去重，总量封顶 SEED_TERMS_MAX）→ add_feedback_terms
+    落 feedback_added。单篇抓取/提词失败跳过记日志，不影响同批其余文献；
+    全部失败仅告警不抛异常。"""
+    pending = Path(base_dir) / "pending"
+    if not pending.is_dir():
+        return 0
+    by_email = {u["email"]: u for u in users}
+    applied = 0
+    for path in sorted(pending.glob("*.yaml")):
+        try:
+            data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        except yaml.YAMLError:
+            logger.warning("文献输入文件损坏，跳过：%s", path)
+            continue
+        user_email = str(data.get("user_email") or "").strip()
+        valid, invalid = parse_seed_paper_lines(str(data.get("papers") or ""))
+        user = by_email.get(user_email)
+        if not user_email or not valid or user is None:
+            logger.warning("文献输入文件缺 user_email/papers 或用户不匹配，归档跳过：%s", path)
+            store.mark_processed(path, base_dir)
+            continue
+        if invalid:
+            logger.warning("文献输入含非法行，已跳过（%s）：%s", user_email, "、".join(invalid))
+
+        known = _known_terms(user, conn, user_email)
+        all_terms: list[str] = []
+        for kind, value in valid:
+            if len(all_terms) >= SEED_TERMS_MAX:
+                break
+            try:
+                pmid = value
+                if kind == "doi":
+                    pmid = pmid_for_doi(value)
+                    if not pmid:
+                        logger.warning("DOI 无法转为 PMID，跳过该篇：%s", value)
+                        continue
+                papers = fetch_by_pmids([pmid])
+            except Exception:
+                logger.warning("文献抓取失败，跳过该篇：%s:%s", kind, value, exc_info=True)
+                continue
+            if not papers:
+                logger.warning("未抓到文献，跳过该篇：%s:%s", kind, value)
+                continue
+            paper = papers[0]
+            for term in extract_terms(paper.title, paper.abstract,
+                                      known + all_terms, llm):
+                if len(all_terms) >= SEED_TERMS_MAX:
+                    break
+                all_terms.append(term)
+                audit_seed_term(user_email, term, f"{kind}:{value}")
+
+        if all_terms:
+            added = add_feedback_terms(user_email, all_terms, users_dir, cache_dir)
+            if added:
+                applied += 1
+                logger.info("文献输入提炼的新检索词已入词表（%s）：%s",
+                            user_email, "、".join(added))
+        else:
+            logger.warning("文献输入未提炼出任何新检索词（%s）：%s", user_email, path)
         store.mark_processed(path, base_dir)
     return applied
 

@@ -79,3 +79,49 @@ def test_paper_type_non_review_metadata_uses_llm():
     paper = make_paper()
     paper.publication_types = ["Journal Article"]
     assert analyze_paper(paper, _llm_with_type("方法学"))["paper_type"] == "方法学"
+
+
+# ---------- category / subcategory：合法保留、非法回退、缺字段回退 ----------
+
+def _llm_with_taxonomy(category, subcategory):
+    payload = {"field": "x"}
+    if category is not None:
+        payload["category"] = category
+    if subcategory is not None:
+        payload["subcategory"] = subcategory
+    return FakeLLM(json.dumps(payload, ensure_ascii=False))
+
+
+def test_taxonomy_valid_pair_kept():
+    result = analyze_paper(make_paper(),
+                           _llm_with_taxonomy("cellular_spatial_biology", "spatial_omics"))
+    assert result["category"] == "cellular_spatial_biology"
+    assert result["subcategory"] == "spatial_omics"
+
+
+def test_taxonomy_empty_pair_kept_as_unclassified():
+    result = analyze_paper(make_paper(), _llm_with_taxonomy("", ""))
+    assert result["category"] == "" and result["subcategory"] == ""
+
+
+def test_taxonomy_invalid_category_falls_back():
+    result = analyze_paper(make_paper(), _llm_with_taxonomy("genomics", "pangenomics"))
+    assert result["category"] == "" and result["subcategory"] == ""
+
+
+def test_taxonomy_subcategory_not_in_category_falls_back():
+    # spatial_omics 不属于 genome_evolution_diversity
+    result = analyze_paper(make_paper(),
+                           _llm_with_taxonomy("genome_evolution_diversity", "spatial_omics"))
+    assert result["category"] == "" and result["subcategory"] == ""
+
+
+def test_taxonomy_only_one_field_falls_back():
+    for cat, sub in (("genome_evolution_diversity", ""), ("", "pangenomics")):
+        result = analyze_paper(make_paper(), _llm_with_taxonomy(cat, sub))
+        assert result["category"] == "" and result["subcategory"] == ""
+
+
+def test_taxonomy_missing_fields_falls_back():
+    result = analyze_paper(make_paper(), FakeLLM('{"field": "x"}'))
+    assert result["category"] == "" and result["subcategory"] == ""

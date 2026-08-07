@@ -359,65 +359,77 @@ def test_page_stars_absent_without_paper_id():
     assert 'class="star-btn"' not in html and 'class="stars"' not in html
 
 
-# ---------- 模块分组与文献类型 badge ----------
+# ---------- 两层分类分区与文献类型 badge ----------
 
-def _typed_item(module_label, paper_type, title="T", category="Must Read"):
+def _typed_item(category_key, subcategory_label, paper_type="", title="T", category="Must Read"):
     item = make_item()
     item["paper"] = Paper(title=title, abstract="a", authors="Au", journal="J",
                           date="2025-07-16", doi=f"10.1/{title}", url="http://x",
                           keywords=["k"])
     item["analysis"] = {"paper_type": paper_type} if paper_type else {}
-    item["module_label"] = module_label
+    item["category_key"] = category_key
+    item["subcategory_label"] = subcategory_label
     item["category"] = category
     return item
 
 
-def test_slim_groups_by_module_with_headers_and_order():
+def test_slim_groups_by_taxonomy_fixed_order():
     items = [
-        _typed_item("空间组学", "", title="A"),
-        _typed_item("社会性昆虫", "", title="B"),
-        _typed_item("空间组学", "", title="C"),
-        _typed_item("其他", "", title="D"),
+        _typed_item("computational_biology", "AI 生物学", title="A"),
+        _typed_item("genome_evolution_diversity", "泛基因组学", title="B"),
+        _typed_item("computational_biology", "基础模型", title="C"),
+        _typed_item("", "", title="D"),  # 未分类 → 其他
     ]
     html = _build_slim(items)
-    heads = [h for h in ('<div class="module-head">空间组学</div>',
-                         '<div class="module-head">社会性昆虫</div>',
+    heads = [h for h in ('<div class="module-head">基因组演化与多样性</div>',
+                         '<div class="module-head">计算生物学</div>',
                          '<div class="module-head">其他</div>') if h in html]
     assert len(heads) == 3
-    # 组序 = 首次出现序，"其他"沉底；序号跨组连续
-    assert html.index("空间组学</div>") < html.index("社会性昆虫</div>") < html.index("其他</div>")
+    # 组序固定为 taxonomy 大类顺序（与 item 出现顺序无关），"其他"沉底；序号跨组连续
+    assert html.index("基因组演化与多样性</div>") < html.index("计算生物学</div>") \
+        < html.index("其他</div>")
+    assert '<div class="module-head">细胞与空间生物学</div>' not in html  # 空大类不渲染
+    assert '<div class="module-head">动物适应与生理</div>' not in html
     assert "1. " in html and "4. " in html
 
 
+def test_slim_unknown_category_key_falls_into_other():
+    html = _build_slim([_typed_item("no_such_category", "", title="A")])
+    assert '<div class="module-head">' not in html  # 全部归"其他"，仅一组时不渲染小标题
+
+
 def test_slim_no_module_head_when_only_other():
-    items = [_typed_item("其他", "", title="A"), _typed_item("", "", title="B")]
+    items = [_typed_item("", "", title="A"), _typed_item("", "", title="B")]
     html = _build_slim(items)
     assert '<div class="module-head">' not in html
 
 
-def test_slim_type_badge_and_fallback():
+def test_slim_subcategory_and_type_badges():
     html = _build_slim([
-        _typed_item("空间组学", "综述", title="A"),
-        _typed_item("空间组学", "", title="B"),  # 无 paper_type：不渲染标签
+        _typed_item("cellular_spatial_biology", "空间组学", "综述", title="A"),
+        _typed_item("cellular_spatial_biology", "", "", title="B"),  # 无分类/类型：不渲染
     ])
+    assert '<span class="badge cat-module">空间组学</span>' in html
+    assert html.count('<span class="badge cat-module">') == 1
     assert '<span class="badge cat-type">综述</span>' in html
     assert html.count('<span class="badge cat-type">') == 1  # 旧缓存论文不渲染类型 badge
 
 
 def test_page_groups_and_badges():
     items = [
-        {**_typed_item("空间组学", "方法学", title="A"), "paper_id": 1},
-        {**_typed_item("其他", "研究", title="B"), "paper_id": 2},
+        {**_typed_item("cellular_spatial_biology", "空间组学", "方法学", title="A"),
+         "paper_id": 1},
+        {**_typed_item("", "", "研究", title="B"), "paper_id": 2},
     ]
     html = _build_page(items)
-    assert '<h2 class="module-head">空间组学</h2>' in html
+    assert '<h2 class="module-head">细胞与空间生物学</h2>' in html
     assert '<h2 class="module-head">其他</h2>' in html
     assert '<span class="badge cat-module">空间组学</span>' in html
     assert '<span class="badge cat-type">方法学</span>' in html
     assert '<span class="badge cat-type">研究</span>' in html
-    # 无 module_label 的旧 item：归"其他"不报错
+    # 无分类字段的旧 item：归"其他"不报错
     html2 = _build_page([{**make_item(), "paper_id": 3}])
-    assert 'class="badge cat-module"' not in html2  # 仅"其他"一组时不渲染小标题与模块 badge
+    assert 'class="badge cat-module"' not in html2  # 仅"其他"一组时不渲染小标题与子类 badge
     assert '<h2 class="module-head">' not in html2
 
 

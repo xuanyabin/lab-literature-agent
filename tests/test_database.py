@@ -116,6 +116,7 @@ def test_get_analysis_roundtrip(conn):
     assert get_analysis(conn, pid) == {
         "field": "", "problem": "P", "solution": "S", "finding": "F",
         "methods": ["scRNA-seq"], "organisms": ["Apis"], "paper_type": "",
+        "category": "", "subcategory": "",
     }
 
 
@@ -123,6 +124,15 @@ def test_analysis_paper_type_roundtrip(conn):
     pid = save_paper(conn, _paper())
     save_analysis(conn, pid, {"problem": "P", "paper_type": "综述"})
     assert get_analysis(conn, pid)["paper_type"] == "综述"
+
+
+def test_analysis_category_roundtrip(conn):
+    pid = save_paper(conn, _paper())
+    save_analysis(conn, pid, {"problem": "P", "category": "cellular_spatial_biology",
+                              "subcategory": "spatial_omics"})
+    analysis = get_analysis(conn, pid)
+    assert analysis["category"] == "cellular_spatial_biology"
+    assert analysis["subcategory"] == "spatial_omics"
 
 
 def test_analysis_table_migration_adds_paper_type(tmp_path):
@@ -148,8 +158,19 @@ def test_analysis_table_migration_adds_paper_type(tmp_path):
     analysis = get_analysis(c, 1)
     assert analysis["problem"] == "P"
     assert analysis["paper_type"] == ""        # 旧行无值，不补跑 LLM
-    save_analysis(c, 1, {"problem": "P2", "paper_type": "研究"})  # 新接口可写
-    assert get_analysis(c, 1)["paper_type"] == "研究"
+    assert analysis["category"] == ""          # 旧行无分类，渲染归"其他"
+    assert analysis["subcategory"] == ""
+    cols = {r["name"] for r in c.execute("PRAGMA table_info(paper_analysis)")}
+    assert {"paper_type", "category", "subcategory"} <= cols
+    c.close()
+    c = connect(db)  # 重复执行幂等：列已存在不再 ALTER，不报错
+    save_analysis(c, 1, {"problem": "P2", "paper_type": "研究",
+                         "category": "genome_evolution_diversity",
+                         "subcategory": "pangenomics"})  # 新接口可写
+    analysis = get_analysis(c, 1)
+    assert analysis["paper_type"] == "研究"
+    assert analysis["category"] == "genome_evolution_diversity"
+    assert analysis["subcategory"] == "pangenomics"
     c.close()
 
 

@@ -5,6 +5,7 @@ import logging
 
 from sources.paper import Paper
 
+from . import taxonomy
 from .llm import load_prompt
 
 logger = logging.getLogger(__name__)
@@ -18,6 +19,9 @@ EMPTY_ANALYSIS = {
     "organisms": [],
     # 文献类型：方法学 / 研究 / 综述 三值；"" 表示未知（不渲染标签）。
     "paper_type": "",
+    # 两层展示分类（config/taxonomy.yaml）；"" 表示未分类（归入"其他"分区）。
+    "category": "",
+    "subcategory": "",
 }
 
 #: paper_type 合法取值；LLM 输出其他值一律按解析失败处理（回退 ""）。
@@ -57,4 +61,9 @@ def _parse_json(raw: str) -> dict:
     for key in result:
         if key in data:
             result[key] = data[key]
+    # 展示分类校验：category 必须是 taxonomy 配置的大类 key 且 subcategory 属于
+    # 该大类，否则两字段同时回退 ""（规则见 processing/taxonomy.validate）。
+    result["category"], result["subcategory"] = taxonomy.validate(
+        str(result.get("category") or ""), str(result.get("subcategory") or "")
+    )
     return result

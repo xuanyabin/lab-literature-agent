@@ -31,10 +31,12 @@
   Worker 直写 feedback_data/seed_papers/pending/，由 python -m feedback 的
   collect_seed_papers_queue 抓取提炼进自动词表。
 
-模块分组与文献类型（日报瘦身邮件 / 网页版 / 周报月报共用约定）：
-- items 可带 "module_label"（调用方用 processing.module_groups 按 lab.yaml
-  topic_groups 归属后写入的中文显示名）；列表按它分组渲染组小标题，缺省/未命中
-  归入"其他"且沉底，仅"其他"一组时不渲染小标题；
+分类分区与文献类型（日报瘦身邮件 / 网页版 / 周报月报共用约定）：
+- items 需带 "category_key" 与 "subcategory_label"（调用方从分析缓存的
+  category/subcategory 经 processing.taxonomy 取显示名后注入）；列表按
+  taxonomy 大类中文名分区，组序固定为 taxonomy.yaml 的大类顺序，空大类
+  不渲染，未分类（含 taxonomy 缺失/损坏）归入"其他"且沉底，仅"其他"一组时
+  不渲染小标题；subcategory_label 非空时标题前渲染子类 badge；
 - analysis["paper_type"]（方法学/研究/综述）非空时标题前渲染类型 badge；
   空值（旧缓存或解析失败）不渲染。
 两条路都要求调用方提供 user_email 且 items 非空。
@@ -48,6 +50,7 @@ from urllib.parse import quote
 import yaml
 
 from mailer.template_renderer import escape, render
+from processing import taxonomy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_EMAIL_CONFIG = BASE_DIR / "config" / "email.yaml"
@@ -140,7 +143,7 @@ def build_page_html(user_name: str, digest_date: str, items: list[dict],
 
 
 def _paper_cards_grouped(items: list[dict], cfg: dict, user_email: str) -> str:
-    """网页版卡片列表：按 module_label 分区（组间插小标题，序号跨组连续）。"""
+    """网页版卡片列表：按 taxonomy 大类分区（组间插小标题，序号跨组连续）。"""
     groups = _group_items(items)
     show_heads = _show_module_heads(groups)
     parts = []
@@ -173,8 +176,8 @@ def _badge(category: str) -> str:
     return f'<span class="badge {cls}">{escape(category or "Reference")}</span>'
 
 
-def _module_badge(label: str) -> str:
-    """模块（topic_groups 中文显示名）badge；空标签不渲染。"""
+def _subcategory_badge(label: str) -> str:
+    """子类中文名 badge（taxonomy 两层分类）；空标签（未分类/旧缓存）不渲染。"""
     if not label:
         return ""
     return f'<span class="badge cat-module">{escape(label)}</span>'
@@ -190,17 +193,23 @@ def _type_badge(it: dict) -> str:
 
 
 def _group_items(items: list[dict]) -> list:
-    """按 module_label 分组：[(label, [(全局序号, item), ...]), ...]。
-    组序 = 首次出现序，"其他"固定沉底（稳定排序）；缺 module_label 归入"其他"。"""
-    groups: list = []
-    index: dict = {}
+    """按两层分类的大类分组：[(大类中文名, [(全局序号, item), ...]), ...]。
+
+    item 需带 "category_key"（调用方从分析缓存注入的 taxonomy 大类 key）；
+    组序固定为 config/taxonomy.yaml 的大类顺序，空大类不渲染；未分类
+    （无 category_key 或 key 不在配置中，如 taxonomy 缺失/损坏）归入"其他"沉底。
+    """
+    by_cat: dict = {}
     for i, it in enumerate(items, 1):
-        label = it.get("module_label") or "其他"
-        if label not in index:
-            index[label] = len(groups)
-            groups.append([label, []])
-        groups[index[label]][1].append((i, it))
-    groups.sort(key=lambda g: g[0] == "其他")
+        by_cat.setdefault(it.get("category_key") or "", []).append((i, it))
+    groups: list = []
+    for key, label in taxonomy.ordered_categories():
+        members = by_cat.pop(key, None)
+        if members:
+            groups.append((label, members))
+    rest = [m for members in by_cat.values() for m in members]
+    if rest:
+        groups.append(("其他", rest))
     return groups
 
 
@@ -210,10 +219,11 @@ def _show_module_heads(groups: list) -> bool:
 
 
 def _paper_row(i: int, it: dict) -> str:
-    """瘦身邮件的一行：序号 + 定级徽章 + 类型 badge + 论文标题（链到原文）
+    """瘦身邮件的一行：序号 + 定级徽章 + 子类/类型 badge + 论文标题（链到原文）
     + news 一句话概要 + 期刊·日期。"""
     p = it["paper"]
     rows = [f'<div class="row-title">{i}. {_badge(it.get("category", "Reference"))}'
+            f'{_subcategory_badge(it.get("subcategory_label") or "")}'
             f'{_type_badge(it)}'
             f'<a class="title-link" href="{escape(p.url)}">{escape(p.title)}</a></div>']
     if it.get("news"):
@@ -223,7 +233,7 @@ def _paper_row(i: int, it: dict) -> str:
 
 
 def _paper_rows_grouped(items: list[dict]) -> str:
-    """瘦身邮件的一句话列表：按 module_label 分组渲染（组间插小标题，序号跨组连续）。"""
+    """瘦身邮件的一句话列表：按 taxonomy 大类分组渲染（组间插小标题，序号跨组连续）。"""
     groups = _group_items(items)
     show_heads = _show_module_heads(groups)
     parts = []
@@ -415,7 +425,7 @@ def _paper_card(i: int, it: dict, cfg: dict, user_email: str = "",
         head += f' · {it["score"]} 分'
     rows = [
         f'<div class="card-head">{head}</div>',
-        f'<div class="card-title">{_module_badge(it.get("module_label") or "")}'
+        f'<div class="card-title">{_subcategory_badge(it.get("subcategory_label") or "")}'
         f'{_type_badge(it)}'
         f'<a class="title-link" href="{escape(p.url)}">{escape(p.title)}</a></div>',
     ]

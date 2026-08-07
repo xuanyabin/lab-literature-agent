@@ -112,3 +112,23 @@ def test_build_queries_includes_learned_terms():
     assert strict == '("Apis") AND ("insect evolution" OR "gut microbiome")'
     assert relaxed == '"Apis" OR "insect evolution" OR "gut microbiome"'
     assert relaxed.count('"insect evolution"') == 1
+
+
+def test_search_pmids_datetype_passthrough(monkeypatch):
+    import sources.pubmed as pm
+
+    seen = {}
+
+    class _Resp:
+        def json(self):
+            return {"esearchresult": {"idlist": ["1"]}}
+
+    def fake_get(url, params, timeout):
+        seen.update(params)
+        return _Resp()
+
+    monkeypatch.setattr(pm, "_get_with_retry", fake_get)
+    assert pm.search_pmids("x", 1, 10) == ["1"]
+    assert seen["datetype"] == "pdat"          # 默认出版日期窗口（回测/预训练语义）
+    pm.search_pmids("x", 1, 10, datetype="edat")
+    assert seen["datetype"] == "edat"          # 日常增量用入库日期窗口

@@ -5,8 +5,10 @@
       （config/users/auto_terms/<slug>.yaml：LLM 扩展词仅用于召回、等权，
       缓存缺失/用户 yaml 更新/超 7 天时自动刷新，失败沿用旧缓存）；
       然后全局合并检索一次（sources/global_pool.py：全用户词表合并 → LLM 主题
-      聚类分簇检索 PubMed + bioRxiv 全局过滤，可选并入顶刊直采通道
-      sources/top_journals.py——按 journals.yaml 刊名直抓绕过关键词召回，
+      聚类分簇检索 PubMed（edat 入库日期窗口，防 pdat 滑窗漏召回）+ bioRxiv
+      全局过滤，可选并入顶刊直采通道
+      sources/top_journals.py——按 journals.yaml 刊名直抓 PubMed（edat）+
+      按 issn 段 Crossref 直采补索引延迟，绕过关键词召回，
       拼成当日全局池）→ 每用户本地规则
       粗筛等权打分选出候选（实验室公共方向词叠加个人词表；期刊因素只在精排
       journal 维度体现，粗筛不再按期刊加分；顶刊通道论文按刊名补入候选，
@@ -62,7 +64,7 @@ from recommendation.ranker import (
 from recommendation.scorer import _normalize_journal, load_scoring_config, rank_papers
 from sources.global_pool import fetch_global_pool
 from sources.paper import term_matches, variants_for
-from sources.top_journals import load_journal_names
+from sources.top_journals import load_journal_issns, load_journal_names
 
 BASE_DIR = Path(__file__).resolve().parent
 LOG_DIR = BASE_DIR / "logs"
@@ -348,15 +350,21 @@ def main() -> int:
                      slug, len(auto["expansion"]), len(auto["feedback_added"]))
         prepared.append((slug, u))
 
-    # 全局合并检索一次：全用户词表聚类分簇 → PubMed + bioRxiv 全局池（可选并入顶刊直采）
+    # 全局合并检索一次：全用户词表聚类分簇 → PubMed(edat 窗口) + bioRxiv 全局池
+    # （可选并入顶刊直采：PubMed 按刊 edat + Crossref 按 ISSN 补索引延迟）
     scoring_cfg = load_scoring_config()
     channel_cfg = scoring_cfg.get("journal_channel") or {}
-    channel_names = load_journal_names(tiers=tuple(channel_cfg.get("tiers") or ("t0",))) \
+    channel_tiers_cfg = tuple(channel_cfg.get("tiers") or ("t0",))
+    channel_names = load_journal_names(tiers=channel_tiers_cfg) \
         if channel_cfg.get("enabled") else []
+    channel_issns = load_journal_issns(tiers=channel_tiers_cfg) \
+        if channel_cfg.get("enabled") and channel_cfg.get("crossref") else {}
     pool = fetch_global_pool(
         [u for _, u in prepared], llm, days=args.days,
         journal_channel={"names": channel_names,
-                         "retmax_per_journal": channel_cfg.get("retmax_per_journal", 20)})
+                         "retmax_per_journal": channel_cfg.get("retmax_per_journal", 20),
+                         "issn": channel_issns,
+                         "crossref_rows": channel_cfg.get("crossref_rows", 20)})
     log.info("全局池：%d 篇（去重后）", len(pool))
     if not pool:
         log.info("全局池为空，今日无新文献")

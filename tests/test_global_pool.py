@@ -154,9 +154,11 @@ def _paper(doi):
 
 def test_fetch_global_pubmed_flat_or_and_cross_cluster_dedupe(monkeypatch):
     searches = []
+    seen_datetype = []
 
-    def fake_search(query, days, retmax):
+    def fake_search(query, days, retmax, datetype="pdat"):
         searches.append(query)
+        seen_datetype.append(datetype)
         if "ecology" in query:
             return ["2", "3"]
         return ["1", "2"]
@@ -174,11 +176,12 @@ def test_fetch_global_pubmed_flat_or_and_cross_cluster_dedupe(monkeypatch):
     # 扁平 OR：每簇只检索一次（无严格查询与降级重试）
     assert len(searches) == 2
     assert all(" AND " not in q and "NOT" not in q for q in searches)
+    assert seen_datetype == ["pdat", "pdat"]  # 默认 pdat；日常 edat 由 fetch_global_pool 传入
     assert [p.doi for p in papers] == ["10.1/1", "10.1/2", "10.1/3"]  # 跨簇合并去重
 
 
 def test_fetch_global_pubmed_cluster_error_continues(monkeypatch):
-    def fake_search(query, days, retmax):
+    def fake_search(query, days, retmax, datetype="pdat"):
         if "bad" in query:
             raise ConnectionError("boom")
         return ["9"]
@@ -205,8 +208,9 @@ def test_fetch_global_pool_merges_journal_channel(monkeypatch):
         {"topic": "全部", "species": terms["species"], "terms": terms["others"]}])
     monkeypatch.setattr(gp.time, "sleep", lambda _: None)
 
-    def fake_top(names, days, retmax):
+    def fake_top(names, days, retmax, datetype="pdat"):
         assert names == ["Nature"]
+        assert datetype == "edat"  # 日常路径一律 edat 窗口，防 pdat 滑窗漏召回
         return [_paper("10.1/1"), _paper("10.9/top")]  # 10.1/1 与关键词池撞 DOI
 
     monkeypatch.setattr(gp.top_journals, "fetch_top_journals", fake_top)
@@ -215,6 +219,45 @@ def test_fetch_global_pool_merges_journal_channel(monkeypatch):
                                   journal_channel={"names": ["Nature"], "retmax_per_journal": 5})
     # 撞 DOI 时关键词池版本优先，顶刊新论文并入
     assert [p.doi for p in papers] == ["10.1/1", "10.9/top"]
+
+
+def test_fetch_global_pool_merges_crossref_channel(monkeypatch):
+    monkeypatch.setattr(gp.pubmed, "search_pmids", lambda *_a, **_k: ["1"])
+    monkeypatch.setattr(gp.pubmed, "fetch_by_pmids",
+                        lambda pmids: [_paper(f"10.1/{i}") for i in pmids])
+    monkeypatch.setattr(gp.biorxiv, "fetch_recent_global", lambda *_a, **_k: [])
+    monkeypatch.setattr(gp, "cluster_terms", lambda terms, llm: [
+        {"topic": "全部", "species": terms["species"], "terms": terms["others"]}])
+    monkeypatch.setattr(gp.time, "sleep", lambda _: None)
+    monkeypatch.setattr(gp.top_journals, "fetch_top_journals", lambda *_a, **_k: [])
+
+    def fake_cross(issn_map, days, rows):
+        assert issn_map == {"cell": "0092-8674"} and days == 1 and rows == 7
+        return [_paper("10.1/1"), _paper("10.10/cross")]  # 10.1/1 与关键词池撞 DOI
+
+    monkeypatch.setattr(gp.top_journals, "fetch_crossref_journals", fake_cross)
+    users = [{"species": ["Apis"], "research_interest": [], "keywords": [], "methods": []}]
+    papers = gp.fetch_global_pool(
+        users, FakeLLM(), days=1,
+        journal_channel={"names": ["cell"], "issn": {"cell": "0092-8674"},
+                         "crossref_rows": 7})
+    # Crossref 论文并入；撞 DOI 时仍是先入池的关键词池版本优先
+    assert [p.doi for p in papers] == ["10.1/1", "10.10/cross"]
+
+
+def test_fetch_global_pool_crossref_skipped_without_issn(monkeypatch):
+    monkeypatch.setattr(gp.pubmed, "search_pmids", lambda *_a, **_k: [])
+    monkeypatch.setattr(gp.biorxiv, "fetch_recent_global", lambda *_a, **_k: [])
+    monkeypatch.setattr(gp, "cluster_terms", lambda terms, llm: [
+        {"topic": "全部", "species": terms["species"], "terms": terms["others"]}])
+    monkeypatch.setattr(gp.time, "sleep", lambda _: None)
+    monkeypatch.setattr(gp.top_journals, "fetch_top_journals", lambda *_a, **_k: [])
+    monkeypatch.setattr(gp.top_journals, "fetch_crossref_journals",
+                        lambda *_a, **_k: (_ for _ in ()).throw(AssertionError("不应调用")))
+    users = [{"species": ["Apis"], "research_interest": [], "keywords": [], "methods": []}]
+    papers = gp.fetch_global_pool(users, FakeLLM(), days=1,
+                                  journal_channel={"names": ["Nature"]})
+    assert papers == []
 
 
 def test_fetch_global_pool_without_journal_channel(monkeypatch):

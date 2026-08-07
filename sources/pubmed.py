@@ -84,9 +84,14 @@ def fetch_recent(user: dict, days: int = 1, retmax: int = 50, min_results: int =
     return dedupe(parse_efetch_xml(_efetch(pmids)))
 
 
-def search_pmids(query: str, days: int, retmax: int) -> list[str]:
-    """按查询式检索 PubMed，返回 PMID 列表（全局池按簇检索的公开包装）。"""
-    return _esearch(query, days, retmax)
+def search_pmids(query: str, days: int, retmax: int, datetype: str = "pdat") -> list[str]:
+    """按查询式检索 PubMed，返回 PMID 列表（全局池按簇检索的公开包装）。
+
+    datetype="pdat" 按出版日期开窗（回测/预训练的历史窗口用）；
+    datetype="edat" 按入库日期开窗（日常增量用，避免"pdat 早于索引日"
+    的大刊论文在窗口滑过后永久漏召回）。
+    """
+    return _esearch(query, days, retmax, datetype)
 
 
 def count_pmids(query: str, days: int) -> int:
@@ -138,14 +143,14 @@ def pmid_for_doi(doi: str) -> str | None:
     return ids[0] if ids else None
 
 
-def _esearch(query: str, days: int, retmax: int) -> list[str]:
+def _esearch(query: str, days: int, retmax: int, datetype: str = "pdat") -> list[str]:
     resp = _get_with_retry(
         f"{EUTILS_BASE}/esearch.fcgi",
         params={
             "db": "pubmed",
             "term": query,
             "retmode": "json",
-            "datetype": "pdat",
+            "datetype": datetype,
             "reldate": days,
             "retmax": retmax,
             "tool": _TOOL,

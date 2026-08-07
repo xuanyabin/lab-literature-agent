@@ -7,7 +7,8 @@ LLM 失败沿用旧缓存，无缓存回退单簇），fetch_global_pubmed 逐�
 合并去重，与 bioRxiv 全局过滤结果一起构成当日全局池。exclude 词不进全局
 检索（各用户粗筛时各自剔除），查询式永不带 NOT。可选顶刊直采通道
 （sources/top_journals.py）：按 journals.yaml 刊名绕过关键词召回直抓
-最新论文并入池中，解决顶刊漏召回。
+最新论文（PubMed 按刊 edat 窗口 + Crossref 按 ISSN 直采）并入池中，
+解决顶刊漏召回与 PubMed 索引延迟。
 """
 
 import hashlib
@@ -172,9 +173,12 @@ def build_cluster_query(cluster: dict) -> str:
     return _or(_clean(cluster.get("species")) + _clean(cluster.get("terms")))
 
 
-def fetch_global_pubmed(clusters: list[dict], days: int, retmax: int = 100) -> list[Paper]:
+def fetch_global_pubmed(clusters: list[dict], days: int, retmax: int = 100,
+                        datetype: str = "pdat") -> list[Paper]:
     """逐簇检索 PubMed 并合并去重。
 
+    datetype 语义同 pubmed.search_pmids（日常路径传 "edat" 防永久漏召回，
+    回测/预训练的历史窗口用默认 "pdat"）。
     单簇异常记日志后继续其余簇；簇间 sleep 0.4s 避免触发 NCBI 限流。
     """
     papers: list[Paper] = []
@@ -183,7 +187,7 @@ def fetch_global_pubmed(clusters: list[dict], days: int, retmax: int = 100) -> l
             query = build_cluster_query(cluster)
             if not query:
                 continue
-            pmids = pubmed.search_pmids(query, days, retmax)
+            pmids = pubmed.search_pmids(query, days, retmax, datetype=datetype)
             logger.info("簇「%s」命中 %d 篇", cluster.get("topic"), len(pmids))
             papers.extend(pubmed.fetch_by_pmids(pmids))
         except Exception:
@@ -197,16 +201,21 @@ def fetch_global_pool(prepared_users: list[dict], llm, days: int,
     """全局池入口：合并词表 → 主题聚类 → PubMed 分簇检索 + bioRxiv 全局过滤
     → （可选）顶刊直采通道合并 → 去重。
 
-    journal_channel: {"names": [刊名...], "retmax_per_journal": N}，
-    刊名来自 journals.yaml（top_journals.load_journal_names），按刊直抓绕过
-    关键词召回；为 None 或 names 为空时不启用。
+    日常增量路径的 PubMed 检索一律用 datetype="edat"（入库日期开窗），
+    避免"pdat 早于索引日"的大刊论文在 pdat 窗口滑过后永久漏召回。
+
+    journal_channel: {"names": [刊名...], "retmax_per_journal": N,
+                      "issn": {刊名: ISSN}, "crossref_rows": N}，
+    刊名/ISSN 来自 journals.yaml（top_journals.load_journal_names /
+    load_journal_issns），按刊直抓绕过关键词召回；issn 非空时额外走
+    Crossref 直采补齐 PubMed 索引延迟。为 None 或 names 为空时不启用。
     """
     terms = collect_global_terms(prepared_users)
     papers: list[Paper] = []
     if terms["species"] or terms["others"]:
         logger.info("全局检索词：物种 %d 个、其余 %d 个", len(terms["species"]), len(terms["others"]))
         clusters = cluster_terms(terms, llm)
-        papers = fetch_global_pubmed(clusters, days)
+        papers = fetch_global_pubmed(clusters, days, datetype="edat")
         logger.info("PubMed 全局池 %d 篇（去重后）", len(papers))
         preprints = biorxiv.fetch_recent_global(terms["species"], terms["others"], days)
         logger.info("bioRxiv 全局池 %d 篇（本地过滤后）", len(preprints))
@@ -216,7 +225,14 @@ def fetch_global_pool(prepared_users: list[dict], llm, days: int,
     if journal_channel and journal_channel.get("names"):
         top = top_journals.fetch_top_journals(
             journal_channel["names"], days,
-            journal_channel.get("retmax_per_journal", 20))
+            journal_channel.get("retmax_per_journal", 20),
+            datetype="edat")
         logger.info("顶刊通道全局池 %d 篇", len(top))
         papers += top
+        if journal_channel.get("issn"):
+            cross = top_journals.fetch_crossref_journals(
+                journal_channel["issn"], days,
+                journal_channel.get("crossref_rows", 20))
+            logger.info("Crossref 直采全局池 %d 篇", len(cross))
+            papers += cross
     return pubmed.dedupe(papers)  # 关键词池在前，撞 DOI/标题时关键词池版本优先

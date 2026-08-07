@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-08-07</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-08-07</h1>
+    <p class="hello">轩亚冰，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">昨日全库新增 517 篇 · 命中您的关键词 159 篇 · 本次推送 15 篇（必读 0 · 重要 6 · 参考 9）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 67 分</div>
+      <div class="card-title"><span class="badge cat-module">脑图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.07.31.742069">Anatomical mapping and regulation of dopaminergic and octopaminergic neurons during temporal polyethism in the red harvester ant</a></div>
+      <div class="card-title-zh">红色收获蚁时间分工过程中多巴胺能与章鱼胺能神经元的解剖学定位及其调控</div>
+      <div class="news">为解决红收获蚁时序分工中胺能神经元分布与表达变化不清问题，作者结合合成酶及转录本荧光定位，发现多巴胺和章鱼胺神经元脑区特异分布且随年龄下调。</div>
+      <div class="meta">bioRxiv · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zavaleta-Zamora C., Fetter-Pruneda I.</div>
+<div class="meta">DOI: 10.64898/2026.07.31.742069</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.07.31.742069">https://www.biorxiv.org/content/10.64898/2026.07.31.742069</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>紧扣蚂蚁时间分工与行为演化，关联神经调控和工蚁任务转换。</div>
+<div class="abstract"><span class="abs-label">背景</span>许多社会性昆虫（如蚂蚁）会随年龄增长而发生从育幼到觅食的刻板性行为转变，这一现象称为时间分工（temporal polyethism）。生物胺与这些特定行为相关，但其在这类动物中的作用仍有许多方面尚不清楚，尤其是许多胺能系统缺乏解剖学表征，且与上述行为表型相关基因的表达情况所知有限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究以 Pogonomyrmex barbatus 的脑为对象，通过检测多巴胺和章鱼胺合成酶——酪氨酸羟化酶（tyrosine hydroxylase）和酪胺β-羟化酶（tyramine beta-hydroxylase）及其转录本，鉴定产生这两种胺的神经元。并通过测量荧光强度，比较年轻育幼蚁与成熟觅食蚁中这两个基因的表达水平。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>多巴胺能和章鱼胺能神经元主要分布于前脑（protocerebrum）和食道下区（subesophageal zone）。产生多巴胺的神经元还存在于视叶（optic lobes），而产生章鱼胺的神经元则在触角叶（antennal lobes）形成簇状分布。随着个体年龄增长，这两个基因的表达均下调。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，相关胺能系统在 Pogonomyrmex barbatus 脑内具有明确的解剖分布特征，并且其基因表达会随年龄和行为阶段变化而改变。上述基因表达降低可能与成熟工蚁更倾向于执行巢外任务（如觅食）相关。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1425&amp;v=1&amp;s=5406b6abc2046141" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1425&amp;v=2&amp;s=45f00bf457088c0b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1425&amp;v=3&amp;s=75be2694d3dd5d75" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1425&amp;v=4&amp;s=67636fef724d4dac" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1425&amp;v=5&amp;s=33142ef2be7886b4" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-important">Important</span> · 64 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.02.13.705867">jazzPanda: spatially aware marker gene detection for imaging-based spatial transcriptomics</a></div>
+      <div class="card-title-zh">jazzPanda：用于基于成像的空间转录组学的空间感知型标记基因检测</div>
+      <div class="news">为解决成像型空间转录组标记基因检测忽略空间坐标的问题，作者提出jazzPanda，发现其较传统检验可识别空间一致性更强、特异性更高且更精简的标记基因集。</div>
+      <div class="meta">bioRxiv · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Jin X., Putri G. H., Cheng J., Asselin-Labat M.-L., Smyth G. K., Phipson B.</div>
+<div class="meta">DOI: 10.64898/2026.02.13.705867</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.02.13.705867">https://www.biorxiv.org/content/10.64898/2026.02.13.705867</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接对应你关注的空间转录组分析，可用于细胞图谱标记基因识别。</div>
+<div class="abstract"><span class="abs-label">背景</span>空间转录组学（spatial transcriptomics）能够解析组织的空间组织结构及其细胞邻域，而细胞类型鉴定依赖于可靠的标记基因检测。现有标记基因检测方法主要为单细胞RNA测序开发，忽略了细胞和转录本的空间坐标；这对于基于成像的平台尤其成问题，因为每个细胞中每个基因的转录本计数极其稀疏。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者提出了 jazzPanda，用于在基于成像的空间转录组学中检测具有空间信息的标记基因。该方法通过空间分箱（spatial binning）将转录本和细胞坐标聚合为一维向量，并且无需细胞分割即可直接由转录本坐标构建基因向量。对于单样本数据，采用基于置换的秩相关进行标记识别；对于多样本数据，则采用带套索正则化（lasso-regularised）的广义线性模型，并纳入阴性对照探针的特异性平台背景信号。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>据作者所知，jazzPanda 是唯一同时考虑空间分布、样本间重复以及平台背景的标记检测方法。在公开 Xenium 和 CosMx 数据上，与 Wilcoxon 秩和检验和 t 检验相比，jazzPanda 识别出的标记基因具有更强的空间一致性和更高的特异性，并产生更小且更易解释的标记集。相同的向量框架还可扩展用于簇水平和基因水平的共定位分析。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该方法为基于成像的空间转录组数据提供了更适配的标记基因检测策略，尤其适用于转录本计数高度稀疏的场景。其开源实现为 R/Bioconductor 软件包，可支持相关数据分析与方法应用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1423&amp;v=1&amp;s=34ed23de225d1ef4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1423&amp;v=2&amp;s=c4d4fc7b6554e205" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1423&amp;v=3&amp;s=361fdda62c6bd9e6" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1423&amp;v=4&amp;s=fed67e5b0ed92f4d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1423&amp;v=5&amp;s=9bd140305d366864" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 45 分</div>
+      <div class="card-title"><span class="badge cat-module">三维时空图谱</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.1101/2024.04.27.591127">A human developing heart atlas reveals cardiovascular cell diversity for in vitro model benchmarking</a></div>
+      <div class="card-title-zh">人类发育中心脏图谱揭示用于体外模型基准评估的心血管细胞多样性</div>
+      <div class="news">为解决人类发育中心脏细胞分子特征不清问题，作者整合单细胞与空间转录组构建图谱，定义63种细胞并揭示体外心肌模型右心偏倚及约12孕周成熟度。</div>
+      <div class="meta">bioRxiv · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Knight-Schrijver V. R., Bayraktar S., Cranley J., Kanemaru K., Waller B., Colzani M., Wong C. K., Davaapil H., Lee J. C. M., D&#x27;Souza M., Köhne M. K., Polanski K., Richardson L., Semprich C., Kapuge R., Dabrowska M., Mulas I., Perera S., Patel M., Ho Y., He X., Tse H.-F., Tyser R., Gambardella L., Teichmann S. A., Sinha S.</div>
+<div class="meta">DOI: 10.1101/2024.04.27.591127</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.1101/2024.04.27.591127">https://www.biorxiv.org/content/10.1101/2024.04.27.591127</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>单细胞加空间转录组构建发育细胞图谱，可借鉴于昆虫细胞图谱研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>人类心脏及其相邻大血管由多种对生命至关重要的细胞类型构成，但其中许多细胞在发育过程中的分子特征仍未得到充分表征。为此，研究旨在系统描绘人类发育中心脏与大血管的细胞组成、分子身份及空间分布特征。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究对受孕后4至20周的人类发育中心脏和大血管进行了高分辨率分析，采用单细胞转录组学（single-cell transcriptomics）和空间转录组学（spatial transcriptomics）鉴定具有不同身份和位置特异性特征的细胞类型。研究还结合时间维度构建了用于单细胞RNA测序（scRNA-seq）预测分析的流程CMageR，用于心脏细胞注释及各细胞类型单细胞发育年龄的转录“心脏时钟”评估，并据此对体外模型进行基准比较。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究共定义了63种细胞类型，揭示了包括心包（pericardium）和动脉导管（ductus arteriosus）在内若干细胞类型此前未报道的分子身份；在心肌细胞中鉴定出心室小梁层-致密层轴及右-左轴的特征，在血管中区分了冠状血管与大血管的组成成分。空间验证证实了转录组发现，显示出具有特定分区模式的精细特征；所构建的心肌细胞发育时钟捕捉到孕早中期的动态生物学变化，揭示了核心功能改变和新的成熟标志物。对体外模型的比较表明，干细胞来源心肌细胞存在转录层面的右心腔偏倚，且其中“最老”的模型与受孕后12周的发育阶段相匹配。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提供了人类心脏发育的高分辨率图谱，可加深对发育、健康和疾病状态下心脏功能的理解。与此同时，该图谱也为建立丰富的转录参考资源、开展体外模型基准评估并进一步改进体外模型奠定了基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1443&amp;v=1&amp;s=b1e5f810c7a76820" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1443&amp;v=2&amp;s=3a7349d4e06d54a3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1443&amp;v=3&amp;s=e8bd9df7ca9439c6" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1443&amp;v=4&amp;s=f95a715d0a7dcf1e" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1443&amp;v=5&amp;s=f355b8d2d7192733" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 68 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.04.20.719773">RVQ-Alpha: Bridging Single-Cell Transcriptomics and Large Language Models via Hierarchical Discrete Tokenization and Fact-Aware Reinforcement Learning</a></div>
+      <div class="card-title-zh">RVQ-Alpha：通过分层离散标记化与事实感知强化学习连接单细胞转录组学与大语言模型</div>
+      <div class="news">为解决单细胞表达谱难融入LLM离散词汇的问题，作者结合分层RVQ与事实感知强化学习，发现统一模型在四任务12项指标上全面优于Mixed且逼近专家模型。</div>
+      <div class="meta">bioRxiv · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Li G., You Y., Fu Y., Zhou W., Tang F., Kong J., Tian L.</div>
+<div class="meta">DOI: 10.64898/2026.04.20.719773</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.04.20.719773">https://www.biorxiv.org/content/10.64898/2026.04.20.719773</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接连接单细胞转录组与大语言模型，契合你对AI genomics与scRNA-seq兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>单细胞RNA测序产生的是连续表达谱，而大语言模型处理的是离散的自回归序列，因此二者之间缺乏可供语言模型对细胞状态进行推理的共享计算接口。现有方法要么将细胞信息保留在大语言模型词表之外，要么按基因逐项占用上下文，要么学习缺乏基因层面锚定的重建编码。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究提出RVQ-Alpha，将大语言模型训练的四个阶段——标记化、监督微调、强化学习和蒸馏——系统适配到单细胞分析中。多码本残差向量量化（Residual Vector Quantization, RVQ）将每个表达谱词汇化为模型原生标记流中的紧凑分层细胞字母表，并通过配对解码器重建相应表达谱；“证据优先”监督将这些符号锚定到具名基因及表达相关证据上，随后事实感知RLVR对相互矛盾的陈述施加惩罚。为在统一模型中恢复专长能力，作者进一步采用多教师在线策略蒸馏（Multi-Teacher On-Policy Distillation, MOPD），将多个任务专家整合为单一的All-in-One检查点。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>任务特异性的RLVR可得到表现强的专家模型，但单一的Mixed策略在全部四类任务上均不如这些专家。在CAPSTONE基准测试中，这一包含明确生物学变化和确定性本体感知评分器的四任务评测套件显示，统一检查点在全部12项指标上均优于Mixed，并且在每个主要指标上与按任务路由的专家参考模型的差距均保持在0.005以内。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>总体而言，RVQ-Alpha为有依据、可审计的多任务单细胞分析提供了一条统一流程。该方法通过将单细胞表达谱转化为可被大语言模型原生处理的离散层级符号，并结合基于事实约束的训练，提高了模型推理的可追溯性与统一建模能力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1435&amp;v=1&amp;s=0f1c9aff580bd3cf" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1435&amp;v=2&amp;s=47a1276774b7b2d9" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1435&amp;v=3&amp;s=369dadaa1ae1e6e9" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1435&amp;v=4&amp;s=4ea08e7ffaf9ff24" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1435&amp;v=5&amp;s=e662db7c6d8282ee" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-important">Important</span> · 64 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42560939/">ScanNet: Single-cell annotation informed by transcriptional regulation Network via iterative heterogeneous graph learning.</a></div>
+      <div class="card-title-zh">ScanNet：通过迭代异构图学习并结合转录调控网络进行单细胞注释</div>
+      <div class="news">为解决单细胞注释忽视转录调控网络的问题，作者构建TF-TG异质图并迭代图学习，发现ScanNet在跨物种跨平台数据及scATAC-seq迁移中均优于现有方法。</div>
+      <div class="meta">PLoS computational biology · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Long Yongyu, Zhang Wenhao, Cao Lan, Huang Xiaobing, Wang Ying</div>
+<div class="meta">DOI: 10.1371/journal.pcbi.1014602</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42560939/">https://pubmed.ncbi.nlm.nih.gov/42560939/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>结合图神经网络与转录调控网络，契合你对单细胞注释和AI基因组学兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>对单细胞转录组测序（scRNA-seq）数据中的细胞类型进行准确注释，对于理解细胞身份至关重要。转录调控网络（transcriptional regulatory networks, TRNs）刻画了转录因子（TFs）与其靶基因（TGs）之间的调控关系，能够反映转录程序背后的分子依赖性，但现有多数细胞类型注释方法尚未充分利用这类调控信息。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>该研究提出ScanNet，将TRN先验知识整合到基因表达数据中，以捕获TRN机制下的细胞类型特异性特征。作者将TRN表示为由TF和TG两类调控元件及其有向边构成的异构图，并设计迭代异构图卷积框架，通过双通道编码器同时学习局部和全局细胞嵌入。其中特征调控层编码器（Regulation-level Encoder）用于捕获TRN内局部TF-TG调控互作，表达层编码器（Expression-level Encoder）用于学习全局细胞转录状态，随后整合多视角表示以实现细胞类型注释。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在涵盖不同物种、样本规模和测序平台的8个scRNA-seq数据集上的综合评估表明，ScanNet持续优于10种当前先进的细胞类型注释方法。通过将TRN先验结构嵌入异构图中，ScanNet在跨平台细胞类型注释以及在结构信息受限条件下识别新型细胞类型时也表现稳健。此外，该框架还可通过将染色质可及性映射到基因水平而灵活迁移至单细胞ATAC测序（scATAC-seq）数据，并取得优于现有注释工具的性能。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>ScanNet是一个具有可扩展性、可迁移性且具机制信息支撑的框架，可在多种单细胞数据模态中实现准确的细胞类型注释。该方法表明，将转录调控网络先验与异构图学习相结合，有助于更充分利用调控机制信息并提升注释性能。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1442&amp;v=1&amp;s=bd1e3e086a58d36a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1442&amp;v=2&amp;s=24ecb395444e7de7" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1442&amp;v=3&amp;s=fe9af5fdc4e42c23" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1442&amp;v=4&amp;s=a69fc61507c69eff" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1442&amp;v=5&amp;s=17a1f23d1f7b0e04" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-important">Important</span> · 62 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42561074/">Generative design of bacteriophages with genome language models.</a></div>
+      <div class="card-title-zh">利用基因组语言模型生成式设计噬菌体</div>
+      <div class="news">为解决全基因组尺度定向设计宿主嗜性噬菌体难题，作者利用基因组语言模型生成并测试完整ΦX174样噬菌体，获得16种可存活变体且其组合可快速克服耐药大肠杆菌。</div>
+      <div class="meta">Science (New York, N.Y.) · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">King Samuel H, Driscoll Claudia L, Li David B, Guo Daniel, Merchant Aditi T, Brixi Garyk, Wilkinson Max E, Hie Brian L</div>
+<div class="meta">DOI: 10.1126/science.aec2657</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42561074/">https://pubmed.ncbi.nlm.nih.gov/42561074/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接契合你关注的基因组AI与语言模型生成设计生物系统。</div>
+<div class="abstract"><span class="abs-label">背景</span>许多重要的生物学功能并非源于单个基因，而是源于由整个基因组编码的复杂相互作用。该研究报告了首次利用基因组语言模型对完整噬菌体基因组进行生成式设计。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究以噬菌体 ΦX174 作为设计模板，利用基因组语言模型生成具有目标宿主嗜性的可存活噬菌体。随后通过实验测试评估所生成噬菌体在实验室条件下的适应性特征，并使用冷冻电子显微镜（cryo-electron microscopy）进行结构验证。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>实验测试获得了 16 种在实验室条件下表现出不同适应性谱的噬菌体。冷冻电子显微镜证实，其中一种生成的噬菌体在衣壳中使用了一种进化上距离较远的 DNA 包装蛋白。由生成噬菌体组成的鸡尾酒疗法可迅速克服对 ΦX174 耐受的 Escherichia coli 菌株。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究展示了一条利用人工智能生成噬菌体疗法以应对快速进化细菌病原体的路径。该工作还为在基因组尺度上设计多样化的合成噬菌体及其他有用生物系统提供了蓝图。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1458&amp;v=1&amp;s=4568bb9e41e352b4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1458&amp;v=2&amp;s=399a60a6b569582e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1458&amp;v=3&amp;s=4a9fc828ae3d6d44" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1458&amp;v=4&amp;s=dec247cb50608bcc" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1458&amp;v=5&amp;s=fa4fd06a90af326a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 55 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42560035/">Drug Target Prediction from Perturbation Transcriptomics via a Biological Function-Guided Hypergraph Siamese Network.</a></div>
+      <div class="card-title-zh">基于生物功能引导的超图孪生网络从扰动转录组学中预测药物靶点</div>
+      <div class="news">为解决扰动转录组中药物靶标预测难题，作者构建生物功能引导的超图孪生网络BioHSNet，发现其在L1000数据集及冷启动场景中均优于现有转录组方法。</div>
+      <div class="meta">Bioinformatics (Oxford, England) · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhang Xinyi, Sun Xinliang, Yang Jiuxu, Li Min</div>
+<div class="meta">DOI: 10.1093/bioinformatics/btag475</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42560035/">https://pubmed.ncbi.nlm.nih.gov/42560035/</a></div>
+<div class="meta">Keywords: Drug target prediction、Hypergraph siamese network、Perturbation transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>超图孪生网络结合转录组与化学结构，契合你对AI基因组学方法的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>理解小分子如何调控细胞状态，仍是药物发现中的关键挑战。扰动转录组学（perturbation transcriptomics）的出现，为通过捕捉扰动后的细胞转录响应来阐明药物-靶点相互作用提供了新途径。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究提出了 BioHSNet，一种生物功能引导的超图孪生网络（hypergraph siamese network），用于从扰动转录组学数据中推断药物-靶点相互作用。该方法利用按功能分组的基因表达超边表示来捕捉高阶功能关系，并将化合物结构信息整合到模型中，以连接化学结构与功能响应。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>实验结果表明，在 Broad Institute 的 L1000 数据集上，BioHSNet 的表现优于其他基于转录组的方法，尤其是在冷启动（cold start）情景下。案例研究进一步显示了其在靶点预测和药物筛选中的实际应用价值。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，结合生物功能信息、超图表示与化合物结构信息，有助于提升基于扰动转录组学的药物靶点预测能力。BioHSNet 为靶点预测和药物筛选提供了一种具有实用潜力的方法。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1437&amp;v=1&amp;s=f201972c63cdf1cd" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1437&amp;v=2&amp;s=7550f9096c377abd" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1437&amp;v=3&amp;s=bbb7d3681bc81bdb" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1437&amp;v=4&amp;s=247a96b45e0675d5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1437&amp;v=5&amp;s=6ff46778d5795eff" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 54 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42557881/">scLncR: An Integrated and Flexible Pipeline for lncRNA Analysis in Single-Cell RNA Sequencing Data.</a></div>
+      <div class="card-title-zh">scLncR：用于单细胞RNA测序数据中lncRNA分析的一体化且灵活的流程</div>
+      <div class="news">为解决单细胞/单核RNA测序中lncRNA分析流程割裂问题，作者开发整合预测、定量与功能解析的scLncR，发现其在保持聚类一致性同时增强lncRNA信号并筛出3个根毛相关候选。</div>
+      <div class="meta">Annals of botany · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Yin Shuwei, Lu Yi, Yan Wenyu, Zhu Zonghui, Liu Ruiqi, Li GuangLin</div>
+<div class="meta">DOI: 10.1093/aob/mcag241</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42557881/">https://pubmed.ncbi.nlm.nih.gov/42557881/</a></div>
+<div class="meta">Keywords: bioinformatics pipeline、long non-coding RNAs、multiple functional analysis、single-cell RNA sequencing</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提供scRNA-seq/snRNA-seq分析流程，契合你对单细胞转录组与计算方法的关注。</div>
+<div class="abstract"><span class="abs-label">背景</span>长链非编码RNA（lncRNA）是细胞过程的重要调控因子，但在单细胞分辨率下对其进行分析仍具挑战性，因为lncRNA预测、定量、细胞类型特异性表征及下游功能解释通常依赖彼此分离的工具。尽管单细胞RNA测序（scRNA-seq）和单核RNA测序（snRNA-seq）能够提供细胞分辨率的转录组图谱，但面向lncRNA分析、尤其适用于植物体系的可重复工作流程仍然有限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>为满足这一需求，作者开发了开源、模块化且可重复的分析框架scLncR，用于单细胞和单核转录组数据中的lncRNA分析。该框架整合了lncRNA预测、独立表达矩阵处理、细胞类型特异性表达分析、snRNA-seq/scRNA-seq表达富集分析、加权基因共表达网络分析（WGCNA）、拟时序轨迹分析和功能富集等模块，并同时支持命令行操作和基于Shiny的图形用户界面。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>通过衔接离散的分析步骤，scLncR实现了从候选lncRNA发现到生物学解释的无缝过渡。基准测试表明，其独立lncRNA矩阵处理策略在细胞类型和聚类两个层面均与已有预处理方法保持高度一致，同时增强了lncRNA信号的可见性。将该流程应用于Arabidopsis根数据集后，作者优先筛选出3个与根毛细胞状态及不同遗传背景相关的lncRNA候选分子。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>scLncR作为一个开源工作流程资源，旨在系统化并简化单细胞和单核转录组数据中以lncRNA为核心的分析。该工具为相关研究提供了更统一、灵活且易于复现的分析框架。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1429&amp;v=1&amp;s=6fc5f9db5813d6dd" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1429&amp;v=2&amp;s=13367851ec156a78" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1429&amp;v=3&amp;s=e0589cc482c20ac3" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1429&amp;v=4&amp;s=267fb355b56a8f14" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1429&amp;v=5&amp;s=485edffcccf84820" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-important">Important</span> · 61 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42561019/">Juvenile hormone receptor relies on conserved domain interfaces for dimerization-dependent activity.</a></div>
+      <div class="card-title-zh">幼虫激素受体依赖保守结构域界面实现二聚化依赖性活性</div>
+      <div class="news">为解决昆虫幼虫激素受体激活中PAS-A如何传导信号问题，作者结合突变、功能分析与建模，发现PAS-A/PAS-B变构耦联决定二聚化、核导入及转录活性。</div>
+      <div class="meta">Proceedings of the National Academy of Sciences of the United States of America · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Bittova Lenka, Tumova Sarka, Yatsenko Mykola, Mokhamatam Raveendra Babu, Tuma Roman, Jindra Marek</div>
+<div class="meta">DOI: 10.1073/pnas.2605755123</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42561019/">https://pubmed.ncbi.nlm.nih.gov/42561019/</a></div>
+<div class="meta">Keywords: Drosophila、PAS-A domain、bHLH-PAS transcription factor、dimerization、juvenile hormone receptor</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦昆虫JH受体机制，直接契合你对幼虫激素信号与内分泌调控的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>幼虫激素（juvenile hormone, JH）对昆虫至关重要。在 Drosophila 中，JH 通过碱性螺旋-环-螺旋-PER-ARNT-SIM（bHLH-PAS）蛋白 methoprene-tolerant（MET）及其旁系同源蛋白 germ cell-expressed（GCE）传递信号；JH 与 MET 或 GCE 的 PAS-B 结构域结合后，可触发由 MET 或 GCE 与 taiman（TAI）组成、可结合 DNA 且具有转录活性的 JH 受体（JHR）异源二聚体形成。JHR 复合物激活的分子机制仍不清楚，尤其是另一 PAS 结构域 PAS-A 在该过程中的作用尚未得到探索。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究以 Drosophila 的 GCE 蛋白为模型，考察 PAS-A 结构域在 JHR 信号传导中的功能。作者分析了 PAS-A 结构域中在昆虫和哺乳动物 bHLH-PAS 蛋白间高度保守的带电氨基酸残基，并通过体外和体内实验评估其对 JHR 信号、JH 结合、核导入、与 HSP83 解离、与 TAI 二聚化以及发育中果蝇功能的影响，同时结合分子建模进行机制分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>PAS-A 结构域中高度保守的带电氨基酸残基对 JHR 信号传导在体外和体内均是必需的；这些位点突变不影响 GCE 通过 PAS-B 结构域结合 JH 的能力，但会削弱 JH 诱导的 GCE 入核、其与伴侣蛋白热休克蛋白 HSP83 的解离以及与 TAI 的二聚化，从而阻断 JHR 的 DNA 结合和转录活性。突变型 GCE 在发育中果蝇中的功能也受损。分子建模提示，这些突变会改变对结构域内和结构域间相互作用至关重要的天然盐桥，导致两个 PAS 结构域出现非天然构象，使其无法与 TAI 正常二聚化，并可能增强 GCE 与 HSP83 的结合。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，JH 受体信号传导关键依赖 PAS-A 与 PAS-B 结构域之间的相互作用，且二者存在变构偶联（allosteric coupling）。结果揭示了保守结构域界面对受体二聚化依赖性活性的核心作用，并为理解昆虫 JH 受体复合物的激活机制提供了分子层面的依据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1426&amp;v=1&amp;s=94e3a49e7e257951" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1426&amp;v=2&amp;s=4f1bff00e48f66ab" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1426&amp;v=3&amp;s=4d847c742d67bfe0" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1426&amp;v=4&amp;s=3928dc10f8ef06b7" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1426&amp;v=5&amp;s=d7d61f2c9e707be0" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 55 分</div>
+      <div class="card-title"><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/41932327/">2P-NucTag: On-demand phototagging for molecular analysis of functionally identified cortical neurons.</a></div>
+      <div class="card-title-zh">2P-NucTag：用于对功能鉴定的皮层神经元进行按需光标记以开展分子分析</div>
+      <div class="news">为解决在体行为中神经元功能与分子特征难对应问题，作者建立2P-NucTag双光子核光标记，发现海马place与silent细胞存在意外转录差异。</div>
+      <div class="meta">Neuron · 2026-04-02</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Shi Jingcheng, Nutkovich Boaz, Kushinsky Dahlia, Rao Bovey Y, Herrlinger Stephanie A, Tsivourakis Emmanouil, Mihaila Tiberiu S, Conde Paredes Margaret E, Cohen-Kashi Malina Katayun, O&#x27;Toole Cliodhna K, Yong Hyun Choong, Sanner Brynn M, Xie Angel, Varol Erdem, Losonczy Attila, Spiegel Ivo</div>
+<div class="meta">DOI: 10.1016/j.neuron.2026.03.016</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/41932327/">https://pubmed.ncbi.nlm.nih.gov/41932327/</a></div>
+<div class="meta">Keywords: hippocampus、memory、phototagging、physiology、sequencing、transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>功能标记结合转录分析的思路，与单细胞细胞类型解析方法相关。</div>
+<div class="abstract"><span class="abs-label">背景</span>神经环路由遗传和功能上多样的细胞类型构成。要从机制上理解环路功能，前提是将单个神经元的遗传特性与生理特性联系起来；然而，在哺乳动物皮层环路体内，仍然很难将分子特征映射到功能异质性的神经元亚型上。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者提出了一种高通量双光子细胞核光标记（two-photon nuclear phototagging, 2P-NucTag）方法，在行为小鼠中完成体内功能表征后，利用可光激活红色荧光蛋白对单个神经元进行按需且稳定的标记。研究进一步使用这一经优化的“功能优先”（function-forward）流程，对行为小鼠海马中此前难以获取的“位置”细胞（place cells）和“沉默”细胞（silent cells）进行选择性标记和转录谱分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>利用2P-NucTag，研究者在行为小鼠海马中比较了“位置”细胞与“沉默”细胞的转录特征，并发现了出乎意料的基因表达差异。作者还表明，该方法可支持多种下游实验方向，包括离体脑片电生理（ex vivo slice electrophysiology）和组织学（histology）分析。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>2P-NucTag为解析神经环路功能组织的分子原则提供了一种新途径。该方法有助于把功能鉴定与分子分析直接连接起来，从而推进对神经环路组织机制的理解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1460&amp;v=1&amp;s=d767b95eb5e6205a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1460&amp;v=2&amp;s=81ed8478356c5d3c" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1460&amp;v=3&amp;s=fba5f4129e8cdf47" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1460&amp;v=4&amp;s=9cec54204ea3dc22" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1460&amp;v=5&amp;s=d47b40aa08930bad" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 53 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.05.743090">Undying leafcutter-ant colonies: The oldest Atta texana leafcutter-ant colonies are estimated to grow older than 100 years</a></div>
+      <div class="card-title-zh">不朽的切叶蚁群体：最古老的 Atta texana 切叶蚁群体估计可存活超过100年</div>
+      <div class="news">为解释北缘A. texana蚁群何以远超热带种寿命上限，作者比较死亡率与社会生态差异，发现缺乏军蚁捕食、多后制和收养年轻蚁后共同促成百年长寿。</div>
+      <div class="meta">bioRxiv · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Mueller U. G., Farrior C. E.</div>
+<div class="meta">DOI: 10.64898/2026.08.05.743090</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.05.743090">https://www.biorxiv.org/content/10.64898/2026.08.05.743090</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦蚂蚁社会组织与繁殖分工演化，揭示多后制延长群体寿命。</div>
+<div class="abstract"><span class="abs-label">背景</span>热带 Atta 切叶蚁群体通常只有一只蚁后，且蚁后寿命最多为15–20年，蚁后死亡后群体不会再补充蚁后，因此群体最大寿命一般为15–20年。相比之下，研究者在切叶蚁分布北界的路易斯安那州发现，Atta texana 群体的死亡率对应的预期寿命可达65–75年，最大群体寿命超过100年。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究基于路易斯安那州 Atta texana 已建立群体的死亡率与寿命估计，并将其与热带 Atta 物种的年死亡率进行比较。摘要还结合该物种在分布边缘种群中的社会组织、天敌缺失、蚁后收养以及历史农药干预与种群恢复情况，对超长寿现象进行解释。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>路易斯安那州已建立的 Atta texana 群体年死亡率仅为1–2%，而热带 Atta 物种为10–25%；其超长寿命可能归因于三点：缺乏专门袭击 Atta 群体的 Nomamyrmex 行军蚁（army-ant）捕食者、群体为多后制（polygyny）而非其他 Atta 物种典型的单后制（monogyny），以及老群体能够收养年轻蚁后。未受干扰生境中、领地较大的老龄群体似乎尤其善于招募年轻蚁后，因此群体年龄增长并不必然导致衰老和死亡，反而可能通过“稳定定居→群体年轻化→长寿”的过程延长寿命。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，Atta texana 群体可表现出此前未知的“百岁”级长寿，挑战了群体年龄增加必然导致繁殖衰老和死亡的常见认识。摘要还指出，20世纪中后期高强度灭杀与航空施药曾清除老群体，因而掩盖了这一现象；在有害农药被禁用后，种群虽已恢复，但其重新占据早先森林生态位仍耗时数十年。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1421&amp;v=1&amp;s=42fe0218020e4109" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1421&amp;v=2&amp;s=c142a6c5424bdfa0" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1421&amp;v=3&amp;s=ab9a0144089fff16" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1421&amp;v=4&amp;s=8203cfb5d79dafae" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1421&amp;v=5&amp;s=26cef2c2c44b7c5c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42557325/">Antigen presentation by CD40+MHC-II+ astrocytes promotes CNS autoimmunity.</a></div>
+      <div class="card-title-zh">CD40+MHC-II+星形胶质细胞的抗原呈递促进中枢神经系统自身免疫</div>
+      <div class="news">为解决星形胶质细胞如何促进CD4+T细胞介导中枢自身免疫，作者结合单细胞组学与体内外遗传扰动，发现CD40+MHC-II+星形胶质细胞经脂滴-NF-κB轴增强Th17反应并推动自身免疫。</div>
+      <div class="meta">Nature · 2026-08-05</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Lee Joon-Hyuk, Li Zhaorong, Soto Joselyn S, Kim Ah-Ram, Illouz Tomer, Polonio Carolina M, Kilian Michael, Kenison Jessica E, Schüle Anton M, Akl Camilo Faust, Lee Hong-Gyun, Andersen Brian M, Ye Jessica J, Rone Joseph M, Piester Gavin, Srun Lena, Martinez Jazmin, Danko Austin, Lee Jinsu, Heo Tae Hyun, Chung Elizabeth N, Oetjen Landon K, Duart-Abadia Pere, Koo Nakyung, Perrimon Norbert, Wheeler Michael A, Khakh Baljit S, Zandee Stephanie E J, Prat Alexandre, Quintana Francisco J</div>
+<div class="meta">DOI: 10.1038/s41586-026-10860-6</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42557325/">https://pubmed.ncbi.nlm.nih.gov/42557325/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>整合单细胞、CRISPR与蛋白结构预测，方法上接近你关注的单细胞与AI生物学。</div>
+<div class="abstract"><span class="abs-label">背景</span>星形胶质细胞参与多种神经系统疾病的病理过程，包括由T细胞驱动的中枢神经系统（CNS）自身免疫病多发性硬化及其小鼠模型实验性自身免疫性脑脊髓炎。尽管如此，人们对星形胶质细胞与CD4+ T细胞之间的功能性交互作用仍知之甚少。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究结合狂犬病毒条形码互作检测测序（rabies barcode interaction detection followed by sequencing）、单细胞RNA测序、体外共培养体系以及细胞特异性体内CRISPR-Cas9遗传扰动，分析星形胶质细胞与CD4+ T细胞的相互作用。作者还利用SorTagging细胞间接触标记技术分析与星形胶质细胞互作的CD4+ T细胞，并通过体内亚蛋白质组学方法和AlphaFold-Multimer预测研究相关分子机制。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究表明，表达CD40和MHC-II的星形胶质细胞可促进CNS T细胞自身免疫；直接的星形胶质细胞-CD4+ T细胞相互作用会增强实验性自身免疫性脑脊髓炎中的致病性辅助性T细胞17（T helper 17）反应。进一步发现，CD4+ T细胞表达的CD40L激活星形胶质细胞中的CD40后，可诱导PLIN4阳性脂滴积累，这些脂滴提供乙酰辅酶A（acetyl-CoA），从而促进依赖p65乙酰化的NF-κB激活和抗原呈递。最后，作者通过单核RNA测序和免疫组织化学在多发性硬化样本中检测到CD40+MHC-II+LD+星形胶质细胞。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究界定了一种此前未被认识的机制，即星形胶质细胞可通过抗原呈递促进中枢神经系统自身免疫。该结果揭示了星形胶质细胞与CD4+ T细胞之间的直接互作及其代谢-炎症耦联过程在多发性硬化相关病理中的重要作用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1453&amp;v=1&amp;s=af2ba00cd828935e" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1453&amp;v=2&amp;s=aa179b55b4764ce8" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1453&amp;v=3&amp;s=78262f8a8c98e3df" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1453&amp;v=4&amp;s=d4fd8fb1d27e5e6c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1453&amp;v=5&amp;s=d15fd12f3ae8783f" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42560964/">Asymmetric chromatin accessibility underlies anterior-posterior axis specification in moth fly embryos.</a></div>
+      <div class="card-title-zh">蛾蚋胚胎中不对称染色质可及性是前后轴特化的基础</div>
+      <div class="news">为解决双翅目前端决定因子是否经共通染色质机制建轴问题，作者结合蛾蠓基因组组装与胚胎染色质可及性分析，发现母源Cal-opa经开放hbn和slp位点启动前后轴对称性破缺。</div>
+      <div class="meta">PLoS biology · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Amiri Ezra E, Li Muzi, Tenger-Trolander Ayse, Devine Maxwell, Julian Alexander T, Kasan Koray, Sanders Sheri A, Blythe Shelby A, Schmidt-Ott Urs</div>
+<div class="meta">DOI: 10.1371/journal.pbio.3003896</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42560964/">https://pubmed.ncbi.nlm.nih.gov/42560964/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦昆虫发育与染色质调控，涉及节肢动物进化机制，但非社会昆虫与激素主题。</div>
+<div class="abstract"><span class="abs-label">背景</span>胚胎发生过程中建立前后（anterior-posterior, AP）体轴是一个基础过程，Drosophila melanogaster 是其中研究最充分的经典模型之一。不同双翅目（Diptera）物种却通过彼此无关且结构不同的前端决定因子建立 AP 轴，其原因尚不清楚；在 Drosophila 中，前端决定因子 Bicoid（Bcd）在核卵裂周期（nuclear cleavage cycles, NCs）期间启动对称性破缺，而 Zelda（Zld）等广泛存在的先锋因子通过核小体耗竭调控染色质可及性并驱动合子基因组激活（zygotic genome activation, ZGA）。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者研究了蛾蚋 Clogmia albipunctata 的对称性破缺机制，该物种中成对规则分节基因 odd-paired 的母源表达转录本异构体充当前端决定因子。研究构建并注释了 Clogmia 基因组的从头组装（de novo assembly），分析了连续囊胚阶段核卵裂周期中的染色质可及性变化，并考察了 zelda 同源基因 Cal-zld 和 odd-paired 同源基因 Cal-opa 对染色质可及性和基因表达的影响。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究记录到囊胚卵裂周期中染色质区域发生了广泛的开放与关闭，并证明 Cal-zld 在打开染色质和驱动合子基因表达中具有重要作用。结果还表明，母源 Cal-opa 通过促进 Clogmia 的 homeobrain 和 sloppy-paired 位点的染色质可及性与表达，启动了沿 AP 轴的合子对称性破缺。这些基因并非已知的 Bcd 关键靶基因，但它们在昆虫中具有早期前端表达并参与头部发育。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，Clogmia albipunctata 的前后轴特化建立在不对称染色质可及性之上，并揭示了与 Drosophila 不同的前端决定因子也可通过调控染色质可及性启动前端图式形成。结果提示 homeobrain 和 sloppy-paired 可能在昆虫前端图式形成起始过程中承担更广泛保守的作用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1454&amp;v=1&amp;s=5a7b9d900e85192e" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1454&amp;v=2&amp;s=1aa8c89e9c4864c6" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1454&amp;v=3&amp;s=4520ddb5a90a37e2" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1454&amp;v=4&amp;s=1611ac3f77d4da49" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1454&amp;v=5&amp;s=b2be44a1d2d8beea" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42557280/">Experimental infection of acute bee paralysis virus induces differential responses of selected honey bee immune genes, independent of varroa resistance.</a></div>
+      <div class="card-title-zh">急性蜜蜂麻痹病毒实验感染可诱导所选蜜蜂免疫基因的差异性应答，且独立于瓦螨抗性</div>
+      <div class="news">为解决Gotland抗瓦螨蜜蜂ABPV耐受机制之谜，作者用时间序列口服感染结合RT-qPCR，发现感染仅短时重塑部分免疫基因表达，且抗性与易感群体模式无差异。</div>
+      <div class="meta">Scientific reports · 2026-08-05</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ruan Xinyan, Noël Amélie, Thaduri Srinivas, de Miranda Joachim R, Locke Barbara</div>
+<div class="meta">DOI: 10.1038/s41598-026-65201-4</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42557280/">https://pubmed.ncbi.nlm.nih.gov/42557280/</a></div>
+<div class="meta">Keywords: Apis mellifera、Varroa destructor、acute bee paralysis virus、Insect immunity、Varroa resistance、Virus tolerance</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦Apis mellifera病毒免疫，贴近你对蜜蜂与内分泌外分子调控兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>Honeybees（Apis mellifera）具有复杂的免疫系统，包括先天免疫和社会免疫。瑞典哥特兰岛的抗螨蜂群以其对瓦螨（Varroa destructor）的独立抗性以及对病毒感染，尤其是翅膀畸形病毒和急性蜜蜂麻痹病毒（ABPV）的耐受性而闻名，但其病毒耐受性的免疫机制仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者在实验室时间进程实验中，对来自抗螨（MR）蜂群和易感（MS）对照蜂群的成蜂进行ABPV或模拟接种物的经口接种。采用RT-qPCR定量检测5条主要免疫信号通路中各2个、此前已知会对病毒感染作出反应的代表性基因。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>这些基因对ABPV接种表现出不同应答：部分基因在接种后24至48小时之间出现与处理相关的差异表达，而另一些基因未受影响。然而，MR与MS蜂群之间的基因表达模式没有差异。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果提示，哥特兰抗螨蜂群增强的病毒耐受性并非由本研究检测的这些免疫基因的差异性调控所致。研究还强调了免疫基因表达的动态特征，细化了后续研究蜜蜂病毒耐受性的假设，并推动对部分样本开展更全面的分子分析。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1431&amp;v=1&amp;s=c86a376a27223681" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1431&amp;v=2&amp;s=4f7d05025b0a35a2" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1431&amp;v=3&amp;s=a375e81d53c622fa" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1431&amp;v=4&amp;s=0d8afd1d9e0c7ca1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1431&amp;v=5&amp;s=81e10af185e9b82d" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 43 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42557137/">Tropilaelaps mercedesae: rapid geographic expansion in a novel honey bee host.</a></div>
+      <div class="card-title-zh">Tropilaelaps mercedesae：在一种新型蜜蜂宿主中的快速地理扩张</div>
+      <div class="news">为应对Tropilaelaps mercedesae跳宿主后扩张威胁，作者通过综述其生物学、监测防治并比较瓦螨自然史，发现其已侵入西方蜜蜂并扩至东欧，凸显养蜂业防控缺口。</div>
+      <div class="meta">Trends in parasitology · 2026-08-05</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Williams Geoffrey R, Aurell Dan, Gill Maggie C, Khongphinitbunjong Kitiphong, Tokach Rogan, Traynor Kirsten S</div>
+<div class="meta">DOI: 10.1016/j.pt.2026.07.002</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42557137/">https://pubmed.ncbi.nlm.nih.gov/42557137/</a></div>
+<div class="meta">Keywords: Apis mellifera、Tropilaelaps mercedesae、Varroa destructor、host shift、host–parasite interactions、invasive species</div>
+<div class="reason"><span class="abs-label">推荐理由</span>围绕蜜蜂寄生螨跨宿主扩张，契合你对Apis健康与社会性昆虫研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>Tropilaelaps mercedesae 是一种分布于南亚和东亚、寄生于巨型蜜蜂的体外寄生螨。该螨已转宿主至西方蜜蜂 Apis mellifera，并将分布范围扩展至东欧，令本已因另一种入侵性体外寄生螨瓦螨（Varroa destructor）而处境脆弱的 A. mellifera 养蜂业更加不安。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文为综述性研究。作者回顾了 T. mercedesae 在原始宿主和新宿主中的已知生物学与致病性，讨论了当前的监测与处理选择，并识别了知识与防备方面的缺口；同时比较了 T. mercedesae 与 V. destructor 的自然史。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>摘要表明，T. mercedesae 已完成向 Apis mellifera 的宿主转换，并且地理扩张迅速，最近已到达东欧。作者总结了其在不同宿主中的已知生物学和病理学信息，梳理了现有监测与防治选项，并指出当前在认知和应对准备方面仍存在不足。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>通过比较 T. mercedesae 与 V. destructor 的自然史，本文旨在为未来研究与科普推广提供方向。其意义在于促进对这种影响范围不断扩大的寄生螨作出及时响应。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1433&amp;v=1&amp;s=19bdfaf2f16cf5c2" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1433&amp;v=2&amp;s=8df38163273e945f" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1433&amp;v=3&amp;s=ab48da8843b3c994" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1433&amp;v=4&amp;s=bc47c8e4f2d75ef1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=1433&amp;v=5&amp;s=6076e3ad630229f2" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日文献主要聚焦三类方向：单细胞/空间组学与细胞图谱构建，AI/机器学习驱动的生物数据分析与设计，以及神经、免疫、昆虫发育和宿主—病原互作等机制研究。共同趋势较明显：一是单细胞、单核与空间转录组持续结合，并用于注释、标记基因发现、发育图谱和功能细胞解析；二是AI方法增多，包括LLM、图学习、超图网络和基因组语言模型，既用于分析也开始用于生成设计；三是计算方法更强调可解释性、先验知识整合与跨平台迁移。对研究者而言，这批论文既提供可直接借鉴的分析工具与参考图谱，也提示可将多组学、空间信息和AI模型结合，用于细胞类型鉴定、机制假设生成及模型体系评估。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=xuanyabing%40genomics.cn&amp;d=2026-08-07&amp;s=6b8dd4098b13db35">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=xuanyabing%40genomics.cn&amp;d=2026-08-07&amp;s=6b8dd4098b13db35">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

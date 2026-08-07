@@ -39,6 +39,8 @@ CREATE TABLE IF NOT EXISTS paper_analysis (
     methods TEXT,
     organisms TEXT,
     paper_type TEXT,
+    category TEXT,
+    subcategory TEXT,
     created_time TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS paper_news_summary (
@@ -110,13 +112,18 @@ def _migrate_translation_table(conn: sqlite3.Connection) -> None:
     conn.commit()
 
 
+# paper_analysis 历次后补的列（旧库缺列时 ALTER 补齐，旧行保持 NULL，
+# 读取时回退为 ""，不补跑 LLM）
+_ANALYSIS_LATE_COLUMNS = ("paper_type", "category", "subcategory")
+
+
 def _migrate_analysis_table(conn: sqlite3.Connection) -> None:
-    """旧库 paper_analysis 无 paper_type 列时 ALTER TABLE 补齐
-    （旧行保持 NULL，读取时回退为 ""，不补跑 LLM）。"""
+    """旧库 paper_analysis 缺后补列时 ALTER TABLE 补齐（幂等）。"""
     existing = {row["name"] for row in conn.execute("PRAGMA table_info(paper_analysis)")}
-    if "paper_type" not in existing:
-        conn.execute("ALTER TABLE paper_analysis ADD COLUMN paper_type TEXT")
-        conn.commit()
+    for name in _ANALYSIS_LATE_COLUMNS:
+        if name not in existing:
+            conn.execute(f"ALTER TABLE paper_analysis ADD COLUMN {name} TEXT")
+    conn.commit()
 
 
 def dedup_key(paper: Paper) -> str:
@@ -164,8 +171,9 @@ def save_paper(conn: sqlite3.Connection, paper: Paper) -> int:
 def save_analysis(conn: sqlite3.Connection, paper_id: int, analysis: dict) -> None:
     conn.execute(
         """INSERT OR REPLACE INTO paper_analysis
-           (paper_id, problem, solution, finding, methods, organisms, paper_type, created_time)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+           (paper_id, problem, solution, finding, methods, organisms, paper_type,
+            category, subcategory, created_time)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (
             paper_id,
             analysis.get("problem", ""),
@@ -174,6 +182,8 @@ def save_analysis(conn: sqlite3.Connection, paper_id: int, analysis: dict) -> No
             json.dumps(analysis.get("methods", []), ensure_ascii=False),
             json.dumps(analysis.get("organisms", []), ensure_ascii=False),
             analysis.get("paper_type", ""),
+            analysis.get("category", ""),
+            analysis.get("subcategory", ""),
             datetime.now(timezone.utc).isoformat(),
         ),
     )
@@ -205,6 +215,8 @@ def get_analysis(conn: sqlite3.Connection, paper_id: int) -> dict | None:
         "methods": json.loads(row["methods"] or "[]"),
         "organisms": json.loads(row["organisms"] or "[]"),
         "paper_type": row["paper_type"] or "",
+        "category": row["category"] or "",
+        "subcategory": row["subcategory"] or "",
     }
 
 
@@ -321,6 +333,26 @@ def get_feedback_since(conn: sqlite3.Connection, user_email: str,
            ORDER BY created_time""",
         (user_email, since_date),
     ).fetchall()
+
+
+def get_latest_ratings(conn: sqlite3.Connection, user_email: str) -> dict[int, str]:
+    """该用户每篇论文的最新标注，返回 {paper_id: value}。
+
+    同一论文允许多条不同星级的历史标注（UNIQUE(user, paper, value)），取
+    created_time 最大者，并列取 id 最大者；不限定反馈创建时间窗——周末推送、
+    下周一才标注的场景必须能关联上。value 原样返回（可能是旧四值或五星字符串），
+    是否按星级解读由调用方决定。
+    """
+    rows = conn.execute(
+        """SELECT paper_id, value FROM (
+               SELECT paper_id, value,
+                      ROW_NUMBER() OVER (PARTITION BY paper_id
+                                         ORDER BY created_time DESC, id DESC) AS rn
+               FROM feedback WHERE user_email = ?
+           ) WHERE rn = 1""",
+        (user_email,),
+    ).fetchall()
+    return {row["paper_id"]: row["value"] for row in rows}
 
 
 def get_unprocessed_feedback(conn: sqlite3.Connection, user_email: str) -> list[sqlite3.Row]:

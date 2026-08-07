@@ -9,6 +9,30 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = BASE_DIR / "logs"
 
 
+def sync_pending_to_db(conn, entries: list, log: logging.Logger) -> int:
+    """把 pending 文件队列的反馈同步进 feedback 表，返回新增条数。
+
+    网页端 ⭐ 标注（worker webhook）只写 pending 文件队列，不入 feedback 表，
+    周/月报的星级过滤与阅读趋势统计依赖该表，故学习前先把队列同步入库。
+    save_feedback 是 INSERT OR IGNORE 幂等，重复跑安全；单条失败记 warning
+    跳过，不中断流程。
+    """
+    from database.db import save_feedback
+
+    synced = 0
+    for entry in entries:
+        try:
+            if save_feedback(conn, entry["user_email"], int(entry["paper_id"]),
+                             str(entry["value"]), entry.get("reason") or ""):
+                synced += 1
+        except Exception:
+            log.warning("pending 反馈同步入库失败，跳过：%s",
+                        entry.get("path"), exc_info=True)
+    log.info("pending 反馈同步入 feedback 表：新增 %d 条 / 队列共 %d 条",
+             synced, len(entries))
+    return synced
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="反馈收集与学习闭环")
     parser.add_argument("--learn-only", action="store_true",
@@ -46,6 +70,7 @@ def main() -> int:
         lab = load_lab_profile()
         users = [(slug, apply_lab_profile(user, lab)) for slug, user in load_users()]
         entries = store.load_pending()
+        sync_pending_to_db(conn, entries, log)
         pending = {u["email"]: [e for e in entries if e["user_email"] == u["email"]]
                    for _, u in users}
         seed_pending_dir = SEED_PAPERS_QUEUE_DIR / "pending"

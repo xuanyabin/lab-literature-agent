@@ -1,5 +1,6 @@
 """Phase 6 每周情报报告测试：db 聚合查询 / 统计 / LLM 趋势总结 / HTML 组装；B3 月报阅读趋势。"""
 
+import logging
 import sys
 from datetime import date, timedelta
 
@@ -7,13 +8,15 @@ import pytest
 
 import weekly_report
 from database.db import (
-    connect, get_feedback_since, get_week_recommendations, save_feedback,
-    save_news_summary, save_paper, save_recommendation, upsert_learned_term,
+    connect, get_feedback_since, get_latest_ratings, get_week_recommendations,
+    save_feedback, save_news_summary, save_paper, save_recommendation,
+    upsert_learned_term,
 )
+from feedback.__main__ import sync_pending_to_db
 from feedback.vocab import load_active_terms
 from mailer.weekly_builder import build_weekly_html
 from processing.weekly_stats import (
-    compute_reading_trends, compute_stats, normalize_feedback_value,
+    compute_reading_trends, compute_stats, normalize_feedback_value, parse_star,
 )
 from processing.weekly_summary_generator import generate_weekly_summary
 from sources.paper import Paper
@@ -172,7 +175,7 @@ def test_build_weekly_html_fallback_when_no_trend_summary():
     assert '<td class="stats-label">学习热词</td>' not in html  # 无有效学习词时不渲染该行
 
 
-# ---------- 分模块展示 + 文献类型 badge ----------
+# ---------- 两层分类分区 + 文献类型 badge ----------
 
 def _stats_trends(rows):
     stats = compute_stats(rows, {})
@@ -181,30 +184,36 @@ def _stats_trends(rows):
     return stats, trends
 
 
-def test_weekly_groups_by_module_with_badges():
+def test_weekly_groups_by_taxonomy_with_badges():
     rows = [
         {**_row("Must Read", "Nature", "[]", title="A"),
-         "module_label": "空间组学", "paper_type": "方法学"},
+         "category_key": "computational_biology", "subcategory_label": "AI 生物学",
+         "paper_type": "方法学"},
         {**_row("Important", "Cell", "[]", title="B"),
-         "module_label": "空间组学", "paper_type": ""},
+         "category_key": "genome_evolution_diversity", "subcategory_label": "比较基因组学",
+         "paper_type": ""},
         {**_row("Must Read", "Cell", "[]", title="C"),
-         "module_label": "其他", "paper_type": "综述"},
+         "category_key": "", "subcategory_label": "", "paper_type": "综述"},
     ]
     stats, trends = _stats_trends(rows)
     html = build_weekly_html("User", "2026-07-16", "2026-07-22", rows, "", stats, trends)
-    assert '<td colspan="2" class="module-head">空间组学</td>' in html
+    assert '<td colspan="2" class="module-head">基因组演化与多样性</td>' in html
+    assert '<td colspan="2" class="module-head">计算生物学</td>' in html
     assert '<td colspan="2" class="module-head">其他</td>' in html
-    assert html.index("空间组学</td>") < html.index("其他</td>")  # "其他"沉底
-    assert '<span class="badge cat-module">空间组学</span>' in html
+    # 固定大类序（基因组在计算之前，与行序无关），"其他"沉底
+    assert html.index("基因组演化与多样性</td>") < html.index("计算生物学</td>") \
+        < html.index("其他</td>")
+    assert '<td colspan="2" class="module-head">细胞与空间生物学</td>' not in html  # 空大类不渲染
+    assert '<span class="badge cat-module">AI 生物学</span>' in html
+    assert '<span class="badge cat-module">比较基因组学</span>' in html
     assert '<span class="badge cat-type">方法学</span>' in html
     assert '<span class="badge cat-type">综述</span>' in html
-    assert "1. " not in html  # 序号走 <td class="num">，跨组连续
-    assert '<td class="num">1</td>' in html and '<td class="num">3</td>' in html
+    assert '<td class="num">1</td>' in html and '<td class="num">3</td>' in html  # 序号跨组连续
 
 
 def test_weekly_no_module_head_and_badges_for_legacy_rows():
     rows = [_row("Must Read", "Nature", "[]", title="A"),
-            _row("Important", "Cell", "[]", title="B")]  # 无 module_label / paper_type
+            _row("Important", "Cell", "[]", title="B")]  # 无分类 / paper_type
     stats, trends = _stats_trends(rows)
     html = build_weekly_html("User", "2026-07-16", "2026-07-22", rows, "", stats, trends)
     assert '<td colspan="2" class="module-head">' not in html  # 仅"其他"一组不渲染小标题
@@ -326,3 +335,171 @@ def test_monthly_report_end_to_end_days_30(tmp_path, monkeypatch):
     assert "阅读趋势" in html
     assert "共 2 条（正向 2 / 中性 0 / 负向 0）" in html   # 窗口外 not_relevant 被排除
     assert "crispr（2.00）" in html
+
+
+# ---------- 星级模式：清单按标注过滤排序 + 趋势总结只看 ≥3 星（含需求 0 同步） ----------
+
+
+def _insert_feedback(conn, user, paper_id, value, created_time):
+    """显式指定 created_time 插入反馈（save_feedback 只能写当前时间，测不出时序语义）。"""
+    conn.execute(
+        "INSERT INTO feedback (user_email, paper_id, value, reason, created_time)"
+        " VALUES (?, ?, ?, ?, ?)",
+        (user, paper_id, value, "", created_time),
+    )
+    conn.commit()
+
+
+def test_parse_star():
+    assert parse_star("1") == 1
+    assert parse_star("5") == 5
+    assert parse_star(" 4 ") == 4      # 容忍首尾空白
+    assert parse_star(3) == 3
+    assert parse_star("0") is None     # 越界
+    assert parse_star("6") is None
+    assert parse_star("relevant") is None  # 旧四值不是星级
+    assert parse_star("") is None
+    assert parse_star(None) is None
+
+
+def test_get_latest_ratings_latest_wins_and_user_isolated(conn):
+    pid = save_paper(conn, _paper("10.1/rate"))
+    _insert_feedback(conn, "a@x.com", pid, "2", "2026-07-20T08:00:00+00:00")
+    _insert_feedback(conn, "a@x.com", pid, "5", "2026-07-22T08:00:00+00:00")
+    _insert_feedback(conn, "b@x.com", pid, "1", "2026-07-23T08:00:00+00:00")
+    # 同一论文多条历史标注 → 以最新一条为准；不同用户互不影响
+    assert get_latest_ratings(conn, "a@x.com") == {pid: "5"}
+    assert get_latest_ratings(conn, "b@x.com") == {pid: "1"}
+
+
+def test_get_latest_ratings_tie_breaks_by_id(conn):
+    pid = save_paper(conn, _paper("10.1/tie"))
+    _insert_feedback(conn, "a@x.com", pid, "3", "2026-07-22T08:00:00+00:00")
+    _insert_feedback(conn, "a@x.com", pid, "4", "2026-07-22T08:00:00+00:00")
+    assert get_latest_ratings(conn, "a@x.com") == {pid: "4"}  # created_time 并列取 id 大者
+
+
+def test_get_latest_ratings_covers_feedback_after_window(conn):
+    """周末推送、下周一才标注：反馈 created_time 晚于推荐 sent_date 也要能关联（不限定时间窗）。"""
+    pid = save_paper(conn, _paper("10.1/late"))
+    save_recommendation(conn, "a@x.com", pid, "Important", 6, "2026-07-18")  # 周末推送
+    _insert_feedback(conn, "a@x.com", pid, "4", "2026-07-21T09:00:00+00:00")  # 下周标注
+    rows = get_week_recommendations(conn, "a@x.com", "2026-07-14")
+    ratings = get_latest_ratings(conn, "a@x.com")
+    assert ratings.get(rows[0]["paper_id"]) == "4"
+
+
+def _rated_row(pid, category, title, score=5, cat_key="", sub_label=""):
+    return {**_row(category, "Cell", "[]", title=title),
+            "paper_id": pid, "score": score,
+            "category_key": cat_key, "subcategory_label": sub_label, "paper_type": ""}
+
+
+def test_weekly_star_mode_filters_orders_and_badges():
+    rows = [
+        _rated_row(1, "Must Read", "Five Star", score=5,
+                   cat_key="computational_biology", sub_label="AI 生物学"),
+        _rated_row(2, "Important", "Three Star Low Score", score=9,
+                   cat_key="computational_biology", sub_label="生物信息学方法"),
+        _rated_row(3, "Reference", "Four Star Ref", score=1,
+                   cat_key="genome_evolution_diversity", sub_label="泛基因组学"),
+        _rated_row(4, "Must Read", "Two Star", cat_key="genome_evolution_diversity"),
+        _rated_row(5, "Important", "Unrated"),
+        _rated_row(6, "Important", "One Star"),
+        _rated_row(7, "Important", "Three Star High Score", score=10,
+                   cat_key="computational_biology"),
+    ]
+    ratings = {1: "5", 2: "3", 3: "4", 4: "2", 6: "1", 7: "3"}
+    stats, trends = _stats_trends(rows)
+    html = build_weekly_html("User", "2026-07-16", "2026-07-22", rows, "",
+                             stats, trends, ratings)
+
+    # 只收录 ≥3 星（含 Reference 级），≤2 星与未标注不出现
+    for title in ("Five Star", "Three Star Low Score", "Four Star Ref",
+                  "Three Star High Score"):
+        assert title in html
+    for title in ("Two Star", "Unrated", "One Star"):
+        assert title not in html
+
+    # 模块分区保留：固定大类序（基因组在计算之前）
+    assert html.index("基因组演化与多样性</td>") < html.index("计算生物学</td>")
+    # 模块内按星级降序，同星级按 score 降序：★5 → ★3(score 10) → ★3(score 9)
+    assert html.index("Five Star") < html.index("Three Star High Score") \
+        < html.index("Three Star Low Score")
+    # 标注星级 badge
+    for badge in ("★5", "★4", "★3"):
+        assert f'<span class="badge cat-star">{badge}</span>' in html
+    assert "★2" not in html and "★1" not in html
+    # 子类 badge 与星级模式副标题
+    assert '<span class="badge cat-module">AI 生物学</span>' in html
+    assert "你标注 ★3 及以上的论文 · 模块内按星级降序" in html
+
+
+def test_weekly_star_mode_module_without_high_star_not_rendered():
+    rows = [
+        _rated_row(1, "Must Read", "Kept", cat_key="computational_biology"),
+        _rated_row(2, "Must Read", "Low Only", cat_key="genome_evolution_diversity"),
+    ]
+    stats, trends = _stats_trends(rows)
+    html = build_weekly_html("User", "2026-07-16", "2026-07-22", rows, "",
+                             stats, trends, {1: "5", 2: "2"})
+    assert "Kept" in html and "Low Only" not in html
+    assert '<td colspan="2" class="module-head">计算生物学</td>' in html
+    assert "基因组演化与多样性" not in html  # 该模块全部 ≤2 星，整个不渲染
+
+
+def test_weekly_star_mode_all_low_star_placeholder():
+    rows = [_rated_row(1, "Must Read", "Two Only"), _rated_row(2, "Important", "One Only")]
+    stats, trends = _stats_trends(rows)
+    ratings = {1: "2", 2: "1"}
+    html = build_weekly_html("User", "2026-07-16", "2026-07-22", rows, "",
+                             stats, trends, ratings)
+    assert "本周期内没有 3 星及以上的标注论文" in html
+    assert "Two Only" not in html and "One Only" not in html
+    # 趋势总结同样为空（走模板占位文案）
+    assert generate_weekly_summary(rows, FakeLLM(), ratings) == ""
+
+
+def test_weekly_star_mode_latest_annotation_wins():
+    """先标 2 星后改 5 星：以最新标注为准，应收录并按 5 星展示。"""
+    rows = [_rated_row(1, "Important", "ReRated", cat_key="computational_biology")]
+    stats, trends = _stats_trends(rows)
+    html = build_weekly_html("User", "2026-07-16", "2026-07-22", rows, "",
+                             stats, trends, {1: "5"})  # get_latest_ratings 已取最新
+    assert "ReRated" in html
+    assert '<span class="badge cat-star">★5</span>' in html
+
+
+def test_weekly_summary_star_mode_prompt():
+    rows = [
+        _rated_row(1, "Reference", "High Star Title", score=1),
+        _rated_row(2, "Must Read", "Mid Star Title"),
+        _rated_row(3, "Must Read", "Low Star Title"),
+        _rated_row(4, "Must Read", "Unrated Title"),
+    ]
+    llm = FakeLLM()
+    summary = generate_weekly_summary(rows, llm, {1: "5", 2: "3", 3: "2"})
+    assert summary == "本周趋势总结文本"
+    assert "High Star Title" in llm.prompt      # 5 星 Reference 也进入总结
+    assert "Mid Star Title" in llm.prompt       # 3 星进入（次要参考）
+    assert "Low Star Title" not in llm.prompt   # ≤2 星不进总结
+    assert "Unrated Title" not in llm.prompt    # 未标注不进总结
+    assert "标注星级" in llm.prompt
+    # 高星排前面（5 星在 3 星之前）
+    assert llm.prompt.index("High Star Title") < llm.prompt.index("Mid Star Title")
+
+
+def test_sync_pending_to_db_idempotent_and_skips_broken(conn):
+    pid = save_paper(conn, _paper("10.1/sync"))
+    save_feedback(conn, "a@x.com", pid, "4")  # 已在 feedback 表（如 IMAP 双写过）
+    entries = [
+        {"user_email": "a@x.com", "paper_id": pid, "value": "4", "reason": ""},   # 已存在
+        {"user_email": "a@x.com", "paper_id": pid, "value": "5", "reason": ""},   # 新增
+        {"user_email": "a@x.com", "paper_id": "bad", "value": "3", "reason": ""},  # 损坏跳过
+    ]
+    log = logging.getLogger("test")
+    assert sync_pending_to_db(conn, entries, log) == 1   # 恰好多一条
+    assert sync_pending_to_db(conn, entries, log) == 0   # 重复跑不重复插入
+    values = sorted(r["value"] for r in conn.execute(
+        "SELECT value FROM feedback WHERE user_email = 'a@x.com'"))
+    assert values == ["4", "5"]

@@ -56,6 +56,15 @@ def normalize_feedback_value(value: str) -> str | None:
     return _FEEDBACK_BUCKET.get(str(value or "").strip().lower())
 
 
+def parse_star(value) -> int | None:
+    """把反馈标注解析为 1–5 星整数；非星级值（旧四值、空、越界数字）返回 None。"""
+    text = str(value or "").strip()
+    if not text.isdigit():
+        return None
+    star = int(text)
+    return star if 1 <= star <= 5 else None
+
+
 def compute_reading_trends(feedback_rows: list, active_terms: list,
                            top_n: int = 5) -> dict:
     """阅读趋势统计（窗口内、按用户）：反馈正/中/负分桶 + 当前有效学习词 Top。

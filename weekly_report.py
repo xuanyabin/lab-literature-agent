@@ -4,8 +4,10 @@
       推荐记录（recommendations ⋈ papers ⋈ paper_news_summary，不重新检索分析）——
       分布统计（定级 / 期刊分层 / Top 期刊 / 高频关键词，纯数据）
       + 阅读趋势（窗口内反馈正/中/负分桶 + 当前有效学习词 Top）
-      → LLM 周度趋势总结（仅基于 Must Read / Important 的一句话新闻）
-      → HTML 周报邮件。
+      → LLM 周度趋势总结 → HTML 周报邮件。
+      清单与趋势总结分两种模式（按用户全或无）：窗口内推荐任意一篇有星级标注
+      → 星级模式（只收最新标注 ≥3 星、模块内按星级降序、总结侧重 4–5 星）；
+      完全无标注 → 维持 Must Read / Important 清单与原趋势总结。
 
 用法：
     python weekly_report.py                 # 对所有 active 用户生成周报并发送邮件
@@ -16,21 +18,23 @@
 """
 
 import argparse
-import json
 import logging
 import sys
 from datetime import date, timedelta
 
 from dotenv import load_dotenv
 
-from database.db import connect, get_analysis, get_feedback_since, get_week_recommendations
+from database.db import (
+    connect, get_analysis, get_feedback_since, get_latest_ratings,
+    get_week_recommendations,
+)
 from feedback.vocab import load_active_terms
 from mailer.sender import send_email
 from mailer.weekly_builder import build_weekly_html
-from main import LOG_DIR, USERS_DIR, apply_lab_profile, load_lab_profile, load_user, load_users
+from main import LOG_DIR, USERS_DIR, load_user, load_users
+from processing import taxonomy
 from processing.llm import LLMClient
-from processing.module_groups import assign_module, group_label
-from processing.weekly_stats import compute_reading_trends, compute_stats
+from processing.weekly_stats import compute_reading_trends, compute_stats, parse_star
 from processing.weekly_summary_generator import generate_weekly_summary
 from recommendation.scorer import load_journal_tiers
 
@@ -53,33 +57,41 @@ def run_for_user(slug: str, user: dict, args: argparse.Namespace,
     feedback_rows = get_feedback_since(conn, user["email"], since)
     active_terms = load_active_terms(conn, user["email"])
 
-    # 分模块展示 + 文献类型 badge：归属在渲染前计算（不落库），paper_type 读分析缓存
+    # 展示分类 + 文献类型 badge：category/subcategory 与 paper_type 均读分析缓存
+    # （LLM 分析时已按 taxonomy 校验落库）；无分类的旧缓存归入"其他"分区
     rows = [dict(r) for r in rows]
-    u = apply_lab_profile(user, load_lab_profile())
     for row in rows:
-        try:
-            kw_list = json.loads(row["keywords"] or "[]")
-        except (TypeError, ValueError):
-            kw_list = []
-        text = f"{row['title']} {' '.join(kw_list)}"
-        row["module_label"] = group_label(
-            u.get("group_labels"),
-            assign_module(text, u.get("lab_groups"),
-                          u.get("subscribed_groups"), u.get("aliases")))
         ana = get_analysis(conn, row["paper_id"]) or {}
+        cat = ana.get("category") or ""
+        row["category_key"] = cat
+        row["subcategory_label"] = taxonomy.subcategory_label(cat, ana.get("subcategory") or "")
         row["paper_type"] = ana.get("paper_type", "")
+    # 每篇论文的最新标注（不限定标注时间窗：周末推送、下周标注也要关联上）；
+    # 查询异常按"无标注"回退，不中断流程
+    try:
+        ratings = get_latest_ratings(conn, user["email"])
+    except Exception:
+        log.warning("读取用户标注失败，按无标注模式生成报告", exc_info=True)
+        ratings = {}
     conn.close()
+
+    # 清单模式（全或无）：窗口内推荐任意一篇存在星级标注 → 星级模式
+    #（清单只收 ≥3 星、模块内按星级排序、趋势总结只看 ≥3 星）；
+    # 完全无标注 → 维持 Must Read / Important 清单现状
+    star_mode = any(parse_star(ratings.get(row["paper_id"])) is not None for row in rows)
+    active_ratings = ratings if star_mode else None
 
     stats = compute_stats(rows, load_journal_tiers())
     trends = compute_reading_trends(feedback_rows, active_terms)
 
     try:
-        trend_summary = generate_weekly_summary(rows, LLMClient())
+        trend_summary = generate_weekly_summary(rows, LLMClient(), active_ratings)
     except Exception:
         log.exception("周度趋势总结生成失败，报告中该部分置空")
         trend_summary = ""
 
-    html = build_weekly_html(user["name"], since, today, rows, trend_summary, stats, trends)
+    html = build_weekly_html(user["name"], since, today, rows, trend_summary,
+                             stats, trends, active_ratings)
 
     if args.dry_run:
         out = LOG_DIR / f"weekly_{today}_{slug}.html"

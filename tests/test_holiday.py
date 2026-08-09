@@ -62,9 +62,35 @@ class TestBackfillDays:
         assert backfill_days(date(2026, 7, 28), set()) == 1
 
 
+class TestSkipWeekends:
+    # 2026-08-07 是周五，08-08 周六、08-09 周日、08-10 周一
+    def test_default_weekend_not_skipped(self):
+        assert backfill_days(date(2026, 8, 8), set()) == 1
+
+    def test_saturday_returns_zero(self):
+        assert backfill_days(date(2026, 8, 8), set(), skip_weekends=True) == 0
+
+    def test_sunday_returns_zero(self):
+        assert backfill_days(date(2026, 8, 9), set(), skip_weekends=True) == 0
+
+    def test_monday_backfills_three_days(self):
+        assert backfill_days(date(2026, 8, 10), set(), skip_weekends=True) == 3
+
+    def test_monday_after_holiday_friday_backfills_four(self):
+        # 周五是法定节假日 + 周末，周一返回 1 + 3 = 4
+        assert backfill_days(date(2026, 8, 10), {date(2026, 8, 7)},
+                             skip_weekends=True) == 4
+
+    def test_weekend_streak_capped_at_ten(self):
+        # 连续节假日接周末超过上限仍封顶 10
+        today = date(2026, 8, 10)
+        holidays = {today - timedelta(days=i) for i in range(3, 13)}
+        assert backfill_days(today, holidays, skip_weekends=True) == 10
+
+
 class TestCli:
     def test_main_prints_integer(self, capsys):
-        main()
+        main([])
         out = capsys.readouterr().out.strip()
         assert out.isdigit()
 
@@ -72,5 +98,5 @@ class TestCli:
         # 把节假日表替换为"今天是节假日"，验证 CLI 输出 0
         monkeypatch.setattr("scheduler.holiday.load_holidays",
                             lambda path=None: {date.today()})
-        main()
+        main([])
         assert capsys.readouterr().out.strip() == "0"

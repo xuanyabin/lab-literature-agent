@@ -37,10 +37,11 @@ jobs:
 
       - name: 节假日守卫
         id: holiday
+        # --skip-weekends：周六/周日也跳过，周一自动合并补发 3 天（周报/月报不用此开关）
         run: |
-          DAYS=$(python -m scheduler.holiday)
+          DAYS=$(python -m scheduler.holiday --skip-weekends)
           echo "days=$DAYS" >> "$GITHUB_OUTPUT"
-          echo "回溯天数 DAYS=$DAYS（0 = 法定节假日，当日整体跳过）"
+          echo "回溯天数 DAYS=$DAYS（0 = 法定节假日或周末，当日整体跳过）"
 
       - name: 反馈收集与学习
         if: steps.holiday.outputs.days != '0'

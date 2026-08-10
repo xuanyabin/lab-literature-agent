@@ -1,5 +1,8 @@
 # 每日文献推荐流水线（取代本地 cron：每天 06:00 run_daily.sh）
 # GitHub Actions cron 只支持 UTC：22:00 UTC = 北京时间 06:00
+# 注意：runner 默认 UTC，22:00 UTC 时 date.today() 仍是"昨天"，节假日守卫会把
+# 北京时间周一早晨误判为周日而跳过；故 job 级设 TZ=Asia/Shanghai，让守卫与
+# 各步骤的日期标签（daily/<date>、sent_date）都按北京日历日计算。
 name: daily-pipeline
 
 on:
@@ -17,6 +20,8 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Shanghai  # runner 默认 UTC；守卫与日期标签按北京日历日
     steps:
       - name: 检出代码
         uses: actions/checkout@v4

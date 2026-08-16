@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-08-17</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-08-17</h1>
+    <p class="hello">niupeiyuan，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">过去 3 天全库新增 934 篇 · 命中您的关键词 118 篇 · 本次推送 15 篇（必读 1 · 重要 1 · 参考 13）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">基因组演化与多样性</h2>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42595816/">Phage-encoded contingency loci enable bet-hedging against host defence mechanisms.</a></div>
+      <div class="card-title-zh">噬菌体编码的应变位点使其能够通过押注分散策略应对宿主防御机制</div>
+      <div class="news">为解决噬菌体基因组多样性起源不清问题，作者结合实验进化与测序，发现简单重复介导的应变位点可逆移码致异质性，助其押注分散逃逸宿主防御。</div>
+      <div class="meta">Nature microbiology · 2026-08-13</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Gomez Jasper B, Barrick Jeffrey E, Waters Christopher M</div>
+<div class="meta">DOI: 10.1038/s41564-026-02445-w</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42595816/">https://pubmed.ncbi.nlm.nih.gov/42595816/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>解析噬菌体对细菌防御的变异机制，贴近你关注的细菌生态。</div>
+<div class="abstract"><span class="abs-label">背景</span>噬菌体是地球上最多样的生物实体，但影响其基因组多样性演化的过程仍知之甚少。研究表明，噬菌体基因组中存在应变位点（contingency loci），即高突变性DNA区域，可通过DNA聚合酶在简单序列重复（simple sequence repeats）上的滑移促进可逆性移码突变；这类位点虽已在细菌、古菌和真核生物中得到广泛描述，但在噬菌体中研究不足。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用实验进化和基因组测序，考察E. coli噬菌体T2和T4中的应变位点作用。作者还分析了多种E. coli噬菌体中简单序列重复的广泛分布情况及其在不同功能基因中的丰度差异。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>E. coli噬菌体T2和T4中的应变位点可在子代中可逆地产生基因组和表型异质性，从而帮助其通过押注分散（bet-hedging）策略应对宿主防御。研究还发现，简单序列重复广泛存在于多样的E. coli噬菌体中，并且在不同功能基因之间的丰度存在差异。总体而言，诱变性的简单序列重复驱动了遗传多样化和群体异质性，使噬菌体能够在宿主防御机制变化的情况下仍然利用宿主。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了噬菌体复制过程中此前未被充分认识的一个方面，即由简单序列重复介导的遗传多样化机制。该机制有助于解释噬菌体如何通过产生群体异质性来适应不同宿主防御，从而加深了对噬菌体基因组多样性演化的理解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2830&amp;v=1&amp;s=6f32491ca028f6ce" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2830&amp;v=2&amp;s=4d9ce11cd8d5838d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2830&amp;v=3&amp;s=f354192dc6ea1413" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2830&amp;v=4&amp;s=25ee08a686567810" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2830&amp;v=5&amp;s=28a5cecc82f61d04" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-must">Must Read</span> · 80 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42601461/">Aligning protein-generative models to experimental fitness with ProteinDPO.</a></div>
+      <div class="card-title-zh">利用 ProteinDPO 将蛋白质生成模型与实验适应度对齐</div>
+      <div class="news">为解决蛋白生成模型与目标功能存在对齐鸿沟，作者利用ProteinDPO对齐实验适应性，发现其稳定性与亲和力预测优于无监督微调模型并可泛化设计多链复合物。</div>
+      <div class="meta">Nature methods · 2026-08-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Widatalla Talal, Borah Ashir A, King Samuel H, Driscoll Claudia L, Rafailov Rafael, Hie Brian L</div>
+<div class="meta">DOI: 10.1038/s41592-026-03137-3</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42601461/">https://pubmed.ncbi.nlm.nih.gov/42601461/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接结合蛋白语言模型与生成式对齐，契合你关注的肽设计方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>生物生成模型无需任务特异性训练数据即可预测生物学功能，但其表现往往不如专门模型。其根本原因在于“对齐鸿沟”，即无监督训练中学到的规则与目标功能并不直接相关。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用直接偏好优化（direct preference optimization, DPO），在保留预训练获得的一般知识的同时，将结构条件蛋白质语言模型对齐到优先生成稳定蛋白质序列这一特定任务。由此构建的对齐模型被命名为 ProteinDPO。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>ProteinDPO 在稳定性预测方面达到与任务特异性模型相当的水平，并持续优于无监督版本和微调版本的模型。该模型还能超越训练数据进行泛化，用于大型多链蛋白复合物的稳定化以及结合亲和力预测提升。在用于流感疫苗主要成分之一的血凝素三聚体稳定化时，约 80% 的设计相较天然血凝素表现出更高或相近的稳定性，并且相对于新近出现的哺乳动物毒株，稳定性最高可提高 32°C。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，可以通过引入生物物理信息来增强生成模型的能力。更广泛地说，研究提出了一个用于生物学基础模型对齐的通用框架。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2661&amp;v=1&amp;s=5c6f548c87ba5b99" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2661&amp;v=2&amp;s=d5a77bfac2a821f7" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2661&amp;v=3&amp;s=c35646f662d9bfa6" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2661&amp;v=4&amp;s=639965ebf7a8ecaf" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2661&amp;v=5&amp;s=0ea0f3633e2d754a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 62 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.14.744703">Protein language models and the long tail of functional diversity</a></div>
+      <div class="card-title-zh">蛋白质语言模型与功能多样性的长尾</div>
+      <div class="news">为解决蛋白图谱中singleton是否为伪影及其缺失影响模型训练的问题，作者分析UniRef和GigaRef聚类与结构域特征，发现其可学习且富含多样结构域，应纳入蛋白语言模型训练。</div>
+      <div class="meta">bioRxiv · 2026-08-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Vinod R., Char S., Amini A. P., Crawford L. K., Yang K. K.</div>
+<div class="meta">DOI: 10.64898/2026.08.14.744703</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.14.744703">https://www.biorxiv.org/content/10.64898/2026.08.14.744703</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接讨论宏基因组序列与蛋白语言模型训练，贴合你做 metagenomic mining 与 PLM。</div>
+<div class="abstract"><span class="abs-label">背景</span>蛋白质语言模型（protein language model, PLM）在下游任务中的表现依赖于预训练数据，因此近期研究致力于将基因组和宏基因组来源的蛋白质序列整合为大规模图谱。由于这些数据集高度冗余，训练时通常先按相似性聚类并进行采样；而不属于任何聚类的序列，即“单例”（singletons），常因被视为伪影而在训练和评估中被排除。摘要指出，单例实际上代表了功能多样性的长尾，并且在大规模图谱中数量丰富，例如联合基因组-宏基因组数据集 GigaRef 的 33.4 亿条序列中，近 43% 为单例。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究对来自 UniRef 和 GigaRef 的单例进行了系统表征，评估聚类过程是否遗漏了同源序列、排除单例对蛋白质语言模型训练的影响，以及这些单例包含哪些生物学结构域。作者还比较了不同聚类参数设置下单例是否会被归入某个聚类，并分析单例与已聚类序列之间的互信息及其结构域内容特征。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，许多 GigaRef 单例在替代参数设置下可以归入某个聚类，提示基因组和宏基因组数据集可能需要数据集特异性的聚类配置。作者还表明，单例与已聚类序列共享互信息，因此可被蛋白质语言模型学习，并对训练有用。最后，宏基因组单例比已聚类序列携带更高密度、更多样的结构域内容，其中包括序列一致性聚类未能识别的结构域层面同源性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果支持在蛋白质语言模型训练中纳入单例，而不是将其一概排除。研究同时呼吁对大规模整合序列图谱中的数据整理（data curation）进行更细致的审视，以更好保留功能多样性的长尾信息。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2807&amp;v=1&amp;s=7c5e32c1946e2c1d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2807&amp;v=2&amp;s=e9672396748f2cd8" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2807&amp;v=3&amp;s=6c9c1b53c6235873" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2807&amp;v=4&amp;s=d1e91a4d87f48d2f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2807&amp;v=5&amp;s=6fe01759597de94b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-reference">Reference</span> · 53 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42595785/">How to build an AI-driven digital organism.</a></div>
+      <div class="card-title-zh">如何构建一个由人工智能驱动的数字生物体</div>
+      <div class="news">为解决生物系统复杂且干预成本高风险大的问题，作者提出整合多尺度基础模型的AIDO，发现其可安全低成本高通量预测模拟并编程跨层级生物学。</div>
+      <div class="meta">Nature medicine · 2026-08-13</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Song Le, Segal Eran, Xing Eric</div>
+<div class="meta">DOI: 10.1038/s41591-026-04595-0</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42595785/">https://pubmed.ncbi.nlm.nih.gov/42595785/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦多尺度基础模型与AI生物模拟，贴近你对生成式AI和蛋白模型的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>生物学处于医学、药学、公共卫生和长寿研究的核心位置。然而在现实世界中，生物系统通常过于复杂，难以操控，而且进行干预的成本高、风险大。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文提出利用人工智能（AI）对生物学和生命进行建模与模拟的愿景。作者主张构建一个由人工智能驱动的数字生物体（AI-driven digital organism, AIDO），即由多尺度基础模型（foundation models）整合而成的系统，并以模块化、可连接和整体性的方式反映生物学的尺度、连通性与复杂性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>摘要提出，AIDO可作为一个安全、可负担且高通量的替代平台，用于在从分子、细胞到个体的各个层级预测、模拟和编程生物学过程。作者进一步展望，AIDO有望推动新一轮实验湿实验（wet-lab）研究与第一性原理推理的改进。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>AIDO有潜力为生物学研究提供更安全、更经济且更高效的研究平台，并促进更有指导性的湿实验和信息更充分的第一性原理推理。最终，这一体系可能帮助人类更好地解码生命并改善生命。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2656&amp;v=1&amp;s=c517a1cf08d933d6" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2656&amp;v=2&amp;s=1b2d8d91b0204d0f" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2656&amp;v=3&amp;s=5fd54f874021afec" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2656&amp;v=4&amp;s=65bc4f1f02f5cd63" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2656&amp;v=5&amp;s=0c5ee51ad197ff0c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42595818/">Characterization of microbial dark matter at scale with MetaSBT and taxonomy-aware Sequence Bloom Trees.</a></div>
+      <div class="card-title-zh">利用 MetaSBT 和具分类学感知能力的序列布隆树在大规模水平表征微生物暗物质</div>
+      <div class="news">为解决宏基因组组装基因组易受错误、缺失与污染干扰的表征难题，作者利用具分类学感知的MetaSBT，定义逾4万个候选病毒物种且约80%不匹配现有数据库，提升未知微生物检测与定量。</div>
+      <div class="meta">Nature biotechnology · 2026-08-13</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Cumbo Fabio, Blankenberg Daniel</div>
+<div class="meta">DOI: 10.1038/s41587-026-03245-7</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42595818/">https://pubmed.ncbi.nlm.nih.gov/42595818/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>面向宏基因组暗物质的规模化索引方法，契合你的metagenomic mining需求。</div>
+<div class="abstract"><span class="abs-label">背景</span>由于测序错误、组装不完整和污染的存在，准确表征宏基因组组装基因组（metagenome-assembled genomes, MAGs）仍然是一项重大挑战。为此，作者提出了用于组织、索引和表征微生物参考基因组及宏基因组组装基因组的工具 MetaSBT，并在本研究中以病毒为例进行了展示。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>MetaSBT 使用序列布隆树（Sequence Bloom Tree）数据结构，在全部七个分类学层级上识别基因组簇。该方法依赖布隆过滤器（Bloom filters）基于 k-mer 组成对大量基因组进行索引。作者构建了一个初始数据库集合，包含来自公共来源的超过 190,000 个病毒基因组，并在不同分类学层级上将其归入序列一致的簇。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>作者定义了超过 40,000 个候选物种，其中约 80% 据作者所知与当前参考数据库中的病毒物种不匹配。此外，作者表明其数据库可与现有定量宏基因组分析器配合使用，从而实现对未知微生物的检测及其在宏基因组样本中丰度的估计。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为大规模组织、索引和表征微生物参考基因组及宏基因组组装基因组提供了一个开源框架。其框架和数据库已完全集成到 Galaxy 平台中，并有助于挖掘此前难以检测的未知微生物多样性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2825&amp;v=1&amp;s=7770dc1405e953a4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2825&amp;v=2&amp;s=f6451ae2dd2a5d69" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2825&amp;v=3&amp;s=72d649993bb0dd8d" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2825&amp;v=4&amp;s=eed66af007602e25" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2825&amp;v=5&amp;s=d55e4d4127d83fd5" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 49 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42595815/">Genomic catalogue of giant viruses reveals expanded diversity and functional potential.</a></div>
+      <div class="card-title-zh">巨型病毒基因组目录揭示其扩展的多样性与功能潜力</div>
+      <div class="news">为解决巨型病毒多样性与功能潜力难刻画问题，作者整合GVMAGs V2并结合系统发育基因组学等方法，发现大量新分类单元及广泛宿主整合与代谢功能潜力。</div>
+      <div class="meta">Nature microbiology · 2026-08-13</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Vasquez Yumary M, Nardi Tiago, Terasaki Gbocho Masato, Byl Petra, Brůna Tomáš, Villada Juan C, Romero-Gutiérrez Miguel F, Mock Thomas, James Timothy Y, GVMAGs data consortium, Woyke Tanja, Schulz Frederik</div>
+<div class="meta">DOI: 10.1038/s41564-026-02435-y</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42595815/">https://pubmed.ncbi.nlm.nih.gov/42595815/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>含宏基因组挖掘与抗菌样生物合成基因簇线索，可启发新肽发现。</div>
+<div class="abstract"><span class="abs-label">背景</span>核质大DNA病毒（nucleocytoplasmic large DNA viruses）和 Mirusviricota 病毒具有丰富的分类学多样性，并且由于宏基因组测序而持续扩展。为系统刻画这类病毒的多样性，作者整理并更新了巨型病毒宏基因组组装基因组数据库。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究构建了巨型病毒宏基因组组装基因组数据库第二版（GVMAGs V2），包含来自 18,727 个 GVMAGs 的 8,508 个物种水平代表基因组。作者结合系统基因组学分析，并通过考虑替代性和自定义遗传密码改进了基因预测；同时利用数据库挖掘分析宿主中的推定内源性病毒元件，并在蛋白质水平评估功能基因与生物合成基因簇。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>GVMAGs V2 相比此前的巨型病毒系统发育框架，规模扩大了 6 倍；系统基因组学分析鉴定出 712 个此前未描述的属、13 个此前未知的病毒科，以及一个作者提议命名为 Mycodnavirales 的目。通过考虑替代性和自定义遗传密码，研究改进了 1,300 多个 GVMAGs 的基因预测，从而更准确地识别蛋白编码基因。数据库挖掘在藻类、真菌和寄生性原生生物宿主中发现了推定内源性病毒元件，提示巨型病毒整合现象广泛存在且具有进化持续性；蛋白质水平分析还显示 Algavirales 中富集了与污染物降解相关的基因，并广泛存在与类抗菌活性和类抗生素抗性基因活性相关的生物合成基因簇。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该公共资源可作为拓展巨型病毒多样性认知、揭示病毒—宿主相互作用以及探索病毒进化的基础。研究同时表明，巨型病毒具有比以往认识更广泛的分类多样性和功能潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2688&amp;v=1&amp;s=8e79905781561e4a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2688&amp;v=2&amp;s=d2df08a6c98e1c0e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2688&amp;v=3&amp;s=a04b7ec3a1c0bd5b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2688&amp;v=4&amp;s=6f30a08330e01be9" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2688&amp;v=5&amp;s=89eec1392dee07ee" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 44 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.09.743676">FP8 Inference in Genomic Foundation Models: Theoretical vs. Realized Speedups on GenomeOcean</a></div>
+      <div class="card-title-zh">基因组基础模型中的 FP8 推理：GenomeOcean 上理论加速与实际加速的比较</div>
+      <div class="news">为解决基因组基础模型低精度推理能否兼顾保真与加速问题，作者在GenomeOcean上实施FP8后训练量化，发现其基本保持生物学保真但吞吐增益最高仅19.3%且强依赖规模与负载。</div>
+      <div class="meta">bioRxiv · 2026-08-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Yu M., Egan R., Liu F., Wang Z., Shi L.</div>
+<div class="meta">DOI: 10.64898/2026.08.09.743676</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.09.743676">https://www.biorxiv.org/content/10.64898/2026.08.09.743676</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>关注基因组基础模型推理效率，可为你使用生成式蛋白模型提供部署参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>基因组基础模型（Genomic Foundation Models, GFMs）正越来越多地用于大规模序列分析与生成。与前沿语言模型相比，GFM 通常规模更小、常处理较长的基因组序列，且评估时往往需要保留具有生物学意义的结构和序列层面关系；因此，低精度训练后量化（post-training quantization, PTQ）在通用语言模型中的收益能否迁移到 GFM 仍不明确。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究以 GenomeOcean 为案例，实证评估了 FP8 训练后量化在基因组基础模型中的应用；GenomeOcean 是一种计算效率较高、在多种基因组学任务中表现较强的 GFM，模型规模覆盖 1 亿到 40 亿参数。作者在两类主要推理场景——嵌入提取（embedding extraction）和自回归生成（autoregressive generation）——下评估 FP8，并从相对于 BF16 基线的生物学保真度，以及吞吐量、内存占用和能效等系统层面效率两个维度进行分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>结果显示，在所评估的模型规模和推理场景中，FP8 基本保持了生物学保真度；在 40 亿参数规模下可降低 GPU 内存占用，并在自回归生成中提升能效。然而，实际吞吐提升明显低于 FP8 理论上的 2 倍硬件上限，最佳情况下自回归生成仅提升 19.3%，且收益随模型规模和工作负载显著变化。自回归生成的收益最为明确，主要由 KV-cache 压缩驱动；相比之下，嵌入提取在较小模型规模下吞吐收益有限甚至为负。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究表明，FP8 低精度推理在科学基础模型中虽可带来一定内存和能效优势，但其实际加速效果受模型规模效应、内存系统瓶颈和软件栈限制的共同影响，理论收益难以完全兑现。因此，在基因组基础模型等科学场景中采用低精度推理前，需要针对具体工作负载开展实证评估。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2808&amp;v=1&amp;s=a059beb172d27a0a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2808&amp;v=2&amp;s=213a5c9912a34067" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2808&amp;v=3&amp;s=fcb5ad89b4799333" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2808&amp;v=4&amp;s=26f673562ea90224" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2808&amp;v=5&amp;s=3a29ad2b96f738d9" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.08.743502">Automated generation of a gene perturbation transcriptomic atlas using large language models</a></div>
+      <div class="card-title-zh">利用大语言模型自动生成基因扰动转录组图谱</div>
+      <div class="news">为解决公共转录组库基因扰动元数据非结构化难复用问题，作者利用大语言模型自动识别并重建GEO单基因扰动分组，生成覆盖2907个基因的6802条表达图谱。</div>
+      <div class="meta">bioRxiv · 2026-08-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Soul J., Young D. A.</div>
+<div class="meta">DOI: 10.64898/2026.08.08.743502</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.08.743502">https://www.biorxiv.org/content/10.64898/2026.08.08.743502</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>用大语言模型结构化挖掘组学数据，对AI驱动肽发现有方法启发。</div>
+<div class="abstract"><span class="abs-label">背景</span>公共转录组数据库包含数千个基因扰动实验，是理解基因功能的重要资源，但其扰动元数据缺乏结构化，阻碍了系统性复用。现有扰动图谱依赖专家人工整理，维护成本高且更新不频繁，而自动分组方法既无法识别哪些样本构成扰动组，也无法恢复被扰动的基因。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究开发了一条自动化流程，利用大语言模型（large language models）在 NCBI-GEO 中识别单基因扰动实验，并重建其实验组-对照组样本分组，同时提取被扰动基因、扰动类型和细胞系等结构化且经本体标准化的字段。作者还人工整理了 3,300 个 GEO 实验的样本层面实验组-对照组标注，并将其作为开放基准数据集发布，包括 2,400 个训练集、600 个验证集和 300 个按时间留出的测试集。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>推理模型和任务特异性微调显著提升了有效扰动分组的识别能力，最佳模型在测试集上达到 0.925 的精确率和 0.836 的召回率。将该流程大规模应用后，研究构建了一个包含 6,802 个基因扰动表达特征的图谱，这些特征来自 4,453 个 GEO 实验，覆盖 2,907 个唯一被扰动基因。研究还提供了 R 包 perturbMatch，用于图谱探索，并可通过相似性评分将用户提供的表达特征与图谱进行查询比对。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为从公共转录组资源中自动提取和结构化基因扰动信息提供了可扩展方案，有助于系统化重用 GEO 中的大量实验数据。借助所构建的图谱和 perturbMatch，用户能够识别可重现目标转录状态的实验，从而支持基因功能研究与转录组状态匹配分析。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2812&amp;v=1&amp;s=6641e16957f2f588" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2812&amp;v=2&amp;s=c18b63be686f5727" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2812&amp;v=3&amp;s=07af5a9acfcb4363" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2812&amp;v=4&amp;s=2d935ea41ea58bac" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2812&amp;v=5&amp;s=8f51e42837ba427c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42599548/">Environmental filtering shapes biosynthetic potential and resistome of antarctic microbiomes.</a></div>
+      <div class="card-title-zh">环境过滤塑造南极微生物组的生物合成潜力与耐药组</div>
+      <div class="news">为解决南极环境过滤如何塑造微生物生物合成潜力与耐药组问题，作者整合319个MAG宏基因组与环境分析，发现BGC和ARG具地点特异性并受地球化学梯度驱动。</div>
+      <div class="meta">World journal of microbiology &amp; biotechnology · 2026-08-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Medeiros William B, Hidalgo-Martinez Kelly J, Penna Daniel D P S, Oliveira Valéria M</div>
+<div class="meta">DOI: 10.1007/s11274-026-05201-8</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42599548/">https://pubmed.ncbi.nlm.nih.gov/42599548/</a></div>
+<div class="meta">Keywords: Adaptive Specialization、Biosynthetic Gene Clusters、Environmental Filtering、Extreme Environment、Microbial Resistome</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接挖掘南极微生物BGC与耐药组，契合你做细菌素发现与宏基因组挖掘。</div>
+<div class="abstract"><span class="abs-label">背景</span>环境过滤是驱动南极生态系统中微生物群落组装的主要因素，但其对生物合成潜力和抗微生物耐药性的影响仍知之甚少。为此，研究聚焦南极不同环境中地球化学梯度与生物合成基因簇（biosynthetic gene clusters, BGCs）及抗微生物耐药基因（antimicrobial resistance genes, ARGs）之间的关系。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究分析了来自四个南极地点（Whalers Bay、Crater Lake、Fumarole Bay 和 Hannah Point）的319个中高质量宏基因组组装基因组（metagenome-assembled genomes, MAGs）。通过整合基因组分辨宏基因组学、生物合成挖掘、耐药组分析和环境分析，评估地球化学梯度、BGCs 与 ARGs 之间的关联。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究共鉴定出1,197个BGCs，其中萜烯（terpene）基因簇占总数的25%以上，并发现多个生物合成热点，包括一个携带62个BGCs的Acidobacteriota MAG。耐药组组成表现出显著的地点特异性结构，并与地球化学变量显著相关，尤其是钴、铁、有机碳和热变化。网络分析显示，隶属于Pseudomonadota和Actinomycetota的高连接度MAGs连接了多种BGC和ARG类别，同时生物合成与耐药决定因子的基因组共定位提示次级代谢与自我耐药机制之间可能存在适应性关联。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，环境过滤不仅塑造南极微生物组的分类组成，也塑造其功能组织。研究同时强调，极地生态系统是尚未充分探索的生物合成多样性储库，具有潜在的生物技术应用价值。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2816&amp;v=1&amp;s=1bd208eb9c080b81" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2816&amp;v=2&amp;s=a90dce4f8fc89b42" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2816&amp;v=3&amp;s=d26ca05005a53036" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2816&amp;v=4&amp;s=680a62f01c6cd330" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2816&amp;v=5&amp;s=0c3b77d9b8d8619c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42595057/">[Lys3, Lys4] M-PONTX-Dq3a [1-15]: a selective dinoponeratoxin-derived peptide that disrupts parasite membranes and inhibits TcGAPDH activity in Trypanosoma cruzi.</a></div>
+      <div class="card-title-zh">[Lys3, Lys4] M-PONTX-Dq3a [1-15]：一种来源于 dinoponeratoxin 的选择性肽，可破坏 Trypanosoma cruzi 寄生虫膜并抑制 TcGAPDH 活性</div>
+      <div class="news">为解决查加斯病药物疗效差且毒副作用大的问题，作者通过理性改造毒液来源抗菌肽，发现候选肽可选择性破坏克氏锥虫膜并抑制TcGAPDH活性。</div>
+      <div class="meta">Toxicon : official journal of the International Society on Toxinology · 2026-08-13</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Edson Evelline Araújo, Magalhães Emanuel Paula, Marinho Márcia Machado, Marinho Emmanuel Silva, Nunes João Victor Serra, Menezes Ramon Róseo Paula Pessoa Bezerra de, Martins Alice Maria Costa</div>
+<div class="meta">DOI: 10.1016/j.toxicon.2026.109267</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42595057/">https://pubmed.ncbi.nlm.nih.gov/42595057/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>展示抗菌肽理性优化与活性机制解析，可借鉴肽设计思路。</div>
+<div class="abstract"><span class="abs-label">背景</span>查加斯病（Chagas disease）仍是一种被忽视的热带病，也是重要的公共卫生问题；现有治疗药物苄硝唑（benznidazole）和硝呋莫司（nifurtimox）存在明显不良反应，且在慢性感染期疗效有限。抗菌肽（antimicrobial peptides, AMPs）因具有广谱活性和多重作用机制，被视为开发抗 Trypanosoma cruzi 药物的有前景骨架。既往研究表明，来源于 Dinoponera quadríceps 毒液的 AMP——M-PONTX-Dq3a 具有较强抗 T. cruzi 活性，其截短肽 M-PONTX-Dq3a [1-15] 及类似物 [Lys3]M-PONTX-Dq3a [1-15] 经结构优化后表现出更强杀锥虫活性和选择性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究以 [Lys3]M-PONTX-Dq3a [1-15] 为基础，通过理性氨基酸替换进一步优化肽分子，旨在获得既能促进膜破坏又能抑制寄生虫生存必需酶的候选肽。研究对所得类似物进行了针对 T. cruzi 多种发育阶段的杀锥虫活性、哺乳动物细胞毒性、溶血活性和选择性评价。并通过作用机制研究、分子对接以及酶学实验，考察其膜通透化、活性氧（reactive oxygen species, ROS）积累、线粒体膜去极化，以及对 TcGAPDH 和 hGAPDH 的结合与对 TcGAPDH 活性的抑制作用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在所评估的类似物中，[Lys3, Lys4] M-PONTX-Dq3a [1-15] 对 T. cruzi 多种发育形式表现出强效杀锥虫活性，同时对哺乳动物细胞的细胞毒性较低，在生物活性浓度下溶血活性低，且选择性指数提高。机制研究显示，该类似物可促进膜通透化、诱导活性氧积累并导致线粒体膜去极化。此外，分子对接预测其对 TcGAPDH 与 hGAPDH 具有不同结合模式，提示其优先识别寄生虫酶；酶学实验进一步证实其可显著抑制 TcGAPDH 活性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>上述结果表明，[Lys3, Lys4] M-PONTX-Dq3a [1-15] 可作为开发新型抗查加斯病药物的有前景骨架。该研究也凸显了理性肽工程（rational peptide engineering）在开发新型抗寄生虫制剂中的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2811&amp;v=1&amp;s=56ada3ce0fcecbfd" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2811&amp;v=2&amp;s=a0974bc6575dde97" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2811&amp;v=3&amp;s=f5b232d14f910c35" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2811&amp;v=4&amp;s=365649ad29c86179" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2811&amp;v=5&amp;s=19d0657dfcb0ff9a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 45 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.14.744830">Isolation and Characterization of Bacteriocin-Producing Lactic Acid Bacteria from Cheese and Functional Evaluation of Their Synthesized Bioactive Peptides</a></div>
+      <div class="card-title-zh">从奶酪中分离并表征产细菌素乳酸菌及其合成生物活性肽的功能评价</div>
+      <div class="news">为解决天然少加工食品的微生物安全问题，作者从盐水奶酪筛选并优化发酵产细菌素乳酸乳球菌，发现其产生的Nisin 2A广谱抑菌且耐热耐储存，推动食品生物保鲜研究。</div>
+      <div class="meta">bioRxiv · 2026-08-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Anumudu C. K., Miri T., Onyeaka H.</div>
+<div class="meta">DOI: 10.64898/2026.08.14.744830</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.14.744830">https://www.biorxiv.org/content/10.64898/2026.08.14.744830</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦细菌素发现与抗菌谱表征，契合你对 bacteriocin 和活性评估的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>由于消费者对天然保藏、少加工且不含人工防腐剂食品的需求不断增长，乳链菌肽（nisin）及其衍生物等生物防腐剂在食品加工业中愈发受到重视。然而，在满足此类消费偏好的同时确保微生物学安全仍是重大挑战，因此有必要持续发掘由天然微生物产生的新型抗菌剂。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究以商业盐水奶酪为来源，采用MRS培养基从乳制品中筛选野生型产细菌素乳酸菌，并通过拮抗实验筛得5株产菌株。对其中代谢产物抗菌活性最强的菌株进行鉴定，确定为Lactococcus lactis；其产生的活性抗菌肽被命名为Nisin 2A，并通过超高效液相色谱-质谱联用（UHPLC-MS）和十二烷基硫酸钠-聚丙烯酰胺凝胶电泳（SDS-PAGE）测定分子量约为3.3 kDa。随后采用Plackett Burman实验设计优化改良MRS肉汤中的补料分批发酵（fed-batch fermentation）条件以放大生产，并通过硫酸铵沉淀和固相萃取（SPE）纯化；其抗菌活性则通过琼脂井扩散法和试管稀释法进行评价与定量。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>纯化后的Nisin 2A表现出广谱抗菌活性，尤其对革兰氏阳性菌Bacillus cereus抑制作用显著。该肽在较宽pH范围（3至9）和高温条件（最高100 C）下仍保持生物活性，对蛋白酶K（Proteinase K）和胰蛋白酶（Trypsin）高度敏感。值得注意的是，该肽具有良好热稳定性，热处理后仍可保留最高达90%的初始活性，并在延长贮藏后维持稳定抑菌效果。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，来源于Lactococcus lactis的Nisin 2A具有作为食品体系天然生物防腐剂的应用潜力。该研究也为从天然乳制品微生物中开发新的抗菌肽提供了依据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2806&amp;v=1&amp;s=7b721bf9172314eb" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2806&amp;v=2&amp;s=56617ba03510bb48" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2806&amp;v=3&amp;s=e0c7f95b0049057d" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2806&amp;v=4&amp;s=f8a087622239e905" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2806&amp;v=5&amp;s=2750ce3d144ea952" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 43 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42601406/">Global microbial DNA signatures of temperature and nutrient limitation across ecosystems.</a></div>
+      <div class="card-title-zh">跨生态系统中温度与营养限制的全球微生物DNA特征</div>
+      <div class="news">为解析跨生态系统微生物DNA对温度与营养限制的普适适应，作者利用1235个宏基因组四核苷酸频率结合机器学习，发现DNA组成可预测温度且GC-温度关系受营养可利用性驱动。</div>
+      <div class="meta">Nature microbiology · 2026-08-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Antman Tomer, Lewin-Epstein Ohad, Yerushalmi Tamir, Broder Yonatan S, Zeevi David</div>
+<div class="meta">DOI: 10.1038/s41564-026-02451-y</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42601406/">https://pubmed.ncbi.nlm.nih.gov/42601406/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>用机器学习解析宏基因组DNA环境信号，可借鉴微生物组可解释建模思路。</div>
+<div class="abstract"><span class="abs-label">背景</span>微生物基因组会持续适应环境条件，但要识别具有普适性的适应性特征仍然具有挑战性。该研究关注不同生态系统中，微生物DNA组成与环境温度及营养限制之间的关联。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究基于1,235个海洋和土壤宏基因组（metagenomes）的四核苷酸频率（tetranucleotide frequencies），并采用机器学习方法，仅根据DNA组成预测环境温度。作者还比较了GC含量与温度在土壤和海洋环境中的相关性，并结合营养可利用性对这些模式进行解释。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究表明，仅凭DNA组成即可较准确地跨生态系统预测环境温度（R2 = 0.75），且这种预测信号在单个分类群内部也存在，提示存在基础性的温度相关特征。相比之下，GC含量与温度的相关性在土壤中为正、在海洋中为负；这一现象可能由营养可利用性的差异驱动，因为GC含量随营养增加而升高，而海洋样品中的营养随温度升高而降低。进一步整合分析后，作者鉴定出一类GC含量为50%的特定四核苷酸，它们在不同环境中均表现出一致且稳健的温度相关性，可能有助于预测结果的稳定性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究强调了宏基因组尺度上DNA与温度之间的关联，这对于理解微生物群落如何响应全球变化具有意义。研究还提示，在解释DNA组成与温度关系时，需要同时考虑营养限制因素。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2826&amp;v=1&amp;s=72286d5386874d79" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2826&amp;v=2&amp;s=0b27f2e3c42669b4" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2826&amp;v=3&amp;s=90dd31a36e6a2934" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2826&amp;v=4&amp;s=c0dd3f914cdabdaf" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2826&amp;v=5&amp;s=c1944d9a04f072f2" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42595643/">Formicitoxins: membrane-targeting antifungal peptides from carpenter ant venoms.</a></div>
+      <div class="card-title-zh">蚁毒素（Formicitoxins）：源自木匠蚁毒液的膜靶向抗真菌肽</div>
+      <div class="news">为解决抗真菌药物类别有限且耐药加剧问题，作者从木匠蚁毒液鉴定formicitoxins，发现其以破坏真菌膜的非经典机制抑菌，并在体外优于伏立康唑且可延缓体内感染。</div>
+      <div class="meta">Trends in molecular medicine · 2026-08-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhang Wei, Sarabandi Melina, Kumar Vinit</div>
+<div class="meta">DOI: 10.1016/j.molmed.2026.07.010</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42595643/">https://pubmed.ncbi.nlm.nih.gov/42595643/</a></div>
+<div class="meta">Keywords: WHO priority pathogens、antifungal peptides、antifungal resistance、formicitoxins、membrane-disrupting antimicrobials、venom biodiscovery</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦膜活性肽发现，但对象偏抗真菌，和你的抗菌肽设计部分相关。</div>
+<div class="abstract"><span class="abs-label">背景</span>真菌感染可导致数百万人死亡，但目前临床抗真菌药物仅涵盖三大类。Koch 等人发现了来自木匠蚁毒液的 formicitoxins-35 毒液肽，这是首次在蚁亚科（Formicinae）物种中发现此类肽。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者从木匠蚁毒液中鉴定出 formicitoxins-35 肽，并评估其体外抗真菌活性及体内感染干预效果。摘要还表明，作者考察了其作用机制是否独立于现有药物靶点。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>其中两种肽在体外的表现优于伏立康唑（voriconazole），并且在体内可延缓感染进程。Formicitoxins 通过破坏真菌细胞膜发挥作用，且其机制独立于现有抗真菌药物靶点。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了木匠蚁毒液中一类新的膜靶向抗真菌肽，为抗真菌药物发现提供了新来源。由于其作用不依赖现有药物靶点，这类分子可能有助于拓展当前仅有三大类的临床抗真菌策略。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2646&amp;v=1&amp;s=0de899bdf4de41aa" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2646&amp;v=2&amp;s=25004276d7040e05" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2646&amp;v=3&amp;s=c013a4db135fd020" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2646&amp;v=4&amp;s=89b7f644c059a3c4" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2646&amp;v=5&amp;s=c83a93278107d64d" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42595787/">Animal degradation of microbial storage polyhydroxyalkanoates.</a></div>
+      <div class="card-title-zh">动物对微生物储存型聚羟基脂肪酸酯的降解</div>
+      <div class="news">为解决动物能否降解微生物储碳sPHA的问题，作者结合PHAD鉴定、异源表达与跨类群功能验证，发现多门动物和原生生物广泛具备该代谢途径。</div>
+      <div class="meta">Nature ecology &amp; evolution · 2026-08-13</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zeidler Caroline, Gruber-Vodicka Harald R, Michellod Dolma, D&#x27;Angelo Grace, Becker Stefan, Berndt Henry, Wippler Juliane, Violette Marlene, Kleiner Manuel, Porta-Fidalgo Alba, Janke Rebekka S, Weinert Kristina, Liebeke Manuel, Dubilier Nicole, Sogin Maggie</div>
+<div class="meta">DOI: 10.1038/s41559-026-03153-8</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42595787/">https://pubmed.ncbi.nlm.nih.gov/42595787/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及微生物代谢与宿主互作，但不直接面向抗菌肽挖掘。</div>
+<div class="abstract"><span class="abs-label">背景</span>多种微生物会产生储存型聚羟基脂肪酸酯（storage polyhydroxyalkanoates, sPHAs），作为碳源和能量储备。此前已知只有细菌和真菌能够利用聚羟基脂肪酸酯解聚酶（polyhydroxyalkanoate depolymerases, PHADs）降解微生物来源的 sPHAs。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者在无肠寡毛类 Olavius algarvensis 中鉴定 PHAD，并结合酶学实验与质谱分析，验证异源表达的 O. algarvensis PHAD 对 sPHAs 的降解能力。研究还通过 mRNA 成像确定 PHAD 的表达部位，并进一步在多个动物物种和原生生物中筛查 PHAD；同时对系统发育上相距较远的动物来源 PHAD 进行了功能测定。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，Olavius algarvensis 具有可降解 sPHAs 的 PHAD；其共生细菌中优势共生体的 sPHAs 最多可占细胞碳储量的 42%。酶学和质谱结果表明，该酶可将 sPHAs 降解为可进入保守代谢通路的羟基烷酸单体，且 PHAD 的 mRNA 表达定位于寡毛类表皮这一共生体消化部位。研究还在来自 9 个门的 66 种以上有肠动物以及来自 3 个主要超类群的 19 种原生生物中鉴定到 PHAD，并通过功能实验确认，来自水生和陆生环境、系统发育距离较远的动物谱系中的 PHAD 均能降解 sPHAs。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果揭示了一条此前未被认识的途径，即原生生物和动物能够获取微生物碳储备中的碳源。鉴于 sPHAs 在各类生态系统中广泛存在，这一发现具有广泛意义，并提示后生动物最近共同祖先可能已具备 PHAD。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2829&amp;v=1&amp;s=d5755c03020148ec" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2829&amp;v=2&amp;s=c76a1fbd59f82c66" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2829&amp;v=3&amp;s=1eebfd7e84247451" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2829&amp;v=4&amp;s=bc92713d607fcd16" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2829&amp;v=5&amp;s=bc1a6cb768b740fa" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42600614/">Unifying the structures of language in a neural population code.</a></div>
+      <div class="card-title-zh">统一神经元群体编码中的语言结构</div>
+      <div class="news">为解决自然语言结构如何在生物与人工系统中统一编码的问题，作者类比分析大语言模型嵌入与神经群体编码，发现二者共享上下文驱动的分布式表征规律，推动语言神经计算建模范式更新。</div>
+      <div class="meta">Neuron · 2026-08-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Nastase Samuel A, Zada Zaid, Goldberg Adele, Hasson Uri</div>
+<div class="meta">DOI: 10.1016/j.neuron.2026.07.024</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42600614/">https://pubmed.ncbi.nlm.nih.gov/42600614/</a></div>
+<div class="meta">Keywords: LLMs、connectionism、construction grammar、embedding space、large language models、neurolinguistics、representational geometry、statistical learning</div>
+<div class="reason"><span class="abs-label">推荐理由</span>主题是人类语言神经编码，与抗菌肽、细菌及蛋白模型研究关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>大语言模型（LLMs）以前所未有的方式掌握了人类语言。与适用于受限且定义明确问题的基于规则的符号系统不同，LLMs 通过统计学习将多样的语言结构编码到统一的高维嵌入空间中，从而能够处理自然语言对语境敏感的表达性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文基于人工智能与认知神经科学交叉领域不断增长的研究工作，考察大语言模型（LLMs）与神经元群体编码（neural population codes）之间的对应关系。作者据此论证，LLMs 可作为支持人脑语言神经计算的、在认知上可信的模型。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究指出，LLMs 所采用的由语境驱动的分布式表征，与神经元群体编码表现出显著相似性。这提示人类语言系统可能已经趋同于一种类似的计算策略。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>作者认为，要解释语言如何在生物系统和人工系统的神经元群体编码中涌现，不能仅依赖代数—符号理论的渐进式修正，而需要新的理论范式。这一观点为理解语言的神经计算基础及人工语言系统提供了统一视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2662&amp;v=1&amp;s=4576983cba542968" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2662&amp;v=2&amp;s=470b799152974f9e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2662&amp;v=3&amp;s=69af3e8f1a8470d2" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2662&amp;v=4&amp;s=d6d78eac70bb1bae" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=2662&amp;v=5&amp;s=196c265f950b3ffe" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日文献主要聚焦两条主线：一是AI与基础模型在生命科学中的应用，包括蛋白生成模型对齐、蛋白/基因组语言模型、LLM驱动转录组元数据整理及数字生物体构想；二是宏基因组与微生物生态，涵盖病毒与巨型病毒目录、微生物暗物质、环境适应、耐药组与生物合成潜力。共同趋势是大规模数据整合结合机器学习/语言模型，并强调从“可预测”走向“可对齐、可量化、可复用”。对研究者而言，这批工作既提供了可直接借鉴的计算框架与数据库资源，也提示在蛋白设计、组学数据整理、未知微生物发现和环境功能解析中，应更重视数据覆盖长尾、多尺度建模与实验验证闭环。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=niupeiyuan%40genomics.cn&amp;d=2026-08-17&amp;s=dc96a1e0fcecc803">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=niupeiyuan%40genomics.cn&amp;d=2026-08-17&amp;s=dc96a1e0fcecc803">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

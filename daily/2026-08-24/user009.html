@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-08-24</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-08-24</h1>
+    <p class="hello">niupeiyuan，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">过去 3 天全库新增 882 篇 · 命中您的关键词 93 篇 · 本次推送 15 篇（必读 0 · 重要 0 · 参考 15）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">基因组演化与多样性</h2>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-module">泛基因组学</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42629596/">Integrating deep learning and pangenomics to recover missing heritability from wild structural variations.</a></div>
+      <div class="card-title-zh">整合深度学习与泛基因组学以恢复野生结构变异中缺失的遗传力</div>
+      <div class="news">为解决驯化致遗传瓶颈下野生结构变异遗传力缺失问题，作者结合泛基因组表示与深度学习，发现可恢复参考偏倚掩盖变异并提升跨野生到栽培预测。</div>
+      <div class="meta">BMC genomics · 2026-08-22</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wang Yiquan, Cai Minnuo, Ma Yahui, Tellier Aurélien, Wei Kai</div>
+<div class="meta">DOI: 10.1186/s12864-026-13274-w</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42629596/">https://pubmed.ncbi.nlm.nih.gov/42629596/</a></div>
+<div class="meta">Keywords: Deep learning、Genomic prediction、Missing heritability、Pangenomics、Structural variation、Wild germplasm</div>
+<div class="reason"><span class="abs-label">推荐理由</span>深度学习与基础模型思路接近你的蛋白语言模型和生成式AI兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>作物驯化造成了严重的遗传瓶颈，降低了现代栽培品种中原本存在于野生近缘种中的适应性多样性。依赖线性参考基因组和单核苷酸多态性（SNPs）的标准群体内基因组预测模型，无法捕获隐藏在野生材料中的全部表型变异。缺失的遗传力主要封存于复杂结构变异中，如存在-缺失变异（presence-absence variants）和拷贝数变异（copy number variants），但这些变异常因参考偏倚而被遮蔽。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文综述了该领域如何从线性坐标体系转向高维基因组数据表征，以恢复未被定位的结构变异。作者对比了两类表示方式：一类是描绘网状进化的显式图拓扑，另一类是无需比对即可捕获序列组成的隐式编码，如 K-mers。针对这些复杂高维特征，文章总结了新兴深度学习框架，重点介绍图神经网络（Graph Neural Networks）如何解析拓扑数据中的遗传路径，以及基于 Transformer 的基础模型（foundation models）如何从序列上下文中提取功能语法。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>摘要指出，这些深度学习架构能够有效整合结构变异，从而解析传统模型遗漏的非加性效应，如上位性（epistasis）。对这些隐藏结构变异的计算识别，有助于更精准地利用野生种质资源。作者进一步说明，人工智能驱动策略可实现对未表征野生等位基因的零样本预测（zero-shot prediction），并优化基因型×环境互作（genotype-by-environment interactions）。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究方向将基因组预测范式从狭窄育种群体内选择，拓展到覆盖野生到栽培连续体的进化尺度推断。通过恢复缺失的遗传力并发掘野生结构变异中的适应性信息，这些方法为气候适应型作物的加速从头驯化（de novo domestication）铺平了道路。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3746&amp;v=1&amp;s=037ab8dfa211a12b" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3746&amp;v=2&amp;s=0a8ad38fc9b821f4" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3746&amp;v=3&amp;s=c26bd8cd5bd2d01a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3746&amp;v=4&amp;s=04a8f17dae9db0fb" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3746&amp;v=5&amp;s=1a1a4d4df70105f2" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42632328/">Exploration of the antibacterial function of the Eutherian LEG1s.</a></div>
+      <div class="card-title-zh">真兽类LEG1s抗菌功能的探索</div>
+      <div class="news">为解决真兽类LEG1抗菌功能是否保守及其演化分化问题，作者系统筛查原核基因组并测试三支LEG1重组蛋白，发现其抗菌功能保守但复制后分化。</div>
+      <div class="meta">Biochemical and biophysical research communications · 2026-08-22</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Xu Sai-Fei, Yang Xiao-Feng, Wang Jin-Yang, Zhang Jia-Qi, Shi Hui, He Jin</div>
+<div class="meta">DOI: 10.1016/j.bbrc.2026.154482</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42632328/">https://pubmed.ncbi.nlm.nih.gov/42632328/</a></div>
+<div class="meta">Keywords: Actinomycetota、Antimicrobial proteins、Eutheria、LEG1、Molecular evolution</div>
+<div class="reason"><span class="abs-label">推荐理由</span>解析LEG1抗菌功能分化，直接关联你关注的细菌抗菌蛋白发现。</div>
+<div class="abstract"><span class="abs-label">背景</span>富含肝脏基因1（liver-enriched gene 1, LEG1）编码一个新型蛋白家族，其功能尚未得到充分阐明。LEG1最早在斑马鱼中被报道并鉴定，编码参与肝脏发育的分泌蛋白；而哺乳动物LEG1s则表现出不同的表达模式，如鸭嘴兽单孔类泌乳蛋白（platypus monotreme lactation protein, platMLP）具有抗菌功能，小鼠和猪的LEG1s特异性表达于唾液腺。进化上，LEG1广泛存在于脊椎动物中并形成LEG1a、LEG1b和LEG1c三大分支，但仅有少数无脊椎动物、原生生物和细菌保留LEG1同源物，其起源仍不明确。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者系统探索了原核生物参考基因组中LEG1的分布情况，并分析其系统发育分布特征。基于放线菌门（Actinomycetota）以产生抗菌化合物著称且platMLP可抑制某些细菌生长，作者提出LEG1可能是保守的抗菌蛋白。随后纯化了来自三个分支的重组LEG1s蛋白，并进行了抗菌实验检测。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，原核生物中的LEG1主要存在于放线菌门（Actinomycetota）。抗菌实验表明，猪LEG1c和platMLP具有分化的抗菌活性。上述结果支持LEG1的抗菌功能在真兽类中是保守的，但在基因复制事件之后发生了功能分化。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究为LEG1蛋白家族的功能提供了新的证据，支持其在真兽类中具有保守的抗菌作用。研究还提示，LEG1在进化过程中可能经历了基因复制后的功能分化，并为理解LEG1的进化来源与功能演化提供了线索。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3823&amp;v=1&amp;s=3661a9101ec8cabe" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3823&amp;v=2&amp;s=f9daa5184c831f06" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3823&amp;v=3&amp;s=2be770e3135c7f77" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3823&amp;v=4&amp;s=4d40d90db202a91c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3823&amp;v=5&amp;s=985fbba267efe7e9" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 42 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.16.744597">Caught in transition: facultative intracellularity and genome evolution of Symbiopectobacterium in Rhodnius species</a></div>
+      <div class="card-title-zh">处于转变之中：Rhodnius 物种中 Symbiopectobacterium 的兼性胞内生活方式与基因组进化</div>
+      <div class="news">为解决Rhodnius中Symbiopectobacterium是否处于胞内共生转变阶段，作者结合比较宏基因组与显微定位，发现其基因组缩减不一且呈可选择性胞内生活，揭示向专性互利共生演化的中间态。</div>
+      <div class="meta">bioRxiv · 2026-08-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Moons T., Mendiola S. Y., Tarabai H., Hypsa V., Vogel K. J., Novakova E.</div>
+<div class="meta">DOI: 10.64898/2026.08.16.744597</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.16.744597">https://www.biorxiv.org/content/10.64898/2026.08.16.744597</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>结合比较宏基因组学解析细菌共生演化，契合你对细菌与宏基因组的关注。</div>
+<div class="abstract"><span class="abs-label">背景</span>吸血昆虫通常依赖专性胞内细菌共生体提供脊椎动物血液中缺乏的必需性维生素B。相比之下，锥蝽亚科（Triatominae，俗称 kissing bugs）长期以来被认为较为特殊，因为它们主要依赖肠道相关的胞外细菌。近期在 Rhodnius 物种中发现 Symbiopectobacterium，提示这些昆虫中共生关系的多样性与演化可能比以往认识更复杂。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究考察了 Symbiopectobacterium 在 Rhodnius 属中的分布、基因组进化和组织定位。研究结合比较宏基因组学（comparative metagenomics）、系统基因组学（phylogenomics）、荧光原位杂交（fluorescence in situ hybridization）、透射电子显微镜（transmission electron microscopy）和血淋巴筛查，对来自 Rhodnius prolixus 的 Symbiopectobacterium 基因组进行表征，并评估其在多个 Rhodnius 物种公开数据集中的存在情况。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Rhodnius prolixus 相关菌株具有较大且高度动态的基因组，富含可移动遗传元件、假基因和分泌系统残迹，同时保留了多种维生素B的生物合成通路。比较分析显示，不同 Rhodnius 相关菌株在基因组缩减程度上存在差异，提示其正处于向宿主限制性共生转变的过程中，且这种转变可能是持续发生并可能彼此独立的。定位分析发现，Symbiopectobacterium 可胞内存在于后中肠上皮细胞中，并偶见于血淋巴，这与兼性胞内生活方式一致；但未观察到菌体器（bacteriomes）或稳定的胞内结构。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，Symbiopectobacterium 代表了锥蝽亚科中从环境相关细菌向专性胞内互利共生体转变过程中的一个中间阶段。该研究为理解 Rhodnius 及相关吸血昆虫中共生系统的演化提供了新证据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3773&amp;v=1&amp;s=49a4879dd27473c0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3773&amp;v=2&amp;s=cf01d5debf242c65" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3773&amp;v=3&amp;s=2f13a712391a2060" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3773&amp;v=4&amp;s=4235c9e0e4e4436a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3773&amp;v=5&amp;s=cece11bd54a31571" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 38 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42627216/">Characterization of vaginal lactobacilli from South African women toward the development of a biotherapeutic to optimize the vaginal microbiome.</a></div>
+      <div class="card-title-zh">南非女性阴道乳杆菌的表征：推动开发用于优化阴道微生物组的生物治疗制剂</div>
+      <div class="news">为解决南非女性阴道菌治疗株筛选问题，作者结合功能表型评估与全基因组测序，发现L. crispatus最适合作为活体生物治疗菌株且需按人群定制。</div>
+      <div class="meta">Applied and environmental microbiology · 2026-08-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wilson Jenna, Amir Hamzah Aleya Sarah, Jordan Christine, Hayward Joshua A, Kullin Brian R, Manhanzva Monalisa T, Tyssen David, Mehou-Loko Celia, Abrahams Andrea G, Radzey Nina, Harryparsad Rushil, Meyer Bahiah, Hearps Anna C, Ziemann Mark, Humphries Hilton, Mkhize Pamela, Bekker Linda-Gail, Passmore Jo-Ann S, Jaspan Heather B, Sheppard Anna E, Tachedjian Gilda, Masson Lindi</div>
+<div class="meta">DOI: 10.1128/aem.00566-26</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42627216/">https://pubmed.ncbi.nlm.nih.gov/42627216/</a></div>
+<div class="meta">Keywords: HIV、South Africa、lactobacilli、live biotherapeutic、vaginal microbiome</div>
+<div class="reason"><span class="abs-label">推荐理由</span>含乳杆菌基因组中的细菌素线索，贴近菌群与抗菌分子挖掘。</div>
+<div class="abstract"><span class="abs-label">背景</span>HIV 仍是全球最严峻的公共卫生挑战之一，撒哈拉以南非洲的青春期女孩和年轻女性尤其易感。细菌性阴道病（bacterial vaginosis, BV）是 HIV 获得的重要危险因素，而当前治疗策略有限；最佳状态下的阴道乳杆菌可通过部分由乳酸介导的免疫调节和抗菌作用，对 BV 和 HIV 提供保护。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者从 25 名 BV 阴性的南非女性中分离获得 181 株阴道乳杆菌，并筛选其中 50 株进行进一步评估。评估内容包括利用阴道上皮细胞检测炎症反应，以及测定 D- 和 L-乳酸、乳酸总产量和培养体系酸化能力；此外，还对 10 株 Lactobacillus crispatus 分离株进行了全基因组测序分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>除 1 株 Ligilactobacillus salivarius 外，Lactobacillus crispatus 分离株对培养基的酸化能力最强，且产生最多的 D- 和 L-乳酸。不同菌株诱导的炎性细胞因子反应差异明显，其中 Lb. crispatus 诱导的细胞因子水平最低，而部分菌株可引发显著炎症反应；综合各项指标后，Lb. crispatus 表现出最理想的生物治疗相关特征。全基因组分析在所有 10 株 Lb. crispatus 中均发现了推定细菌素和完整前噬菌体序列，但未检出抗菌药物耐药元件，且多数南非来源的 Lb. crispatus 在遗传上彼此更接近，而不同于其他地理区域的分离株。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究表明，用于阴道微生态干预的活体生物治疗制剂（live biotherapeutic）在菌株选择上必须严格，因为不同菌株在乳酸生成和炎症诱导等关键性状上存在显著差异。南非女性来源的 Lb. crispatus 具有较优的候选特征，且其基因组与其他地区分离株存在差异，这支持为目标使用人群定制阴道活体生物治疗产品的必要性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3915&amp;v=1&amp;s=18d213718c62cffb" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3915&amp;v=2&amp;s=507626dfb948d6b5" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3915&amp;v=3&amp;s=1a84e002194989ab" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3915&amp;v=4&amp;s=d128e2465a052d70" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3915&amp;v=5&amp;s=b8e83824ecb67c04" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 33 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42623474/">Genomes of Poaceae relatives reveal key metabolic innovations preceding the evolution of grasses.</a></div>
+      <div class="card-title-zh">禾本科近缘类群基因组揭示草类演化之前发生的关键代谢创新</div>
+      <div class="news">为厘清禾本科双淀粉和双木质素途径起源，作者测序近缘类群基因组并结合系统发育与功能分析，发现ρ全基因组复制和更早PAL串联复制分别驱动两类代谢创新形成。</div>
+      <div class="meta">Science (New York, N.Y.) · 2026-08-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Takeda-Kimura Yuri, Moore Bethany, Holden Samuel, Morris Jae S, Deb Sontosh K, Sanders Carly, El-Azaz Jorge, Barrett Matt, Lorence David, de Oliveira Marcos V V, Havranek Wynne, Grimwood Jane, Williams Melissa, Boston Lori Beth, Jenkins Jerry, Plott Christopher, Shu Shengqiang, Barry Kerrie, Goodstein David M, Schmutz Jeremy, Jez Joseph M, Moscou Matthew J, McKain Michael R, Leebens-Mack James H, Maeda Hiroshi A</div>
+<div class="meta">DOI: 10.1126/science.adv0443</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42623474/">https://pubmed.ncbi.nlm.nih.gov/42623474/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>研究植物代谢创新与基因组演化，对细菌肽挖掘和生成设计帮助很有限。</div>
+<div class="abstract"><span class="abs-label">背景</span>禾本科（Poaceae）具有巨大的经济和生态重要性，并表现出独特的代谢特征，包括双重淀粉生物合成途径和双重木质素生物合成途径。该研究旨在探究这些代谢创新是在何时、以何种方式相对于禾本科起源而演化形成的。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究测序了 Pharus、Joinvillea、Ecdeiocolea 和 Typha 物种的基因组，以比较分析这些代谢创新与禾本科起源之间的演化关系。研究还在系统基因组学（phylogenomics）分析指导下，整合了生物化学、功能和结构研究，以解析关键代谢创新的分子基础。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在通向所有草类最近共同祖先的谱系中，rho 全基因组复制（ρWGD）促进了与胞质淀粉生物合成相关的基因家族扩张。更早发生的苯丙氨酸解氨酶（phenylalanine ammonia lyase, PAL）串联重复产生了苯丙氨酸/酪氨酸解氨酶（phenylalanine/tyrosine ammonia lyase, PTAL），后者负责双重木质素生物合成。综合分析进一步揭示了这些先于草类演化出现的关键代谢创新的分子基础。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了禾本科独特代谢性状的关键创新并非都起始于草类出现之后，而是在其演化之前已逐步形成。研究为理解草类代谢特征的起源及其演化机制提供了基因组和分子层面的证据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3557&amp;v=1&amp;s=eeb40886939d54ab" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3557&amp;v=2&amp;s=ba3e94a1cb8d5505" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3557&amp;v=3&amp;s=68a612e8319d82df" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3557&amp;v=4&amp;s=28f74c2a12131c9f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3557&amp;v=5&amp;s=aa3638b0746f551e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-reference">Reference</span> · 54 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.09.743796">Peptide structural plasticity is predictable from sequence and environment</a></div>
+      <div class="card-title-zh">肽结构可塑性可由序列和环境预测</div>
+      <div class="news">为解决肽在不同环境中结构可塑性难预测问题，作者利用ApexFold整合序列与环境描述符，发现其可准确预测溶剂诱导构象转变且优于静态预测器。</div>
+      <div class="meta">bioRxiv · 2026-08-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Torres M. D. T., Cao H., de la Fuente-Nunez C.</div>
+<div class="meta">DOI: 10.64898/2026.08.09.743796</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.09.743796">https://www.biorxiv.org/content/10.64898/2026.08.09.743796</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>可预测肽在膜环境中的构象变化，贴合抗菌肽设计与活性优化。</div>
+<div class="abstract"><span class="abs-label">背景</span>许多肽通常并不存在单一的优势结构。相反，许多肽在水中保持无序，而在遇到膜或其他化学环境时会发生折叠；这一性质支撑了多种生物学功能，但难以预测。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究提出了机器学习框架 ApexFold，用于预测肽二级结构如何随环境而变化。ApexFold结合肽序列及其特征，并引入周围介质的理化描述符，以估计不同条件下螺旋、β样和无序结构所占比例。该模型基于1,187条肽在水、助溶剂和膜模拟胶束中获得的圆二色谱（circular dichroism）测量数据进行训练。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在独立肽面板上，ApexFold能够预测由溶剂诱导的结构转变。与仅返回单一构象的静态结构预测器相比，ApexFold表现更优。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，肽的结构可塑性可以从序列和环境中学习得到。该方法为在合成和结构表征之前优先筛选候选肽及实验条件提供了途径。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3930&amp;v=1&amp;s=ee6ce0f672d095dd" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3930&amp;v=2&amp;s=bdc5158803375ff3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3930&amp;v=3&amp;s=4f1b037d54b1d824" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3930&amp;v=4&amp;s=ede1f71a4031ce3a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3930&amp;v=5&amp;s=709e5f54887ffd81" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42628591/">Identification of novel antimicrobial peptides and histone-derived cryptides in the hepatic transcriptome of Nile tilapia (Oreochromis niloticus) infected with Streptococcus agalactiae.</a></div>
+      <div class="card-title-zh">感染 Streptococcus agalactiae 的 Nile tilapia（Oreochromis niloticus）肝脏转录组中新型抗菌肽及组蛋白来源隐肽的鉴定</div>
+      <div class="news">为解决罗非鱼无乳链球菌感染时肝脏抗菌肽与组蛋白隐肽未明问题，作者结合RNA-seq、数据库比对和AlphaFold 3，鉴定13个候选分子并揭示经典AMP时序表达与H2A转录关闭规律。</div>
+      <div class="meta">Fish &amp; shellfish immunology · 2026-08-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Kadira Hossam I, Gao Jinhua, Zhao Jinliang</div>
+<div class="meta">DOI: 10.1016/j.fsi.2026.111663</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42628591/">https://pubmed.ncbi.nlm.nih.gov/42628591/</a></div>
+<div class="meta">Keywords: Nile tilapia (Oreochromis niloticus)、Streptococcus agalactiae、antimicrobial peptides、gene expression、histone-derived cryptides、transcriptomic profiling</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦AMP与隐肽发现，结合转录组挖掘契合你的肽发现方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>Nile tilapia（Oreochromis niloticus）是全球及中国广泛养殖的重要淡水鱼类，但其养殖生产受到无乳链球菌（Streptococcus agalactiae）这一链球菌病主要病原的严重威胁。抗菌肽（antimicrobial peptides, AMPs）是鱼类先天免疫系统的重要组成部分，对多种病原体具有防御和抑制作用。本研究旨在鉴定 Nile tilapia 中的抗菌肽及组蛋白来源隐肽（histone-derived cryptides）。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究结合了对 S. agalactiae 感染 Nile tilapia 肝组织的高通量 RNA 测序（RNA-seq）与针对专门抗菌肽数据库（APD 和 DRAMP）的计算机比对分析。随后利用 AlphaFold 3 进行结构建模评估，并通过感染后 48 小时内的定量实时 PCR（qPCR）在体内进行验证。此外，还对抗菌肽和隐肽进行了序列特征分析与蛋白结构分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>转录组分析共鉴定出 13 个高可信候选分子，包括 7 个经典候选分子：2 个保守转录本（NK-lysin、hepcidin）、2 个结构变体（piscidin 2、piscidin 3），以及 3 个首次在 Nile tilapia 肝脏中得到实验验证的分子（LEAP-2、thymosin β4 和 lysozyme C）；同时还鉴定出 6 个新型组蛋白来源隐肽：Acipensin 1、Acipensin 2、Acipensin 6、Hipposin、SpHistin 和 VK10。qPCR 检测了 7 个抗菌肽候选分子及经典 H2A（作为组蛋白蛋白的代表）的表达变化模式。结果显示，经典抗菌肽呈现协调的时间依赖性表达模式，从早期酶学应答逐步转向后期营养免疫，而 piscidin 变体表现出结构分化，非经典隐肽的预测则与经典组蛋白 H2A 的转录关闭相一致。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究从根本上扩展了硬骨鱼类（teleost）的已知免疫分子库，补充了 Nile tilapia 中新鉴定的抗菌肽分子。研究结果强调了这些分子在抵御 S. agalactiae 感染中的防御作用，并突出了 piscidin 变体的结构差异及非经典隐肽的潜在免疫学意义。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3911&amp;v=1&amp;s=5fc3694b37765fed" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3911&amp;v=2&amp;s=4f03df2163793c42" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3911&amp;v=3&amp;s=530961aac0378e91" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3911&amp;v=4&amp;s=5a380fea174004c4" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3911&amp;v=5&amp;s=bdf056d38c4734d8" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42618632/">Prospective evaluation of a large language model clinical decision support system in the emergency department.</a></div>
+      <div class="card-title-zh">在急诊科前瞻性评估大型语言模型临床决策支持系统</div>
+      <div class="news">为解决急诊大模型决策支持缺乏前瞻性证据问题，作者在三级医院前瞻评估SHAKED系统，发现其输出虽安全适宜，但临床参与度随负荷下降且未缩短停留时间。</div>
+      <div class="meta">Nature medicine · 2026-08-19</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Leibovitch Liron, Ahituv Adi, Gorenshtein Alon, Aran Dvir, Sorka Moran, Miron Keren, Shelly Shahar</div>
+<div class="meta">DOI: 10.1038/s41591-026-04601-5</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42618632/">https://pubmed.ncbi.nlm.nih.gov/42618632/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及大语言模型真实场景应用，但不涉及蛋白序列生成或抗菌肽发现。</div>
+<div class="abstract"><span class="abs-label">背景</span>基于人工智能（artificial intelligence, AI）的临床决策支持在急诊科中的前瞻性证据仍然有限。本研究在一家三级急诊科对基于多个大型语言模型构建的临床决策支持系统 SHAKED 进行了 DECIDE-AI 1 期评估。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究历时 4 周，共分析 1,138 例患者，分别来自两个平行单元：一个使用 SHAKED，另一个按常规轮转开展诊疗。研究评估了 SHAKED 的临床采用情况、医生使用偏好、安全性、输出的临床适宜性，以及急诊科停留时间和会诊周期时间等指标。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>SHAKED 的临床采用率从 68% 下降至 30%，原因是对工作负荷敏感的脱离使用（每增加 1 个班次小时，OR = 0.72，95% CI 0.62–0.83）；医生更倾向于将其用于放射科会诊（OR = 2.98，95% CI 1.58–5.63）。研究未发现不良事件，专家评审认为抽样的 100 份输出中有 99 份在临床上适宜；两组急诊科停留时间无差异（均为 4.9 小时，P = 0.99），意向治疗（intention-to-treat）分析显示会诊周期时间缩短存在非显著趋势（-9.4 分钟，P = 0.077）。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果提示，在急诊科有效应用临床人工智能的关键障碍可能不是算法准确性，而是临床医生能否持续参与使用。这些发现可为随机试验设计提供依据，但现阶段尚不足以支持将 AI 临床决策支持系统部署于临床实践。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3527&amp;v=1&amp;s=113e531f59a16d29" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3527&amp;v=2&amp;s=29a32a5b57df16c1" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3527&amp;v=3&amp;s=fe73ab25f3c616e4" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3527&amp;v=4&amp;s=142b93f2bfef3324" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3527&amp;v=5&amp;s=e09199dbcaef0554" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 37 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.18.745432">Genome-resolved metagenomics reveals microbial potential for CO2 and CH4 emissions in prawn ponds</a></div>
+      <div class="card-title-zh">基因组解析宏基因组学揭示对虾养殖池塘中微生物介导 CO2 和 CH4 排放的潜力</div>
+      <div class="news">为解析对虾池塘微生物对CO2和CH4排放的贡献，作者利用基因组解析宏基因组学，发现相关代谢潜力占比较低且季节效应强于管理措施。</div>
+      <div class="meta">bioRxiv · 2026-08-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Bashar A., Djurhuus A. M., Browne P. D., Jahangir M. M. R., Jorgensen N. O. G., Haque M. M., Hansen L. H.</div>
+<div class="meta">DOI: 10.64898/2026.08.18.745432</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.18.745432">https://www.biorxiv.org/content/10.64898/2026.08.18.745432</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>采用基因组解析宏基因组学，方法上接近你的宏基因组挖掘方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>鉴于微生物在水产养殖系统温室气体（GHG）循环中的核心作用，本文从基因组和基因中心视角考察了不同季节及不同养殖管理方式下，对虾养殖池塘中 CO2 和 CH4 循环的代谢潜力。研究重点在于解析这些池塘微生物群落与碳周转及潜在气体排放之间的关系。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究使用 TaxVAMB 从宏基因组数据中恢复了 78 个高质量和中等质量的宏基因组组装基因组（MAGs），其中包括此前较少受到重视的类群，如 Bathyarchaeia 和 Terriglobia。随后通过代谢谱分析和整合代谢网络，评估池塘微生物群落中与 CO2 产生、CO2 固定、产甲烷和甲烷氧化相关的基因与代谢潜力，并比较季节变化与管理处理的影响。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>代谢分析显示，CO2 和 CH4 循环仅占池塘整体代谢潜力中的较小部分，群落代谢主要由发酵、氧代谢和铁还原等异养过程主导；这些碳循环通路的相对代谢权重低于冻土、湿地、泥炭地、深海和人类肠道微生物组中的报道水平。整合代谢网络表明，CO2 产生潜力主要由丙酮酸和乙酰辅酶A氧化驱动，而产甲烷与甲烷氧化基因共同编码了通过典型古菌和细菌途径实现内部碳再循环环路的潜力。季节动态而非管理处理显著影响功能基因丰度，CO2 固定和 CH4 氧化基因在养殖后期增加；Bathyarchaeia 是 CO2 循环和产甲烷方面代谢能力最全面的类群，且其相对丰度在不同季节和处理间保持稳定。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究强调了随季节演替的微生物网络在调控对虾养殖池塘碳周转以及 CO2 和 CH4 潜在排放中的作用。结果表明，理解池塘微生物群落的功能动态对于认识水产养殖系统温室气体排放潜力具有重要意义。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3924&amp;v=1&amp;s=14f4de7ceaf00fe0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3924&amp;v=2&amp;s=84f5c61d6c6736c8" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3924&amp;v=3&amp;s=b0afc34e95a475e9" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3924&amp;v=4&amp;s=8332e029984b3d07" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3924&amp;v=5&amp;s=cba0276fda0fe937" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 37 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42627180/">Taxifolin impairs colonization of Clostridium perfringens in association with iron limitation-related physiological stress.</a></div>
+      <div class="card-title-zh">Taxifolin通过与铁限制相关的生理应激损害Clostridium perfringens的定植</div>
+      <div class="news">为解决选择性抑制产气荚膜梭菌定植问题，作者结合小鼠感染模型与蛋白质组学等方法，发现taxifolin通过诱导铁限制相关应激削弱其生长、黏附与生物膜形成。</div>
+      <div class="meta">Microbiology spectrum · 2026-08-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Fadhilatunnur Harum, Gong Weichen, Sato Haruna, Hishinuma Eiji, Matsukawa Naomi, Namai Fu, Villena Julio, Huang Hui-Yu, Komatsu Hiroaki, Nishiyama Keita, Kitazawa Haruki</div>
+<div class="meta">DOI: 10.1128/spectrum.01301-26</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42627180/">https://pubmed.ncbi.nlm.nih.gov/42627180/</a></div>
+<div class="meta">Keywords: Clostridium perfringens、colonization、intestinal pathogens、iron limitation、taxifolin</div>
+<div class="reason"><span class="abs-label">推荐理由</span>研究细菌定植抑制与抗菌谱选择性，可参考抗菌活性评估思路。</div>
+<div class="abstract"><span class="abs-label">背景</span>黄酮类化合物是植物来源的多酚，具有多种生物活性，但单个化合物抑制肠道病原体的机制仍不清楚。Clostridium perfringens是重要的革兰氏阳性肠道病原体，可引起多种人和动物疾病，其防控因抗菌药物耐药性增加及保护有益肠道菌群的需求而面临挑战。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究比较了taxifolin（二氢槲皮素，dihydroquercetin）对Clostridium perfringens及其他细菌的抑制作用，并检测其对黏蛋白黏附和生物被膜形成等定植相关表型的影响。作者进一步在抗生素预处理小鼠感染模型中评估口服taxifolin对肠道定植的影响，并结合蛋白质组学分析、扫描电子显微镜观察以及Fe2+、其他二价离子和铁特异性螯合剂2,2&#x27;-联吡啶（2,2&#x27;-bipyridyl）补充实验探讨作用机制。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Taxifolin对Clostridium perfringens表现出显著抑制活性，而对大多数其他受试菌种影响较小；在未完全抑制生长的浓度下，它仍可明显降低黏蛋白黏附和生物被膜形成，并在小鼠感染早期显著减少肠道定植。蛋白质组学显示其表面相关和胞外蛋白发生明显改变，包括应激反应因子MreB、LytR和ClpB，以及与铁和氧化还原依赖代谢相关的酶，提示存在铁限制性应激；扫描电镜还显示处理后细胞明显伸长，符合应激条件下细胞分裂受损。补充Fe2+可部分恢复细菌生长、正常形态、黏蛋白黏附和生物被膜形成，而其他二价离子不能恢复生长；铁特异性螯合剂2,2&#x27;-联吡啶处理产生了类似表型。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究支持这样一种工作模型：与铁限制相关的生理应激参与了taxifolin对Clostridium perfringens生长及定植相关表型的抑制作用。该研究加深了对膳食黄酮与梭菌病原体相互作用的认识，并提示taxifolin有望作为植物来源化合物用于限制人和动物肠道中Clostridium perfringens的定植。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3936&amp;v=1&amp;s=7f72afd496ca78c4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3936&amp;v=2&amp;s=bdaeea7e5e83037b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3936&amp;v=3&amp;s=a487dbd3ac741433" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3936&amp;v=4&amp;s=40d4ab0736709f95" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3936&amp;v=5&amp;s=f6c9e3a8eea1975d" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 35 分</div>
+      <div class="card-title"><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42628413/">Targeting endocarditis-associated Streptococcus biofilms: The antibacterial potential of Lippia sidoides essential oil.</a></div>
+      <div class="card-title-zh">靶向心内膜炎相关链球菌生物被膜：Lippia sidoides 精油的抗菌潜力</div>
+      <div class="news">为解决心内膜炎相关链球菌顽固生物膜难治问题，作者评估唇香草精油对临床分离株的抗菌抗生物膜作用，发现其以低毒性显著抑菌并破坏生物膜。</div>
+      <div class="meta">Archives of oral biology · 2026-08-18</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Oliveira Lucas Laion da S, Santo Renata do Espirito, Silva Gabriela Pereira da, Olimpio Carolina Vargas, Costa Maria Eduarda da Silva, Junqueira Juliana Campos, Franco Eduardo M, Costa Palloma Christine Queiroga Gomes da, Castro Ricardo Dias de, Alves Lívia A</div>
+<div class="meta">DOI: 10.1016/j.archoralbio.2026.106734</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42628413/">https://pubmed.ncbi.nlm.nih.gov/42628413/</a></div>
+<div class="meta">Keywords: Antimicrobial Activity、Bacterial Endocarditis、Natural Products、Streptococcus</div>
+<div class="reason"><span class="abs-label">推荐理由</span>含细菌MIC与抗生物膜数据，可参考抗菌活性评估但非肽研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>Streptococcus sanguinis 和 Streptococcus gordonii 等链球菌因能够形成顽固的生物被膜（biofilms），是感染性心内膜炎的重要致病因素。本研究评估了 Lippia sidoides 精油（LSEO）对来源于血液和口腔的临床分离株的抗菌及抗生物被膜潜力。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究共纳入 16 株 S. sanguinis 和 S. gordonii 临床分离株，其中口腔分离株 8 株、感染性心内膜炎患者血液分离株 8 株。采用最低抑菌浓度（MIC）和最低杀菌浓度（MBC）测定抗菌活性，通过对 18 小时生物被膜的形成抑制和活性降低评估抗生物被膜作用，并用扫描电子显微镜（SEM）观察其对生物被膜早期形成的影响。另在人牙龈成纤维细胞（HGF）中评估细胞毒性，并以 Galleria mellonella 幼虫评估全身毒性；同时通过气相色谱鉴定 LSEO 的主要成分。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>气相色谱显示，LSEO 的主要成分为 carvacrol。LSEO 对口腔和血流来源分离株均表现出显著抗菌活性，对两种链球菌的 MIC 范围为 0.1562–1.25 mg/mL；其对生物被膜形成的抑制率为 30–96%，对生物被膜活性的降低幅度为 4–100%，在实验条件下其抗生物被膜活性与氯己定相当，且 SEM 显示其可明显破坏早期生物被膜结构。毒性实验表明，LSEO 在 MIC 和 MIC×2 浓度下对 HGF 细胞无细胞毒性，并在 Galleria mellonella 中表现出较低的全身毒性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>LSEO 对心内膜炎相关链球菌分离株具有较强的抗菌和抗生物被膜作用，同时保持了较好的安全性特征。该结果提示，LSEO 具有作为预防生物被膜相关感染的天然策略的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3914&amp;v=1&amp;s=eda282a1789a0231" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3914&amp;v=2&amp;s=64f27685d1711de3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3914&amp;v=3&amp;s=76616d2b57e41fd7" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3914&amp;v=4&amp;s=dfe17a63591a8692" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3914&amp;v=5&amp;s=2c6587b499907930" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 35 分</div>
+      <div class="card-title"><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42625758/">Future-proofing agricultural research: FAIR principles for agriculture AI agents (FAIR4AG2).</a></div>
+      <div class="card-title-zh">面向未来的农业研究：农业人工智能体的 FAIR 原则（FAIR4AG2）</div>
+      <div class="news">为解决农业知识与代码模型分散且难被AI智能体调用的问题，作者提出FAIR4AG2标准，发现需以agent-actionability结合结构化出版、标准API与MCP支撑农业科研资源机器可用。</div>
+      <div class="meta">Frontiers in artificial intelligence · 2026-08-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Qian Chenhao, Jung YeonJin, Hu Haowen, Gong Yijing, Negreiro Ariana Nicole, Cabrera Victor E, Ivanek Renata, Wiedmann Martin</div>
+<div class="meta">DOI: 10.3389/frai.2026.1877344</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42625758/">https://pubmed.ncbi.nlm.nih.gov/42625758/</a></div>
+<div class="meta">Keywords: FAIR (findable accessible interoperable and reusable) principles、agentic AI、agricultural research、large language model (LLM)、research data infrastructure</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及AI智能体与科研数据规范，但不面向蛋白语言模型或肽设计。</div>
+<div class="abstract"><span class="abs-label">背景</span>大型语言模型正迅速从对话式使用转向智能体式推理，这正在改变科学产出面向机器消费时所需的组织方式。农业领域有望从这一转变中获益最多，但目前却最缺乏像生物医学领域数十年来建立的那种集中化、机器就绪的基础设施。农业知识仍分散于同行评议期刊、推广公报、技术报告和多媒体田间示范中，相关代码、数据和模型也常常无法被自主智能体访问。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者主张将基础性的 FAIR 原则（可查找、可获取、可互操作、可重用，FAIR）及面向研究软件的 FAIR（FAIR for Research Software, FAIR4RS）扩展到“智能体可操作性（agent-actionability）”这一新标准，并提出将 FAIR4AG2 作为农业研究中的这一扩展框架。围绕三类知识单元形态——文本、多媒体和数据库——作者提出了可直接实施的具体实践方案。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>对于文本，作者提出采用结构化出版格式和机器可读许可；对于多媒体，提出信号隔离、时间对齐的可视化以及具备领域认知的策展；对于数据库和模型仓库，提出标准化 API、Agent Skills 和模型上下文协议（Model Context Protocol, MCP）服务器。摘要未报告实验性数据结果，而是给出了 FAIR4AG2 的实践路径与实施要点。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为农业研究如何适配人工智能体时代提出了面向未来的标准扩展方向，有助于提升农业知识、数据、代码和模型对自主智能体的可访问性与可用性。作者指出，实现 FAIR4AG2 还需要同步投入于公平参与、审慎策展、人在回路验证以及治理规范建设，并应认可数据策展者和基础设施建设者的贡献。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3934&amp;v=1&amp;s=bbfe1814c4a58096" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3934&amp;v=2&amp;s=30cd5c12a3e66bee" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3934&amp;v=3&amp;s=a735f44685af07df" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3934&amp;v=4&amp;s=6952c5538d187aa3" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3934&amp;v=5&amp;s=f3284bed1c2f6c67" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 33 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42620238/">Directed evolution of the Drosophila microbiome improves intestinal health and extends lifespan.</a></div>
+      <div class="card-title-zh">对 Drosophila 微生物组进行定向进化可改善肠道健康并延长寿命</div>
+      <div class="news">为解决能否重塑肠道菌群抗氧化应激以延缓衰老，作者对果蝇菌群开展体外抗百草枯定向进化，发现富集植物乳杆菌及其乙酸产生可改善肠道健康并延长寿命。</div>
+      <div class="meta">bioRxiv : the preprint server for biology · 2026-08-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ulgherait Matt, Sun Yiwei, Huang Yiming, Chang Timothy, Lam Carly, Canman Julie, Wang Harris, Shirasu-Hiza Mimi</div>
+<div class="meta">DOI: 10.64898/2026.08.04.742805</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42620238/">https://pubmed.ncbi.nlm.nih.gov/42620238/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>关注微生物组定向进化，但核心不在抗菌肽或蛋白生成设计。</div>
+<div class="abstract"><span class="abs-label">背景</span>肠道微生物组及其细菌来源代谢物已知会影响宿主健康的多个方面，包括代谢、免疫反应、肠道炎症、氧化应激，甚至寿命。由于肠道微生物组及这些功能的病理性改变与衰老相关，研究者提出可通过诱导肠道微生物组发生有益改变来抵御衰老。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究在宿主体外（ex vivo）对 Drosophila 肠道微生物组进行定向进化，获得了对可引发氧化应激的毒素百草枯（paraquat）具有抗性的微生物组。随后将该百草枯抗性（PQR）微生物组移植回 Drosophila 肠道，并鉴定其中的有益菌种及与寿命延长相关的突变；同时直接向 Drosophila 补充短链脂肪酸乙酸（acetate）以验证其作用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>与对照微生物组相比，移植回肠道的 PQR 微生物组可提高宿主对膳食百草枯的耐受性，减轻与年龄相关的肠道病理改变，并延长寿命。研究将 PQR 微生物组中的有益菌种鉴定为 Lactiplantibacillus plantarum，并发现寿命延长相关分离株的特异性突变与更高水平的乙酸产生有关。直接喂食乙酸即可重现寿命延长效应，其效果与 PQR 细菌在肠道定植所诱导的延寿作用相似。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果证明了一个原理：通过宿主体外定向进化提高微生物组对氧化应激的抗性，可能成为一种抵御衰老的治疗策略。该研究表明，靶向改造肠道微生物组及其代谢产物具有改善肠道健康并延长寿命的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3675&amp;v=1&amp;s=32ed57ff34237258" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3675&amp;v=2&amp;s=66f8af597ba40aa0" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3675&amp;v=3&amp;s=e49c7133cd571627" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3675&amp;v=4&amp;s=b08641012f4984d7" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3675&amp;v=5&amp;s=d99c3ae5a3b1857e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 32 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42620928/">Screening and functional analysis of a host membrane protein interacting with the structural protein VP1 of deformed wing virus.</a></div>
+      <div class="card-title-zh">与畸翅病毒结构蛋白VP1相互作用的宿主膜蛋白筛选及功能分析</div>
+      <div class="news">为解决DWV VP1感染中宿主膜互作及促复制机制不清问题，作者用膜蛋白双杂交结合互作验证和RNAi，发现VP1结合NCR-like受体并调控抗菌肽，敲低后病毒复制升高约6倍。</div>
+      <div class="meta">Frontiers in microbiology · 2026-08-05</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Liu Di, Xiao Yuting, Li Xu, Zhang Hanwen, Zhang Yue, Wang Guan, Yin Xuechen, Yu Yang, Liu Haiyu, Liu Yuming, Sun Li, Li Ming, Liu Yonghua, Mingxiao Ma, Fei Dongliang</div>
+<div class="meta">DOI: 10.3389/fmicb.2026.1860293</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42620928/">https://pubmed.ncbi.nlm.nih.gov/42620928/</a></div>
+<div class="meta">Keywords: VP1 protein、deformed wing virus、interacting proteins、viral replication、yeast membrane protein two-hybrid system</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及抗菌肽表达调控机制，但对象为蜜蜂病毒而非细菌肽发现。</div>
+<div class="abstract"><span class="abs-label">背景</span>畸翅病毒（deformed wing virus，DWV）是感染西方蜜蜂（Apis mellifera）的重要病毒性病原体。然而，在感染过程中，病毒结构蛋白与宿主蛋白之间的相互作用仍知之甚少。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究采用酵母膜蛋白双杂交系统筛选与DWV结构蛋白VP1相互作用的宿主膜蛋白，并以携带VP1基因的诱饵质粒pBT3-STE-VP1对西方蜜蜂蛋白互补DNA文库进行筛选。随后利用谷胱甘肽S-转移酶（glutathione S-transferase，GST）pull-down、辅免疫沉淀（co-immunoprecipitation，Co-IP）和共表达实验对相互作用进行验证，并通过RNA干扰（RNA interference，RNAi）分析其功能。研究还在健康蜂蛹和DWV感染蜂蛹中沉默NCR-like基因，以评估其对抗菌肽表达及病毒复制的影响。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究共鉴定出22个候选宿主蛋白，并选取一种类似神经肽capa（neuropeptide capa，NCR）的G蛋白偶联受体（NCR-like）进行深入分析。GST pull-down、Co-IP和共表达结果证实了DWV VP1与NCR-like之间存在相互作用。RNAi沉默NCR-like后，可影响抗菌肽Defensin-1和Hymenoptaecin的表达；在DWV感染蜂蛹中沉默该基因后，病毒复制水平较仅感染对照组升高约6倍。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果表明，DWV VP1可与宿主NCR-like蛋白相互作用，调控免疫效应分子尤其是抗菌肽（AMPs）的表达，从而影响DWV复制。该研究为理解DWV与宿主之间的相互作用及其致病机制提供了初步的机制性认识。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3511&amp;v=1&amp;s=dd5e0af24acc5b50" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3511&amp;v=2&amp;s=f8d6637f42d71582" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3511&amp;v=3&amp;s=2b8c501068cb9615" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3511&amp;v=4&amp;s=3e654644a916b777" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3511&amp;v=5&amp;s=ea4e5f8dc064381c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 32 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42629599/">Comparative Assessment of Antibacterial Activity of Haskap Berry (Lonicera caerulea L.) Extract, Gallic Acid, and Combination Against Alicyclobacillus acidoterrestris for Application in Orange Juice.</a></div>
+      <div class="card-title-zh">蓝靛果忍冬（Lonicera caerulea L.）提取物、没食子酸及其组合对Alicyclobacillus acidoterrestris抑菌活性的比较评估及其在橙汁中的应用</div>
+      <div class="news">为解决果汁腐败菌Alicyclobacillus acidoterrestris致变质问题，作者比较蓝靛果提取物、没食子酸及联用，发现联用协同破坏膜并耗竭ATP，在橙汁中抑菌且较少影响品质。</div>
+      <div class="meta">Journal of food science · 2026-08-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Qi Feiran, Liu Jinhua, Xu Tianyang, Meng Jiatong, Ren Mingyue, He Miao, Liu Yuxin, Shi Yanyu</div>
+<div class="meta">DOI: 10.1111/1750-3841.71383</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42629599/">https://pubmed.ncbi.nlm.nih.gov/42629599/</a></div>
+<div class="meta">Keywords: Alicyclobacillus acidoterrestris、Haskap berries (Lonicera caerulea L.)、antibacterial、antioxidant、food spoilage、gallic acid</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提供细菌MIC/MBC与协同抑菌数据，可参考抗菌活性评价框架。</div>
+<div class="abstract"><span class="abs-label">背景</span>Alicyclobacillus acidoterrestris是一种嗜热嗜酸、可形成芽孢的细菌，是果汁腐败的重要原因之一，并会造成显著经济损失。本研究比较评估了没食子酸（gallic acid, GA）、蓝靛果忍冬（Lonicera caerulea L.）乙醇提取物（LCEE）及其组合，作为针对该腐败菌的天然防腐剂的效果。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究测定了GA、LCEE及LCEE+GA对该菌的最低抑菌浓度（minimum inhibitory concentration, MIC）和最低杀菌浓度（minimum bactericidal concentration, MBC）。通过膜完整性与膜功能相关实验分析其抗菌机制，包括ATP水平、膜电位、扫描电子显微镜（SEM）、流式细胞术（FCM）和共聚焦激光扫描显微镜（CLSM）；并采用DPPH和ABTS方法测定抗氧化能力。进一步在果汁模型中结合理化指标评价其实用效果。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>LCEE表现出更强的抑菌活性，而GA显示出更优的杀菌效果；LCEE单独处理在测试条件下因12.5 mg/mL以上出现细菌再生长，未能明确确定其MBC。LCEE与GA联用表现出显著协同作用（FIC指数：营养细胞为0.5，芽孢为0.38），显著降低了两者的有效MIC和MBC，并加速细胞死亡；其作用机制均涉及膜损伤、膜超极化和ATP耗竭。抗氧化能力排序为LCEE+GA组合＞GA＞LCEE；在果汁中，所有配方均抑制了微生物生长并提高了抗氧化活性，其中GA和联用更有效提高总酚含量，而LCEE则特异性富集某些酚酸；此外，协同组合较LCEE单用对果汁关键品质参数的不利影响明显更小。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究提出了两种天然抑菌剂（LCEE和GA）及其协同组合，并对其抗Alicyclobacillus acidoterrestris的效果进行了比较分析。结果为控制果汁生产中由Alicyclobacillus介导的腐败提供了新的天然防腐配方选择，尤其显示出联用方案在抑菌效果与果汁品质保持之间具有更优平衡。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3918&amp;v=1&amp;s=76940f23efd2f679" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3918&amp;v=2&amp;s=7584d0965a1b1c79" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3918&amp;v=3&amp;s=eee32cea18a67f76" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3918&amp;v=4&amp;s=41778acaaf60aaba" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=3918&amp;v=5&amp;s=6820d0cf0b762db9" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日文献主要聚焦三类方向：一是微生物/宿主互作与抗菌干预，包括抗菌肽、益生菌、生物膜、病原定植和共生演化；二是基因组与宏基因组解析，如泛基因组、结构变异、近缘物种基因组和基因组解析宏基因组；三是AI相关方法，包括肽结构环境预测、农业AI资源规范及临床大模型决策支持。共同趋势是多组学结合计算建模增多，深度学习、AlphaFold、LLM与基因组/转录组/宏基因组数据融合更明显，同时更强调真实场景验证。对研究者的价值在于：可获取抗感染与微生态干预的新靶点和候选分子，借鉴AI与组学整合分析框架，并关注工具从预测走向实验和应用评估的路径。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=niupeiyuan%40genomics.cn&amp;d=2026-08-24&amp;s=8f2ea7783e5a5082">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=niupeiyuan%40genomics.cn&amp;d=2026-08-24&amp;s=8f2ea7783e5a5082">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

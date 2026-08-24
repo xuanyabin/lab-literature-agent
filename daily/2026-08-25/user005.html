@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-08-25</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-08-25</h1>
+    <p class="hello">panyunrui，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">昨日全库新增 496 篇 · 命中您的关键词 183 篇 · 本次推送 15 篇（必读 0 · 重要 5 · 参考 10）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-important">Important</span> · 66 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42635210/">ARCADIA reveals spatially dependent transcriptional programs through integration of scRNA-seq and spatial proteomics.</a></div>
+      <div class="card-title-zh">ARCADIA通过整合单细胞RNA测序与空间蛋白质组学揭示空间依赖性的转录程序</div>
+      <div class="news">为解决无条形码配对且无基因蛋白对应时的跨模态整合难题，作者利用ARCADIA对齐archetype并联合双VAE，发现扁桃体中B细胞成熟及T细胞激活/耗竭受空间生态位塑造。</div>
+      <div class="meta">Bioinformatics (Oxford, England) · 2026-08-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Rozenman Bar, Hoffer-Hawlik Kevin, Djedjos Nicholas, Azizi Elham</div>
+<div class="meta">DOI: 10.1093/bioinformatics/btag454</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42635210/">https://pubmed.ncbi.nlm.nih.gov/42635210/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提出跨模态整合框架，适合你关注单细胞多组学与空间微环境解析。</div>
+<div class="abstract"><span class="abs-label">背景</span>细胞状态受到空间环境的强烈影响，但单细胞RNA测序（scRNA-seq）会丢失局部组织结构信息，而空间蛋白质组学检测通常仅覆盖有限的标志物面板，从而限制了对转录组的推断。整合这两类模态有助于阐明空间生态位如何塑造转录程序，但现有方法通常依赖特征层面的对应关系（如基因-蛋白关联）或细胞层面的条形码配对，而这些信息往往不可获得。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者提出ARCADIA（ARchetype-based Clustering and Alignment with Dual Integrative Autoencoders），这是一个用于跨模态整合的生成式框架，无需细胞条形码配对，也不假设特征间存在直接一一对应关系。ARCADIA先识别各模态特异的原型（archetypes），即代表极端表型状态的细胞凸组合，再通过最小化其细胞类型组成谱差异实现跨模态对齐。对齐后的原型定义了共享坐标系，并用于锚定带有跨模态几何正则化的双变分自编码器（VAE），在保留原型结构和空间邻域信息的同时实现模态间双向转换。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在半合成CITE-seq数据上，ARCADIA的表现优于现有弱连接（weak-linkage）方法。将其应用于相互独立的人扁桃体scRNA-seq与CODEX数据后，ARCADIA重建了已知的组织结构，并揭示了与微环境生态位相关的空间依赖性转录程序，这些程序将B细胞成熟以及T细胞激活或耗竭与特定空间生态位联系起来。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提供了一种无需细胞配对且不依赖直接特征对应关系的跨模态整合方法，可用于解析空间生态位对转录程序的塑造作用。ARCADIA有助于从scRNA-seq与空间蛋白质组学联合数据中恢复组织结构并发现具有空间依赖性的生物学过程。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3980&amp;v=1&amp;s=34a16008d898c62e" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3980&amp;v=2&amp;s=82681afee40a4b00" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3980&amp;v=3&amp;s=b2e0d8a4fd016fa4" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3980&amp;v=4&amp;s=363e7f04b507687d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3980&amp;v=5&amp;s=83befcc6c4ee44f9" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 67 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42635202/">CellTypeAI: cell annotation for scRNA-seq using local generative-AI.</a></div>
+      <div class="card-title-zh">CellTypeAI：利用本地生成式人工智能进行 scRNA-seq 细胞注释</div>
+      <div class="news">为解决scRNA-seq细胞注释易受标记动态波动影响的问题，作者利用本地生成式AI结合RAG进行组织情境注释，发现其准确性优于传统及云端方法并适用于敏感数据。</div>
+      <div class="meta">Bioinformatics (Oxford, England) · 2026-08-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Daw Rufus H, Deijnen Harry R, Rattray Magnus, Grainger John R</div>
+<div class="meta">DOI: 10.1093/bioinformatics/btag425</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42635202/">https://pubmed.ncbi.nlm.nih.gov/42635202/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦scRNA-seq细胞注释，直接契合你的单细胞转录组方法需求。</div>
+<div class="abstract"><span class="abs-label">背景</span>单细胞 RNA 测序（scRNA-seq）的细胞注释技术通常依赖将已知定义性标志基因与给定细胞群体进行匹配。然而，这类方法对于患者、样本和病理状态之间细胞标志表达的动态波动，可能缺乏稳健性。易于实施的预测技术，如生成式人工智能（generative-AI, gen-AI）的出现，推动了计算流程的发展，从而改进原本受上下文影响而不准确的细胞类型注释。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究提出了 CellTypeAI，这是一种简化且可扩展的程序，用于借助现代生成式人工智能模型并结合检索增强生成（retrieval augmented generation）方法，对 scRNA-seq 数据集进行组织背景依赖的细胞注释。该实现建立在本地生成式人工智能托管技术之上，并可直接整合进 scRNA-seq 分析流程中。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究表明，与当前传统注释方法以及新兴的基于云端的生成式人工智能方法相比，CellTypeAI 可提供更高的注释准确性。由于 CellTypeAI 利用本地运行的人工智能模型，因此不同于使用 ChatGPT、DeepSeek 或 Claude 等在线生成式人工智能工具的方法，它可应用于敏感数据集。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>CellTypeAI 为组织特异性的细胞类型鉴定提供了一种新方案，可通过本地部署的生成式人工智能模型克服传统基于标志基因方法的局限性。其源代码已公开，有助于在实际 scRNA-seq 分析流程中推广应用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3972&amp;v=1&amp;s=97974e4db0fa10e7" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3972&amp;v=2&amp;s=e445dd62d0658540" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3972&amp;v=3&amp;s=be1f0c2d27b6c796" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3972&amp;v=4&amp;s=b7c917dacb3e7c07" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3972&amp;v=5&amp;s=2b7d3eb33bc8439c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-important">Important</span> · 61 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://doi.org/10.1126/science.adz4351">Autonomous biomedical research with an artificial intelligence agent</a></div>
+      <div class="card-title-zh">利用人工智能体开展自主生物医学研究</div>
+      <div class="news">为解决生物医学研究流程碎片化致效率低的问题，作者构建AI代理Biomni，整合文献挖掘、检索规划与代码执行，发现其无需调优即可泛化完成多类任务并生成可实验检验方案。</div>
+      <div class="meta">Science · 2026-08-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Huang Kexin, Zhang Serena, Wang Hanchen, Qu Yuanhao, Lu Yingzhou, Li Ryan, Roohani Yusuf, Qiu Lin, Cao Shiyi, Li Gavin, Zhang Junze, Yin Di, Wierenga Rick, Kavi Deniz, Liu Sherry, She Tianwei, Marwaha Shruti, Carter Jennefer N., Zhou Xin, Wheeler Matthew T., Bernstein Jonathan A., Wang Mengdi, He Peng, Zhou Jingtian, Snyder Michael P., Cong Le, Regev Aviv, Leskovec Jure</div>
+<div class="meta">DOI: 10.1126/science.adz4351</div>
+<div class="meta"><a href="https://doi.org/10.1126/science.adz4351">https://doi.org/10.1126/science.adz4351</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涵盖微生物组与多模态分析，贴近你单细胞和肠脑轴研究流程。</div>
+<div class="abstract"><span class="abs-label">背景</span>生物医学研究日益受到重复性强且彼此割裂的工作流程限制，从而减缓了科学发现的速度。为应对这一问题，作者提出了 Biomni，一种可自主执行多种研究任务的通用型生物医学人工智能体（artificial intelligence agent）。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>为描绘生物医学行动空间，Biomni 的动作发现智能体（action-discovery agent）从 25 个领域的数千篇论文中挖掘工具、数据库和实验方案（protocols），并构建统一的智能体环境。其通用架构将大语言模型推理与检索增强规划（retrieval-augmented planning）及基于代码的执行相结合，无需预设模板即可动态组合工作流程。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>系统性基准测试表明，Biomni 在因果基因优先级排序、药物再利用、罕见病诊断、微生物组分析和分子克隆等异质任务中表现出较强的泛化能力，且无需针对具体任务进行调优。真实世界案例进一步显示，Biomni 能够解读多模态数据集、优化蛋白稳定性、协调湿实验室仪器，并生成可供实验检验的方案。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究展示了人工智能增强人类科学家并加速科学发现的前景。Biomni 体现了通用型生物医学人工智能体在整合分散研究流程、提升研究自动化水平方面的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3526&amp;v=1&amp;s=dd2546ed1e164efc" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3526&amp;v=2&amp;s=72a922873bce331e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3526&amp;v=3&amp;s=f19e675b334849ef" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3526&amp;v=4&amp;s=af493d3ae2188ce5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3526&amp;v=5&amp;s=93a4609b06b15b77" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-important">Important</span> · 60 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42635227/">Sensitivity analysis of cell fate trajectories from single-cell transcriptomics.</a></div>
+      <div class="card-title-zh">基于单细胞转录组学的细胞命运轨迹敏感性分析</div>
+      <div class="news">为解决单细胞RNA测序推断分化轨迹稳定性难评估的问题，作者利用FateSens敏感性分析框架，识别关键调控基因与命运边界，并在小鼠造血中获谱系追踪支持。</div>
+      <div class="meta">Bioinformatics (Oxford, England) · 2026-08-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Noman Abdullah Al, Sashittal Palash</div>
+<div class="meta">DOI: 10.1093/bioinformatics/btag473</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42635227/">https://pubmed.ncbi.nlm.nih.gov/42635227/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提出scRNA-seq轨迹敏感性分析框架，适合你的单细胞多组学方法储备。</div>
+<div class="abstract"><span class="abs-label">背景</span>细胞分化是一个动态过程，细胞在基因调控网络和环境线索的影响下穿越高维基因表达空间。单细胞RNA测序（scRNA-seq）的进展使研究者能够获得这一动态过程的高分辨率快照，并据此重建细胞在基因表达空间中的轨迹。尽管现有方法对细胞轨迹的描述越来越细致，但这些轨迹对扰动的稳定性仍缺乏系统研究。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者提出了 FateSens，这是一种基于敏感性的计算框架，用于利用从 scRNA-seq 数据导出的流映射（flow maps）分析基因调控动力学。FateSens 对由 scRNA-seq 数据推断的分化轨迹进行敏感性分析，以识别调控基因和命运边界。作者将其应用于小鼠造血过程中中性粒细胞-单核细胞分化的 scRNA-seq 数据，并结合该数据集中提供真实命运关系的谱系追踪条形码进行验证。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究结果表明，FateSens 能够准确恢复与已知生物学一致的调控因子，并识别出得到谱系追踪数据支持的命运边界。尽管 FateSens 仅依赖转录组测量，但其分析结果与包含真实命运关系的信息相吻合。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为利用 scRNA-seq 数据研究分化轨迹的稳定性与敏感性提供了一个有原则的计算框架。它有助于回答推断轨迹对扰动是否稳健、哪些基因最强烈影响长期命运结局，以及竞争性命运承诺之间的不稳定性出现于何处等问题。作者还以 Python 3 实现了 FateSens，并提供了开源代码。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3973&amp;v=1&amp;s=6b4ab69875c3f3e1" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3973&amp;v=2&amp;s=72af54fb636210e7" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3973&amp;v=3&amp;s=7cde64f9b2568c2f" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3973&amp;v=4&amp;s=8423c9d043a6adf1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3973&amp;v=5&amp;s=b7a82ff8d60a302f" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 58 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42635192/">Identification and Classification of Expressed Orphan Genes, Spurious Orphan Genes, and Conserved Genes in the Human Gut Microbiome.</a></div>
+      <div class="card-title-zh">人类肠道微生物组中表达的孤儿基因、伪孤儿基因和保守基因的鉴定与分类</div>
+      <div class="news">为解决肠道微生物组孤儿基因真伪难辨问题，作者结合宏转录组与XGBoost分类，鉴定21.8万表达孤儿基因并揭示其与虚假及保守基因的系统差异。</div>
+      <div class="meta">Genome biology and evolution · 2026-08-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chen Chen, Vakirlis Nikolaos, Holmer Rens, de Ridder Dick, Kupczok Anne</div>
+<div class="meta">DOI: 10.1093/gbe/evag211</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42635192/">https://pubmed.ncbi.nlm.nih.gov/42635192/</a></div>
+<div class="meta">Keywords: Orphan genes、conserved genes、human gut microbiome、machine learning、metatranscriptomics、spurious orphan genes</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦人类肠道微生物组新基因识别，契合你对gut microbiome的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>孤儿基因（orphan genes，指在某一物种之外缺乏可检测同源物的基因）广泛存在于微生物基因组中，被认为有助于适应与分子创新。然而，并非所有预测的孤儿基因都代表新的功能性编码序列，其中一部分假阳性孤儿基因，即伪孤儿基因（spurious orphan genes），可能来源于基因预测错误。作者据此推断，缺乏可检测表达的孤儿基因更可能是伪孤儿基因。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究结合人类肠道微生物组的大规模宏转录组（metatranscriptomic）分析与机器学习，用于区分表达的孤儿基因与伪孤儿基因，并将其与存在于多个物种中的保守基因进行比较。作者利用近5000个宏转录组文库，为每个基因提取了154个序列、结构和进化特征，并在考虑基因组代表性的情况下训练XGBoost分类器。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定出约218,000个有表达证据支持的孤儿基因，而约330,000个预测的孤儿基因因缺乏可检测表达而被归类为伪孤儿基因。模型在区分表达的孤儿基因与伪孤儿基因时，受试者工作特征曲线下面积（AUC）为0.82；在区分表达的孤儿基因与保守基因时，AUC为0.93。基于SHAP的解释显示出明确的生物学信号，尤其是表达的孤儿基因存在于更多基因组中，且其长度短于保守基因。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究改进了孤儿基因的发现策略，并表明表达的孤儿基因在序列组成、结构约束和进化信号方面与保守基因及伪孤儿基因存在系统性差异。这为更准确地区分真实孤儿基因与由预测误差产生的伪孤儿基因提供了依据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4087&amp;v=1&amp;s=80bc1fc267d373f2" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4087&amp;v=2&amp;s=c8a00aa07aa278f2" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4087&amp;v=3&amp;s=7cba3547ffc96b71" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4087&amp;v=4&amp;s=f22c71bd96001dc7" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4087&amp;v=5&amp;s=70bb36502c54937f" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 66 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42635046/">Mutation-resolved single-cell transcriptomics reveals enhanced β-amyloid clearance in TET2-mutant human monocytes.</a></div>
+      <div class="card-title-zh">突变分辨的单细胞转录组学揭示TET2突变型人单核细胞增强的β-淀粉样蛋白清除能力</div>
+      <div class="news">为解决TET2克隆性造血降低阿尔茨海默病风险机制不清问题，作者利用突变分辨单细胞转录组学，发现TET2突变单核细胞增强补体/吞噬程序并促进β淀粉样蛋白清除。</div>
+      <div class="meta">JCI insight · 2026-08-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Yang Xiao, Fatima Sameen, Sampere-Birlanga Salvador, Ware Akshay, Shumliakivska Mariana, Zanders Lukas, Radhakrishnan Srisurekha, Luxán Guillermo, John David, Günther Stefan, Mas-Peiro Silvia, Dimmeler Stefanie, Zeiher Andreas M, Abplanalp Wesley T</div>
+<div class="meta">DOI: 10.1172/jci.insight.208804</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42635046/">https://pubmed.ncbi.nlm.nih.gov/42635046/</a></div>
+<div class="meta">Keywords: Aging、Alzheimer disease、Immunology、Neuroscience</div>
+<div class="reason"><span class="abs-label">推荐理由</span>解析TET2突变单核细胞清除β-淀粉样蛋白机制，紧扣AD与单细胞转录组。</div>
+<div class="abstract"><span class="abs-label">背景</span>由TET2驱动的克隆性造血（clonal hematopoiesis）与阿尔茨海默病风险降低相关，但其在人类中的作用机制仍不清楚。该研究旨在解析TET2突变在人单核细胞中的功能影响。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用突变分辨的单细胞转录组学（single-cell transcriptomics），在同一老年个体内区分TET2突变型与野生型单核细胞，并比较其转录程序。随后在人体单核细胞和巨噬细胞中进行TET2沉默，以验证相关表型并评估β-淀粉样蛋白摄取能力。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，与野生型细胞相比，TET2突变型单核细胞中吞噬作用和补体（complement）相关程序富集。TET2沉默在人单核细胞和巨噬细胞中重现了这一表型，并增强了对β-淀粉样蛋白的摄取。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果表明，TET2突变可使先天免疫（innate immunity）偏向于聚集体清除。该发现为TET2驱动的克隆性造血与阿尔茨海默病风险降低之间的关联提供了人体机制层面的线索。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3976&amp;v=1&amp;s=d34f44c5f142d014" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3976&amp;v=2&amp;s=25f6150317e4ae61" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3976&amp;v=3&amp;s=d522a57bb58b7cd7" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3976&amp;v=4&amp;s=7dcf828c9df88d1c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3976&amp;v=5&amp;s=edb0837acc589315" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 56 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.21.745917">Gut Microbial Signals Influence Motivational Responses in the Male Mouse</a></div>
+      <div class="card-title-zh">肠道微生物信号影响雄性小鼠的动机反应</div>
+      <div class="news">为解决肠道菌群如何影响雄鼠天然奖赏动机问题，作者以抗生素扰菌结合行为、转录组及迷走神经切断，发现菌群紊乱经炎症与伏隔核可塑性通路增强奖赏动机。</div>
+      <div class="meta">bioRxiv · 2026-08-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Sharvin B. L., Tofani G. S. S., Lawless J. A., Keane L., Clarke G., McNamara C. G., Cryan J. F.</div>
+<div class="meta">DOI: 10.64898/2026.08.21.745917</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.21.745917">https://www.biorxiv.org/content/10.64898/2026.08.21.745917</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接研究小鼠肠道菌群-脑轴、炎症与脑奖励转录变化，契合你的gut-brain axis方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>哺乳动物获取天然奖赏的动机受内部生物学因素和外部环境因素调控。越来越多的证据提示，肠道微生物群（gut microbiota）可能是其中一个重要影响因素。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究通过抗生素（antibiotic, ABX）诱导扰乱小鼠肠道微生物群，观察其对获取适口性奖赏动机的影响，并检测炎性细胞因子水平以及伏隔核（nucleus accumbens, NAc）中与突触可塑性相关的基因通路变化。研究还评估了肠道微生物群动态状态对动机反应的部分影响，鉴定了可能驱动该表型的若干肠道微生物代谢物，并通过膈下迷走神经切断术（subdiaphragmatic vagotomy）检验迷走神经信号的作用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>抗生素诱导的肠道微生物群紊乱增强了小鼠获取适口性奖赏的动机，提高了炎性细胞因子水平，并引起伏隔核中突触可塑性相关基因通路的显著改变。肠道微生物群的动态状态可部分影响动机反应，且研究鉴定出数种可能驱动这一表型的肠道微生物代谢物。膈下迷走神经切断可部分恢复伏隔核中的转录组特征并减轻炎症标志物升高，但不足以阻止动机反应的增强。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究结果表明，肠道微生物群在调控奖赏加工与动机所需的代谢、神经化学和免疫事件级联反应中具有重要的新作用。这一发现强调了肠道微生物信号对雄性小鼠动机行为调控的关键意义。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4089&amp;v=1&amp;s=3330606b19beef35" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4089&amp;v=2&amp;s=77bff220fec74a37" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4089&amp;v=3&amp;s=69935b6ff192f733" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4089&amp;v=4&amp;s=011a6e2d7cb98488" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4089&amp;v=5&amp;s=63168830b2d898a7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 54 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42634290/">The Glymphatic System in α-Synucleinopathies.</a></div>
+      <div class="card-title-zh">α-突触核蛋白病中的类淋巴系统</div>
+      <div class="news">为解决α-突触核蛋白病毒性蛋白清除受损问题，作者综述影像与病理证据，发现类淋巴流动及AQP4极性受损加重蛋白沉积和认知运动下降。</div>
+      <div class="meta">Yonsei medical journal · 2026-09-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Jeong Seong Ho, Chung Seok Jong, Lee Phil Hyu</div>
+<div class="meta">DOI: 10.3349/ymj.2025.0495</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42634290/">https://pubmed.ncbi.nlm.nih.gov/42634290/</a></div>
+<div class="meta">Keywords: Glymphatic system、Parkinson&#x27;s disease、dementia with Lewy bodies、multiple system atrophy</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接讨论帕金森等α突触核蛋白病的类淋巴清除与神经炎症机制。</div>
+<div class="abstract"><span class="abs-label">背景</span>α-突触核蛋白病包括帕金森病（Parkinson&#x27;s disease, PD）、路易体痴呆（dementia with Lewy bodies, DLB）和多系统萎缩（multiple system atrophy, MSA），其特征是错误折叠的α-突触核蛋白发生病理性积累。当前治疗主要仍以对症为主，而新近证据提示，有毒蛋白清除受损可能是疾病进展的重要基础。类淋巴系统（glymphatic system）作为依赖脑脊液（cerebrospinal fluid, CSF）、经血管周围通路和星形胶质细胞水通道蛋白4（aquaporin-4, AQP4）介导脑内废物清除的全脑网络，正受到越来越多关注。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>这是一篇综述，综合了近年来将类淋巴功能障碍与α-突触核蛋白病联系起来的神经影像学、病理学和实验研究数据。摘要中特别提到的先进磁共振成像（MRI）方法包括沿血管周围间隙的弥散张量成像分析（diffusion tensor imaging analysis along perivascular spaces, DTI-ALPS）以及功能性血氧水平依赖-脑脊液耦联（functional blood oxygen-level dependent-CSF coupling）。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>先进MRI研究显示，PD、DLB和MSA患者存在类淋巴流动受损，且这种异常与认知和运动功能下降相关。动物研究和尸检研究表明，AQP4极性分布破坏会加重α-突触核蛋白积累和神经变性。进一步地，类淋巴清除降低还可能促进神经炎症并推动疾病传播。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现提示，类淋巴系统可能是α-突触核蛋白病发病机制中一个可被调控的关键因素。旨在增强类淋巴清除的治疗策略——包括睡眠优化、AQP4的药物调节以及新型器械干预——正在积极研究中。靶向脑内废物清除基础设施，可能为α-突触核蛋白病提供新的疾病修饰治疗途径。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4102&amp;v=1&amp;s=bf955d32701bbb65" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4102&amp;v=2&amp;s=c2d7d6fa1f38d95c" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4102&amp;v=3&amp;s=53f7bf49881511cc" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4102&amp;v=4&amp;s=56e4ffa10c9e7278" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4102&amp;v=5&amp;s=1e65b707208100fd" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 54 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://doi.org/10.1126/science.aed9286">RAD51 stabilizes neutrophil extracellular traps to compartmentalize inflammation</a></div>
+      <div class="card-title-zh">RAD51通过稳定中性粒细胞胞外诱捕网将炎症限制在局部</div>
+      <div class="news">为解决NET分支结构来源及炎症局限化问题，作者结合RAD51抑制/敲低与感染模型，发现RAD51稳定NET以限制局部炎症并防止系统性2型炎症加重。</div>
+      <div class="meta">Science · 2026-08-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Tsansizi Lorenza Iolanda, Guan Sophie Yihan, Aramburu Iker Valle, Punatar Rajvee Shah, Williams Thomas J., Qiao Yihe E., Reed Anna, Armstrong-James Darius, West Stephen C., Papayannopoulos Venizelos</div>
+<div class="meta">DOI: 10.1126/science.aed9286</div>
+<div class="meta"><a href="https://doi.org/10.1126/science.aed9286">https://doi.org/10.1126/science.aed9286</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦炎症局限化机制，可为你研究神经炎症与免疫通路提供参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>中性粒细胞胞外诱捕网（neutrophil extracellular traps, NETs）具有分支状染色质结构，但其来源和功能此前尚不清楚。研究发现，NETs 的分支形成由 RAD51 介导；RAD51 是一种在 DNA 重组修复过程中生成 DNA 连接结构的蛋白。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究通过药理学抑制 RAD51、敲低 RAD51，以及使用 GEN1 和 RuvC 解旋酶/解离酶处理，评估 NETs 分支和稳定性的变化；同时通过不同刺激上调 RAD51，观察形成的 NETs 稳定性差异。研究还在小鼠肺部 Aspergillus fumigatus 感染模型中抑制 RAD51，并结合人曲霉病样本分析血浆细胞外 DNA 与炎症因子的相关性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>药理学抑制、RAD51 敲低或 GEN1 和 RuvC 处理均减少了 NETs 分支并使其失稳，而不同刺激诱导的 RAD51 上调可产生稳定性不同的 NETs。在小鼠肺部 Aspergillus fumigatus 感染中，抑制 RAD51 可解体 NETs 并降低肺部细胞因子；但循环中 NETs 成分积聚增加，诱导循环单核细胞产生白细胞介素-6（interleukin-6, IL-6），从而加重 2 型炎症和哮喘。人曲霉病中，血浆细胞外 DNA 与 IL-6 和 eotaxin 呈相关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>RAD51 通过在结构上稳定 NETs，将炎症限制在局部，从而防止异常的全身性免疫激活。该研究将 DNA 修复过程与炎症调控联系起来。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3565&amp;v=1&amp;s=07702e33a2133bda" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3565&amp;v=2&amp;s=5274ef0690f278e7" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3565&amp;v=3&amp;s=935e2aa5de28035e" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3565&amp;v=4&amp;s=9cc5b62d7ef907fc" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3565&amp;v=5&amp;s=59b66c718b902b95" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 53 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42634345/">Emerging Natural and Synthetic Neuroactive Compounds in the Management of Neurodegenerative Diseases: Mechanistic Perceptions and Translational Challenges.</a></div>
+      <div class="card-title-zh">神经退行性疾病管理中新兴天然与合成神经活性化合物：机制认识与转化挑战</div>
+      <div class="news">为解决神经退行性疾病缺乏疾病修饰疗法问题，作者系统综述神经活性化合物研究，发现其经抗氧化、抗炎与促自噬等发挥保护作用，但临床转化受血脑屏障和异质性限制。</div>
+      <div class="meta">Current neurovascular research · 2026-08-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ali Zeeshan, Kumar Prashant</div>
+<div class="meta">DOI: 10.2174/0115672026485045260805065353</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42634345/">https://pubmed.ncbi.nlm.nih.gov/42634345/</a></div>
+<div class="meta">Keywords: Degenerative neurological diseases (DNDs)、challenges、innovative mechanism、neuroactive compounds、preclinical and clinical evaluation</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦神经退行与神经炎症，并涉及肠道菌群代谢物和血脑屏障转化难题。</div>
+<div class="abstract"><span class="abs-label">背景</span>神经退行性疾病（degenerative neurological diseases, DNDs）是一组进行性疾病，其特征为神经元结构与功能逐渐丧失，最终导致认知和运动功能受损。尽管对症治疗已有进展，但临床上仍迫切需要有效的疾病修饰治疗（disease-modifying therapies）。神经活性化合物因能够调节中枢神经系统中的神经元信号传导和细胞过程，正日益受到关注，成为潜在治疗候选物。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文为综述性研究，作者通过 PubMed、Google Scholar、ResearchGate、Scopus、Web of Science、ScienceDirect 和 Cochrane Library 等主要数据库与科研平台进行了系统文献检索。检索关键词包括“Neurological Disease”“neuroprotective compounds”“Neurodegenerative pathways”“protein misfolding”“oxidative stress”“neuroinflammation”以及“Mechanism of compounds”，以筛选同行评议文献。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>纳入讨论的神经活性化合物包括作用于神经递质靶点的小分子调节剂、直接来源于植物的植物化学物（phytochemicals）、合成与内源性神经类固醇（neurosteroids）、合成与天然肽及生长因子，以及微生物群来源代谢物和纳米载体，如细胞外囊泡（extracellular vesicles）。这些化合物总体上可通过减轻氧化应激、降低炎症反应、改善线粒体功能、诱导自噬/蛋白稳态（autophagy/proteostasis）、调节突触可塑性/神经发生以及胶质细胞-神经元相互作用，发挥神经保护和神经修复作用。尽管临床前研究结果令人鼓舞，但其临床转化仍受血脑屏障通透性差、生物利用度低、疾病异质性强以及缺乏合适模型等因素限制。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该综述总结了神经活性化合物的最新进展、相关病理生理过程及其向神经退行性疾病患者可用疾病修饰治疗转化时面临的核心问题。研究强调，天然与合成神经活性化合物为应对神经退行性疾病的复杂性提供了有前景的治疗思路，但实现临床成功仍需突破关键转化障碍。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4033&amp;v=1&amp;s=e6e0d3430cb1815f" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4033&amp;v=2&amp;s=0c7f99d0d3dfd741" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4033&amp;v=3&amp;s=c748fbe06f076b2e" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4033&amp;v=4&amp;s=495be7d45a77bf4f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4033&amp;v=5&amp;s=82c69a4a12edf02d" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42634196/">Ferulic Acid and Brain Health: A Defender Against Alzheimer&#x27;s Disease, Parkinson&#x27;s Disease, and Neuroinflammation.</a></div>
+      <div class="card-title-zh">阿魏酸与脑健康：对抗阿尔茨海默病、帕金森病和神经炎症的防御者</div>
+      <div class="news">为解决神经炎症驱动AD和PD进展问题，作者系统综述阿魏酸作用证据，发现其可调控Nrf2/HO-1、NF-κB和MAPK并减少Aβ与α-synuclein积累。</div>
+      <div class="meta">Current topics in medicinal chemistry · 2026-08-13</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Singh Niraj Kumar, Oriquat Ghaleb, Jain Ishika, Chaudhary Mahima, Khlyl Yasser Mohsen, Tailor Navin Kumar</div>
+<div class="meta">DOI: 10.2174/0115680266493487260611111705</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42634196/">https://pubmed.ncbi.nlm.nih.gov/42634196/</a></div>
+<div class="meta">Keywords: Alzheimer’s disease、Ferulic acid、Neuroglia、Neuroinflammation、Oxidative stress、Parkinson’s disease</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦AD/PD神经炎症、淀粉样蛋白与血脑屏障，契合你的神经退行研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>神经炎症是发生于中枢神经系统内的免疫反应，正常情况下有助于维持脑细胞稳态与健康，但失控的慢性神经炎症会损伤神经元并导致神经退行性疾病。小胶质细胞和星形胶质细胞在其中起关键作用，相关过程受核因子κB（NF-κB）、磷脂酰肌醇3激酶/蛋白激酶B（PI3K/Akt）和丝裂原活化蛋白激酶（MAPK）等信号通路调控；这些系统失衡会引发持续炎症和氧化应激，并在阿尔茨海默病（AD）和帕金森病（PD）进展中加速神经元丢失。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文为综述性研究，围绕神经炎症在AD和PD中的作用以及阿魏酸（ferulic acid）的脑保护潜力进行总结。摘要显示，作者综合了关于阿魏酸抗氧化、抗神经炎症、调控Nrf2/HO-1、NF-κB和MAPK等信号通路，以及抑制Aβ和α-突触核蛋白（α-synuclein）积累的实验研究证据。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>摘要表明，阿魏酸是一种存在于谷物、水果和蔬菜中的天然抗氧化剂，可通过清除自由基和抑制脂质损伤来保护神经元免于变性。实验研究显示，阿魏酸具有显著的抗氧化和抗神经炎症作用，能够抑制促炎介质生成、改善线粒体功能障碍、阻止细胞凋亡，并减少Aβ和α-synuclein等有害蛋白在脑内积累。阿魏酸还可调节Nrf2/HO-1、NF-κB和MAPK等与AD和PD发生发展密切相关的细胞与分子信号通路，从而保护胆碱能和多巴胺能神经元。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该综述认为，阿魏酸是一种有前景的天然化合物，可作为预防和管理神经炎症相关神经退行性疾病（如AD和PD）的替代性天然植物活性成分。其多靶点调控炎症、氧化应激、线粒体功能障碍和异常蛋白积累的能力，提示其具有突出的神经保护应用潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4083&amp;v=1&amp;s=3341d6cf22fb2c9d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4083&amp;v=2&amp;s=74e5d5705b7e37cb" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4083&amp;v=3&amp;s=4832e690107a8add" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4083&amp;v=4&amp;s=d23e6b085b602d9a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4083&amp;v=5&amp;s=02d8dadd36fbe3cf" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42635434/">Species-specific prophage induction by ciprofloxacin in human gut metagenomes.</a></div>
+      <div class="card-title-zh">环丙沙星在人类肠道宏基因组中诱导物种特异性的前噬菌体诱导</div>
+      <div class="news">为解决抗生素是否在人体肠道内诱导前噬菌体的问题，作者利用两队列宏基因组P:H比值分析，发现整体效应不普遍，但环丙沙星可在特定菌种中诱导且轨迹异质。</div>
+      <div class="meta">mSystems · 2026-08-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Sakdinan Ben, Sinha Anshul, Qadri Firdausi, Khan Ashraful I, Nelson Eric J, Shapiro B Jesse</div>
+<div class="meta">DOI: 10.1128/msystems.00303-26</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42635434/">https://pubmed.ncbi.nlm.nih.gov/42635434/</a></div>
+<div class="meta">Keywords: antibiotics、bacteriophages、gut microbiome、metagenomics、microbial ecology、prophage induction</div>
+<div class="reason"><span class="abs-label">推荐理由</span>解析人肠道中抗生素诱导前噬菌体，契合你对肠道微生物组机制的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>已有研究表明，抗生素可在受控实验室条件下触发前噬菌体（prophage）诱导，但这一现象是否也发生于自然状态下的微生物组中仍不明确。当前研究人类肠道中抗生素与前噬菌体诱导关系的方法，主要依赖对人肠道细菌分离株进行体外培养。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用宏基因组学方法测量前噬菌体诱导，并评估其是否与抗生素暴露相关。在两个相互独立的人群队列中，研究者比较了已知或实测抗生素暴露条件下，前噬菌体与细菌宿主测序读段深度比值（P:H）。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>结果显示，在整体微生物组水平上，前噬菌体诱导并未与抗生素暴露呈广泛相关。 但在某些细菌物种中，环丙沙星（ciprofloxacin）会提高P:H比值。研究还记录到在抗生素暴露过程中，P:H比值呈现异质性变化轨迹，有时升高后维持在高水平，有时则回归基线。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究通过提供人类肠道体内（in vivo）前噬菌体诱导的证据，对实验模型形成补充。由于前噬菌体诱导可导致宿主细胞死亡、影响细菌群体与群落，并且前噬菌体作为可移动遗传元件参与细菌间水平基因转移，因此理解体内诱导过程对于验证体外观察结果至关重要。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4095&amp;v=1&amp;s=1f39587ea76e3afc" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4095&amp;v=2&amp;s=ae5603ef6124deb1" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4095&amp;v=3&amp;s=3a9b3c015c24c727" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4095&amp;v=4&amp;s=c59837d7565f1ece" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4095&amp;v=5&amp;s=7c81849f506c21ba" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42634137/">Esterified Cholesterol Conjugates Enable LNP-Mediated mRNA Delivery to the Blood-Brain Barrier Following Intravenous Administration.</a></div>
+      <div class="card-title-zh">酯化胆固醇缀合物可实现静脉给药后经脂质纳米颗粒介导的 mRNA 向血脑屏障的递送</div>
+      <div class="news">为解决静脉给药后mRNA难以选择性递送脑内皮问题，作者筛选486种胆固醇基LNP，发现无配体四组分体系可在不破坏血脑屏障下高效转染脑内皮而避开神经元和胶质细胞。</div>
+      <div class="meta">Advanced materials (Deerfield Beach, Fla.) · 2026-08-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Tian Zeru, Wang Xu, Benitez Alexis Pacheco, Guerrero Erick, Duan Yaou, Wei Jingwen, Farbiak Lukas, Siegwart Daniel J</div>
+<div class="meta">DOI: 10.1002/adma.74762</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42634137/">https://pubmed.ncbi.nlm.nih.gov/42634137/</a></div>
+<div class="meta">Keywords: blood–brain barrier (BBB)、brain endothelial cells、cholesterol‐based lipid、lipid nanoparticles (LNPS)、mRNA delivery、systemic administration</div>
+<div class="reason"><span class="abs-label">推荐理由</span>围绕血脑屏障靶向递送mRNA，紧贴你关注的BBB与神经疾病干预。</div>
+<div class="abstract"><span class="abs-label">背景</span>血脑屏障（blood-brain barrier, BBB）通过调控脑与外周循环之间的分子和细胞交换，在维持中枢神经系统稳态中发挥关键作用。尽管多数递送策略着眼于跨越 BBB，但直接靶向脑内皮细胞可能为治疗干预提供一种互补且更可控的替代方案。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究构建了一种无需配体（ligand-free）的脂质纳米颗粒（lipid nanoparticle, LNP）平台，用于经全身给药实现 mRNA 向脑内皮的高效递送。研究者采用模块化合成策略建立了化学多样性的胆固醇基脂质文库，并对 486 种 LNP 进行筛选，最终确定了由 C6O2B2、DODAP、DSPC 和 DMG-PEG 组成的四组分优化配方。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>优化后的 LNP 配方在不加入游离胆固醇（free cholesterol）、且不破坏 BBB 完整性与功能的情况下，实现了脑内皮细胞中的高效转染；其作用方式不同于聚焦超声（focused ultrasound, FUS）等会干扰 BBB 的技术。该 BBB 靶向 LNP 平台避免了对神经元和胶质细胞的转染。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该平台为脑血管基因递送提供了一种无创且可扩展的方法。该研究建立了一类新的胆固醇基脂质，并为靶向 BBB 相关疾病的下一代 RNA 疗法奠定了基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4103&amp;v=1&amp;s=aba3a2a1a87f4d53" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4103&amp;v=2&amp;s=f09edc1a585143af" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4103&amp;v=3&amp;s=5b8379a8e6b56e1c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4103&amp;v=4&amp;s=6290a6f656389fd0" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4103&amp;v=5&amp;s=45e5e6430e26afff" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42634903/">[PTPRO inhibitor alleviates cytoskeletal rearrangement and pyroptosis in brain microvascular endothelial cells in sepsis-associated encephalopathy via PI3K/AKT-related signaling].</a></div>
+      <div class="card-title-zh">PTPRO抑制剂通过PI3K/AKT相关信号通路缓解脓毒症相关性脑病中脑微血管内皮细胞的细胞骨架重排和细胞焦亡</div>
+      <div class="news">为解决SAE中PTPRO如何损伤脑微血管内皮屏障的问题，作者结合LPS模型与PTPRO抑制/沉默，发现其可经PI3K/AKT相关信号减轻骨架重塑与caspase-11/GSDMD焦亡。</div>
+      <div class="meta">Xi bao yu fen zi mian yi xue za zhi = Chinese journal of cellular and molecular immunology · 2026-08-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wu Fengjiao, Tang Haitao, Xiong Qianqian, Li Chang, Song Yuwei, Cao He, Tang Mengjie, Pan Zhengyan, Liu Guiping, Li Tianzhen, Gou Zongming, Zhou Wusheng, Qian Zhongqing, Wang Huaxue</div>
+<div class="meta">DOI: —</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42634903/">https://pubmed.ncbi.nlm.nih.gov/42634903/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦小鼠BBB内皮炎症与焦亡，贴近神经炎症和屏障研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>脓毒症相关性脑病（sepsis-associated encephalopathy, SAE）是脓毒症常见且严重的并发症，与血脑屏障（blood-brain barrier, BBB）功能障碍及脑微血管内皮细胞损伤密切相关。蛋白酪氨酸磷酸酶受体O型（protein tyrosine phosphatase receptor type O, PTPRO）在炎症信号转导和细胞功能调控中具有重要作用，但其在SAE过程中调控脑内皮屏障功能的作用尚不明确。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究通过腹腔注射脂多糖（lipopolysaccharide, LPS）建立小鼠SAE模型，检测脑组织炎性细胞因子水平，并通过白蛋白渗漏和伊文思蓝（Evans Blue）外渗评估BBB通透性。体外采用LPS刺激小鼠脑微血管内皮细胞bEnd.3，利用免疫荧光、跨内皮电阻（transendothelial electrical resistance, TEER）和Western blot检测PTPRO表达、丝状肌动蛋白（filamentous actin, F-actin）重塑、单层屏障功能、caspase-11/gasdermin D（GSDMD）相关细胞焦亡分子事件及PI3K/AKT磷酸化水平，并使用PTPRO siRNA验证药理抑制结果。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>LPS显著升高小鼠脑组织中白细胞介素-1β（interleukin-1β, IL-1β）和白细胞介素-6（interleukin-6, IL-6）水平，并增强白蛋白渗漏和伊文思蓝外渗；PTPRO抑制剂预处理可减轻LPS诱导的BBB通透性损伤。体外实验显示，LPS明显上调bEnd.3细胞中PTPRO表达，降低TEER，诱导F-actin重塑、细胞收缩和细胞间隙形成，并增加caspase-11和GSDMD-N水平；PTPRO抑制或PTPRO siRNA干预可不同程度逆转上述变化，并伴随PI3K和AKT磷酸化降低。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>PTPRO抑制可缓解LPS诱导的脑微血管内皮细胞细胞骨架重塑、屏障功能障碍以及caspase-11/GSDMD相关细胞焦亡分子事件。该作用可能与PI3K/AKT相关信号变化有关，提示PTPRO可能是SAE中脑内皮屏障损伤的潜在干预靶点。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4096&amp;v=1&amp;s=991a56409963a8dc" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4096&amp;v=2&amp;s=e144165b6fe91abb" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4096&amp;v=3&amp;s=f201be937166ead9" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4096&amp;v=4&amp;s=9755c6c79022b85d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=4096&amp;v=5&amp;s=a90916fbb72f3089" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://doi.org/10.1126/science.aee0747">China’s solar expansion policy reduces bird diversity</a></div>
+      <div class="card-title-zh">中国的太阳能扩张政策降低了鸟类多样性</div>
+      <div class="news">为解决光伏扩张能否兼顾减碳与护鸟问题，作者利用中国2344县2014至2023年面板数据，发现政策扩张经耕地草地开发化与植被同质化降低鸟类多样性。</div>
+      <div class="meta">Science · 2026-08-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhang Huiming, Zhang Aixin, Wu Kai, Cai Yinyin, Li Shanjun, Wang Shouyang, Qiu Yueming (Lucy), Huang Shoujun, Phan Thi Thuc Anh</div>
+<div class="meta">DOI: 10.1126/science.aee0747</div>
+<div class="meta"><a href="https://doi.org/10.1126/science.aee0747">https://doi.org/10.1126/science.aee0747</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及你关注的鸟类与生态，但与神经退行和古DNA方向交叉较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>全球向可再生能源转型，是否会带来一种在减碳与生物多样性保护之间相互权衡的“绿色困境”，是本研究关注的核心问题。研究聚焦于促进太阳能光伏（solar photovoltaics）发展的政策，评估其对地方鸟类多样性的影响。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究使用覆盖中国2344个县、时间跨度为2014年至2023年的面板数据集进行分析。研究据此考察了支持光伏扩张的政策与当地鸟类多样性变化之间的关系，并进一步分析其潜在作用机制。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>支持光伏扩张的政策导致鸟类多样性下降，且这种影响在较富裕地区、非荒漠地区以及分布广泛的物种中更为明显。其主要机制是土地利用转化：耕地和草地被转变为开发用地，导致植被多样性下降。与此同时，叶面积指数（leaf area index）反而上升，研究将这一现象称为“低质绿化（inferior greening）”，即多样的自然景观被高密度但生态同质化的植被所取代。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究认为，未来光伏开发应同时配套严格的生物多样性保护措施。尤其是在经济较发达且栖息地复杂性较高的地区，更应重视在推进光伏发展过程中避免生物多样性损失。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3637&amp;v=1&amp;s=5eeab5fe66a4cbc2" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3637&amp;v=2&amp;s=d363d67c94e28693" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3637&amp;v=3&amp;s=99b9fafff2cd7838" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3637&amp;v=4&amp;s=a3e3b380a3577fec" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=3637&amp;v=5&amp;s=eb709924c1e448a4" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日文献主要聚焦三类方向：单细胞/空间组学方法与应用（scRNA-seq注释、命运轨迹敏感性、突变分辨单细胞、scRNA-seq与空间蛋白组整合），AI驱动的生物医学研究工具，以及神经退行性疾病、血脑屏障、肠道菌群与免疫炎症机制。共同趋势是计算方法明显增多，尤其是生成式AI、RAG、代理式科研系统、VAE与机器学习分类器被用于注释、跨模态整合、流程自动化和宏组学判别；同时多组学整合与体内外联合验证并行。对研究者的价值在于：可直接借鉴新分析工具与代码框架，关注神经免疫和脑血管递送等转化线索，并从菌群—免疫—脑轴及蛋白清除机制中寻找新假设。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=panyunrui%40genomics.cn&amp;d=2026-08-25&amp;s=bf45764b2b60098c">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=panyunrui%40genomics.cn&amp;d=2026-08-25&amp;s=bf45764b2b60098c">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

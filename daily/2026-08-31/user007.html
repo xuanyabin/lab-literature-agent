@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-08-31</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-08-31</h1>
+    <p class="hello">lijiawei，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">过去 3 天全库新增 947 篇 · 命中您的关键词 81 篇 · 本次推送 15 篇（必读 0 · 重要 0 · 参考 15）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">基因组演化与多样性</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-module">系统发育基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.27.747422">Asynchronous origins of Yellow-Stripe transporters and Nicotianamine Synthase underlie the evolution of plant Strategy-II iron uptake</a></div>
+      <div class="card-title-zh">黄条纹转运蛋白与烟酰胺胺合酶的不同步起源奠定了植物策略II型铁吸收的演化基础</div>
+      <div class="news">为解决植物策略II型铁吸收起源问题，作者利用跨谱系系统发育基因组学，发现YSL早起源而NAS晚近经真菌水平转移进入植物，揭示该通路由既有螯合金属转运机制挪用扩展而来。</div>
+      <div class="meta">bioRxiv · 2026-08-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">de Campos M. L. C. B., Rodrigues W. F. C., Gomes H. F., Ricachenevsky F. K., Lima J. E., Del Bem L. E. V.</div>
+<div class="meta">DOI: 10.64898/2026.08.27.747422</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.27.747422">https://www.biorxiv.org/content/10.64898/2026.08.27.747422</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接讨论植物基因水平转移与系统发育，契合你对质体演化和比较基因组的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>植物获取铁主要依赖两种经典机制：基于还原的吸收（策略I型，Strategy I）和基于螯合的吸收（策略II型，Strategy II）。尽管策略II型是禾本科植物的典型特征，但与螯合金属转运相关的基因广泛存在于植物各谱系中，因此该通路的演化过程仍不清晰。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究重建了Archaeplastida及其最接近非植物同源序列中黄条纹样转运蛋白（Yellow Stripe-Like, YSL）和烟酰胺胺合酶（Nicotianamine Synthase, NAS）的演化历史。作者结合系统基因组学、分布特征分析和结构分析，比较了这两类基因家族的起源时间与演化模式。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>分析显示，YSL与NAS两个基因家族在时间上存在显著不同步：YSL很可能早在Viridiplantae早期即已起源，是螯合金属转运系统中最深层的演化模块；而NAS则出现得晚得多，且是通过真菌向真叶植物类群（euphyllophytes）及特定苔藓谱系发生的独立水平基因转移而获得。该时间差表明，YSL介导的转运最初可能独立于烟酰胺胺发挥作用，暗示祖先状态下可能利用了其他铁载体；此外，禾本科（Poaceae）中YSL基因的显著扩张与经典策略II型的出现相吻合。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果提示，植物经典策略II型铁吸收通路并非由全新系统直接产生，而更可能是对既有螯合金属转运机制的功能挪用（exaptation）。该研究为理解植物铁吸收策略的起源及其分子演化提供了新的证据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5078&amp;v=1&amp;s=14dd59d4c63e3d81" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5078&amp;v=2&amp;s=f7fe2d5acbe18532" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5078&amp;v=3&amp;s=3539ca5d60207c2d" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5078&amp;v=4&amp;s=d7864fccbbe5aa17" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5078&amp;v=5&amp;s=9cc0acf5ffbf235d" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-reference">Reference</span> · 47 分</div>
+      <div class="card-title"><span class="badge cat-module">系统发育基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.26.747220">Utilising nuclear encoded plastid DNA to identify donors of grass-to-grass lateral gene transfer</a></div>
+      <div class="card-title-zh">利用核编码质体DNA鉴定禾草间横向基因转移的供体</div>
+      <div class="news">为解决草类横向基因转移供体难识别问题，作者利用NUPT系统发育结合叶绿体组装与短读长比对，发现Eremochloa attenuata很可能是共同转移供体。</div>
+      <div class="meta">bioRxiv · 2026-08-29</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Bourne N. G., Payne L., Manzi S., Besnard G., Vorontsova M. S., Jobson R. W., Chomicki G. S., Dunning L. T.</div>
+<div class="meta">DOI: 10.64898/2026.08.26.747220</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.26.747220">https://www.biorxiv.org/content/10.64898/2026.08.26.747220</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦LGT供体识别，且利用NUPTs与系统发育方法，贴近你对质体与横向转移的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>准确确定禾草与禾草之间横向基因转移（lateral gene transfer, LGT）的供体物种或谱系，对于推断有助于解释转移机制的特定供体特征至关重要。要实现精确的供体推断，需要覆盖广泛物种的数据集以获得足够的系统发育分辨率。由于禾草间LGT常涉及多基因DNA片段的转移，其中可能包含可用于准确直系同源比较的附加序列，例如来源于质体的核DNA（nuclear DNA of plastid origin, NUPTs）。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者系统扫描了4个Alloteropsis semialata材料的基因组中的NUPTs，这些材料中的LGT此前已被表征。研究利用丰富的Panicoideae叶绿体序列重建NUPT系统发育关系并推断横向获得事件；随后组装并纳入另外12个Eremochloa叶绿体基因组进行分析。最后，作者将E. attenuata的短读长序列比对到该NUPT侧翼的核基因组区域，以检验包括先前已鉴定LGT在内的区域覆盖情况。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究推断出两次横向获得事件：一次来自Paniceae/Digitaria，另一次来自Andropogoneae/Eremochloa，且后者位于此前已鉴定LGT的邻近区域。纳入额外12个Eremochloa叶绿体基因组后，结果显示最可能的供体为Eremochloa attenuata。来自E. attenuata的短读长在该NUPT侧翼核区域上表现出一致覆盖，包括此前已鉴定的LGT区域，从而支持这些序列发生了共同转移（co-transfer）。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究表明，NUPTs有潜力更准确地鉴定禾草间LGT的供体。该结果为解析禾草间横向基因转移的供体来源及其转移机制提供了有价值的线索。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5065&amp;v=1&amp;s=ee0b63e0e2f1d1aa" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5065&amp;v=2&amp;s=764bf3cb58c0f3cc" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5065&amp;v=3&amp;s=defcfbcdf514d943" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5065&amp;v=4&amp;s=271dcaddbbbf2d86" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5065&amp;v=5&amp;s=ecdbe428355883a6" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 42 分</div>
+      <div class="card-title"><span class="badge cat-module">群体基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.24.746700">Genomovar-level resolution reveals rapid pathotype switching and genomovar-specific disease potential in diarrheagenic Escherichia coli populations in northern Ecuador</a></div>
+      <div class="card-title-zh">基因组变体（genomovar）水平分辨率揭示厄瓜多尔北部致泻性 Escherichia coli 群体中病型的快速转换及基因组变体特异性的致病潜力</div>
+      <div class="news">为解决DEC毒力基因在共循环谱系中转移速度及其致病意义不清问题，作者以99.5%ANI划分genomovar并结合系统发育分析，发现pathotype由近期水平转移驱动且不同genomovar致病潜力显著不同。</div>
+      <div class="meta">bioRxiv · 2026-08-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Feistel D. J., Jesser K. J., Levy K., Trueba G., Konstantinidis K. T.</div>
+<div class="meta">DOI: 10.64898/2026.08.24.746700</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.24.746700">https://www.biorxiv.org/content/10.64898/2026.08.24.746700</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接讨论水平基因转移驱动谱系性状切换，契合你对HGT与比较基因组的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>致泻性 Escherichia coli（diarrheagenic Escherichia coli, DEC）的病型通常依据若干离散毒力基因的分子检测来界定，但这些诊断性基因在共同流行谱系中出现和转移的速度仍不清楚。为此，研究旨在从种内更高分辨率层面解析 DEC 群体结构、病型演化及其与致病性的关系。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者将来自厄瓜多尔北部 EcoZUR 病例-对照研究的 248 株完成全基因组测序的 E. coli 分离株，依据新近提出的 99.5% 平均核苷酸一致性（average nucleotide identity, ANI）阈值划分为种内基因组变体单元。随后结合共线性（synteny）分析、系统发育分析以及毒力基因谱分析，比较病型诊断基因与核心基因组的一致性，并评估不同基因组变体与腹泻关联的差异。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该框架揭示了隐匿的群体结构：同一序列型（sequence type, ST；即相同多位点序列分型，MLST）内可包含多个不同的基因组变体；在单个基因组变体内部，ANI 约为 99.7% 的分离株之间也可出现不同病型，而这种现象在不同基因组变体之间更为常见。共线性和系统发育分析显示，病型诊断性毒力基因与核心基因组之间普遍存在不一致，提示近期水平基因转移是病型演化的主要驱动力；同时，附属毒力基因库在不同病型间按系统发育群（phylogroup）呈层级化分布，B2 和 D 群的基因组变体比 A 和 B1 群表现出更保守的毒力结构。特别是在 DAEC 分离株中，归属于 B2 和 D 群的基因组变体较 A 群对应基因组变体具有更高的腹泻相关率，而包括 VI 型分泌系统（Type VI secretion systems）在内的罕见毒力基因可进一步区分腹泻相关与无症状基因组变体。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究表明，尽管毒力在谱系内（即系统发育群内）似乎具有一定保守性，但病型身份本质上是一种不稳定状态，在基因组变体水平上由水平获得的毒力基因所定义。基因组变体框架因此为连接种内多样性与致病潜力及暴发提供了一个具有生物学意义的分析单元。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5068&amp;v=1&amp;s=ed24d3feb617bf84" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5068&amp;v=2&amp;s=351b55d615710ce7" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5068&amp;v=3&amp;s=a84c52c333861de2" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5068&amp;v=4&amp;s=28e5b6800cf95b38" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5068&amp;v=5&amp;s=a756e488cd5e5642" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 38 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42663732/">Complete telomere-to-telomere genome assembly of Guazuma ulmifolia uncovers evolutionary mechanisms, drought adaptation, and flavonoid biosynthesis.</a></div>
+      <div class="card-title-zh">Guazuma ulmifolia 端粒到端粒（telomere-to-telomere, T2T）完整基因组组装揭示其进化机制、干旱适应与黄酮类生物合成</div>
+      <div class="news">为解决G. ulmifolia缺乏高质量基因组问题，作者构建T2T基因组并开展比较分析，发现其染色体融合及LEA、GST串联扩张与抗旱适应相关。</div>
+      <div class="meta">Plant cell reports · 2026-08-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Dorjee Tashi, Cui Yican, Liu Bo, Richardson James E, Gao Fei</div>
+<div class="meta">DOI: 10.1007/s00299-026-03948-w</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42663732/">https://pubmed.ncbi.nlm.nih.gov/42663732/</a></div>
+<div class="meta">Keywords: Guazuma ulmifolia、Ancestral karyotype、Comparative genomics、Genome evolution、T2T genome assembly</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽含T2T组装与比较基因组，但主题是抗旱与黄酮代谢，和质体演化关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>气候变化，尤其是干旱发生频率增加，正对粮食安全构成重大威胁；理解作物野生近缘种环境适应的基因组基础，可为提升抗逆性提供重要资源。Guazuma ulmifolia 是 Theobroma cacao 的野生近缘种，具有重要生态和药用价值，但此前缺乏高质量参考基因组资源。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究构建了 Guazuma ulmifolia 首个端粒到端粒（telomere-to-telomere, T2T）染色体水平参考基因组，并对其组装质量、重复序列组成和基因组完整性进行了评估。进一步结合比较基因组分析、祖先核型重建以及基因家族与组织表达分析，探究其基因组演化、染色体重排、胁迫相关基因扩张和黄酮类生物合成基因特征。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Guazuma ulmifolia 基因组大小为 311.31 Mb，contig N50 为 35.19 Mb，BUSCO 完整度为 98.70%；重复序列占基因组的 27.43%，其中长末端重复逆转座子（LTR retrotransposons）为主要类型。比较基因组结果表明，锦葵科（Malvaceae）物种间基因组大小差异与多倍化历史及转座元件（TE）动态有关；祖先核型重建鉴定出 5 个将 Guazuma ulmifolia 与 Theobroma cacao 区分开的谱系特异性染色体融合事件。进一步分析发现，与串联重复相关的胁迫相关 LEA 和 GST 基因家族发生扩张，而黄酮类生物合成基因在拷贝数上总体保守，但呈现组织特异性表达模式。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究建立了 Guazuma ulmifolia 首个高质量 T2T 参考基因组，为可可野生近缘种的逆境适应研究和抗逆育种提供了核心基因组资源。该资源也为解析锦葵科基因组进化、染色体组织及胁迫相关基因组特征提供了重要基础，并为次生代谢研究提供了候选基因。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4938&amp;v=1&amp;s=2172ac851e6fca3f" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4938&amp;v=2&amp;s=35345aa4dcc4b7dc" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4938&amp;v=3&amp;s=89359ac394e83954" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4938&amp;v=4&amp;s=b20a6a291894d400" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4938&amp;v=5&amp;s=8db63dc64e3a3550" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 38 分</div>
+      <div class="card-title"><span class="badge cat-module">群体基因组学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.25.743606">Extended genomic regions flanking ultraconserved elements allow efficient species identification and intraspecific diversity assessment in coral</a></div>
+      <div class="card-title-zh">超保守元件侧翼延伸基因组区域可实现珊瑚的高效物种鉴定与种内多样性评估</div>
+      <div class="news">为解决珊瑚保护中物种鉴定与种内多样性评估低效问题，作者利用500个UCE扩展侧翼位点，发现其在六种鹿角珊瑚中可达到媲美全基因组的分辨率。</div>
+      <div class="meta">bioRxiv · 2026-08-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Mateos A., Cowman P., Bridge T., Yeoh Y. K., Bourne D., Sato Y.</div>
+<div class="meta">DOI: 10.64898/2026.08.25.743606</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.25.743606">https://www.biorxiv.org/content/10.64898/2026.08.25.743606</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>UCE侧翼区域做系统发育与种内变异评估，对你常用phylogenomics有方法参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>基于遗传信息的保护对确保干预措施真正惠及目标种群至关重要。在珊瑚中，遗传多样性的保存和准确的物种鉴定对有性繁殖尤为关键；尽管已有多种物种鉴定和种内变异测量方法，但如何获取并分析可支持快速且可靠决策的分子数据，仍然具有挑战性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究提出了一种以超保守元件（ultra-conserved elements, UCEs）周围延伸基因组区域为靶标的、资源高效的种内遗传分型方法。通过按简约信息性（parsimony informativeness）对位点排序，并采用距 UCE 上下游各 5000 bp 的窗口大小，作者筛选出 500 个与 UCE 相关的位点子集；该方法利用六种鹿角珊瑚属（staghorn coral）现有群体基因组数据进行验证，包括 Acropora hyacinthus、Acropora tersa、Acropora pectinata、Acropora sp. &quot;VI-3&quot;、Acropora kenti 和 Acropora cf. spathulata。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>筛选得到的 500 个 UCE 相关位点能够准确解析物种间系统发育关系，并以与全基因组数据相当的准确度评估种内变异。基于该 UCE 子集构建的系统发育树与基于完整数据构建的系统发育结果一致。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>在目标基因组区域数量和长度适中的前提下，该方法在分辨率与测序投入之间实现了平衡，为结合 Oxford Nanopore Technologies 等实时长读长测序平台开发快速、可扩展且成本效益高的工作流程提供了概念验证。该方法学还有望广泛用于支持不同类群的遗传评估，尤其适用于分类不确定性常见的情形，从而提高实验设计和保护决策的可信度。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5069&amp;v=1&amp;s=44e3724b1364d742" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5069&amp;v=2&amp;s=4ee7fbaca10faa26" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5069&amp;v=3&amp;s=28269dbb521a3554" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5069&amp;v=4&amp;s=14fbcd9f8d4ec732" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5069&amp;v=5&amp;s=158ee834124c0273" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 34 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42663318/">Pre-Cambrian origin of envelope-carrying retrotransposons in metazoans.</a></div>
+      <div class="card-title-zh">后生动物中携带包膜的逆转座子的前寒武纪起源</div>
+      <div class="news">为解决Ty3/gypsy包膜基因是近期获得还是古老关联的问题，作者系统筛查无脊椎基因组并结合系统发育与结构分析，发现其在古老后生动物中广泛存在且与pol长期共分化，支持前寒武纪起源。</div>
+      <div class="meta">eLife · 2026-08-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chary Shashank, Hayashi Rippei</div>
+<div class="meta">DOI: 10.7554/eLife.108449</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42663318/">https://pubmed.ncbi.nlm.nih.gov/42663318/</a></div>
+<div class="meta">Keywords: D. melanogaster、Ty3/gypsy、endogenous retroviruses、errantiviruses、evolutionary biology、genetics、genomics、origin of envelope genes、retrotransposon evolution、viruses</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及古老基因元件演化，但与质体演化和海蛞蝓体系关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>逆转座子或内源性逆转录病毒（endogenous retroviruses, ERVs）通常携带gag和pol开放阅读框，用于在宿主生殖系基因组中进行自私性复制。果蝇中的Ty3/gypsy errantiviruses是少见的还携带包膜（envelope）基因的ERV实例，但这类含包膜Ty3/gypsy元件究竟代表近期、谱系特异性的病毒融合蛋白获得，还是逆转座子与包膜样基因之间的古老关联，此前尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究系统搜索了无脊椎后生动物基因组中与Ty3/gypsy同源、且保留完整包膜基因的ERVs。并结合系统发育分析与结构分析，评估包膜基因、pol基因及宿主类群之间的进化关系，以及重组发生的频率。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，这类含完整包膜的Ty3/gypsy同源ERVs广泛分布于多个类群，包括刺胞动物、栉水母和被囊动物等古老动物。许多元件在各自基因组中以多个高度相似拷贝存在，提示其在某些宿主谱系中近期发生了基因组扩增。包膜基因可分为类似副黏病毒糖蛋白F（glycoprotein F）和疱疹病毒糖蛋白B（glycoprotein B）的两类，且两类在丰度和分布上相当；系统发育和结构分析表明，包膜基因在进化过程中大体上与pol基因及宿主共同分化，而重组较少发生。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，ERV获得包膜基因并非近期、局部发生的事件，而是一次古老的获得过程。该事件很可能可追溯至前寒武纪、两侧对称动物与非两侧对称动物分化之前。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4949&amp;v=1&amp;s=a2bd0cd2fdda6cce" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4949&amp;v=2&amp;s=79b5fc494587582d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4949&amp;v=3&amp;s=d2ec8be2fe3e8a02" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4949&amp;v=4&amp;s=248b8cd1a2ab05f1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4949&amp;v=5&amp;s=d10d29903b2d4add" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 31 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42656273/">Integrative genomic and clinical analysis of carbapenem-resistant and susceptible Klebsiella pneumoniae isolates from a tertiary hospital in Wuhan.</a></div>
+      <div class="card-title-zh">武汉某三级医院碳青霉烯耐药与敏感Klebsiella pneumoniae分离株的整合基因组与临床分析</div>
+      <div class="news">为阐明耐药与敏感肺炎克雷伯菌差异，作者整合临床因素与比较基因组分析，发现CCI&gt;3、呼吸道感染及ST11-blaKPC-2谱系与CRKP流行和耐药毒力负担升高相关。</div>
+      <div class="meta">Frontiers in cellular and infection microbiology · 2026-08-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Liu Mengling, Wu Zhiyong, Mao Jieyu, Zhang Shuo, Xu Sheng, Min Jinwen, Yu Wenjing, Liu Haizhou, Hu Yangbo, Wu Xiaojun</div>
+<div class="meta">DOI: 10.3389/fcimb.2026.1881548</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42656273/">https://pubmed.ncbi.nlm.nih.gov/42656273/</a></div>
+<div class="meta">Keywords: carbapenem-resistant Klebsiella pneumoniae、carbapenem-susceptible Klebsiella pneumoniae、clinical risk factors、comparative genomics、pan-genome</div>
+<div class="reason"><span class="abs-label">推荐理由</span>采用比较基因组和系统发育基因组学，但对象为耐药肺炎克雷伯菌，非质体相关。</div>
+<div class="abstract"><span class="abs-label">背景</span>碳青霉烯耐药Klebsiella pneumoniae（carbapenem-resistant Klebsiella pneumoniae, CRKP）因对碳青霉烯类药物耐药，已成为全球重大公共卫生威胁。鉴于CRKP碳青霉烯耐药的潜在机制尚未被完全阐明，本研究旨在揭示其临床与基因组特征。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究共收集中国武汉某三级医院40株CRKP和42株碳青霉烯敏感Klebsiella pneumoniae（carbapenem-susceptible Klebsiella pneumoniae, CSKP）分离株，并整合2460个公开可得的Klebsiella pneumoniae基因组。研究综合分析了临床危险因素、耐药与毒力基因谱、质粒复制子组成、基于核心基因组单核苷酸多态性（SNP）的系统发育关系、泛基因组结构，以及全基因组单核苷酸变异和插入/缺失（SNVs/InDels）变异。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>临床分析显示，Charlson合并症指数（Charlson comorbidity index, CCI）&gt;3和呼吸道感染是CRKP感染的独立危险因素。基因组比较表明，CRKP较CSKP携带更多耐药基因和毒力基因，其中ST11是优势CRKP克隆，且常携带blaKPC-2基因；纳入公共基因组后的系统发育分析还揭示了序列型和碳青霉烯酶基因型分布的区域差异。泛基因组分析显示两组均具有开放性泛基因组特征，云基因（cloud genes）占比最大；比较基因组分析发现CRKP与CSKP在SNV和InDel分布模式上存在明显差异，相关变异基因的GO注释涉及细胞与代谢过程、转运与刺激应答、膜相关组分以及结合与催化功能等广泛功能类别。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究表明，ST11-blaKPC-2是主要流行谱系，且CRKP较CSKP具有更高的耐药与毒力决定子负荷。系统发育、泛基因组和比较基因组分析共同揭示了CRKP与CSKP之间显著的基因组多样性及不同的变异模式。这些发现加深了对CRKP临床风险特征、克隆传播动态和基因组演化的认识，并可为未来监测与感染防控策略提供依据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4726&amp;v=1&amp;s=b1ce049cc8ba15d3" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4726&amp;v=2&amp;s=c5789c8f5b391094" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4726&amp;v=3&amp;s=0db659720a6bd8ce" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4726&amp;v=4&amp;s=174922181196494b" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4726&amp;v=5&amp;s=acaf23590a7dff0b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 31 分</div>
+      <div class="card-title"><span class="badge cat-module">系统发育基因组学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42668170/">A novel Cryphonectria species (Cryphonectriaceae, Diaporthales) discovered on Eucalyptus, including insights into the mating biology of the genus.</a></div>
+      <div class="card-title-zh">在桉树上发现一种新的 Cryphonectria 物种（Cryphonectriaceae，Diaporthales），并揭示该属交配生物学的相关见解</div>
+      <div class="news">为解决北苏门答腊桉树壳斗孢科真菌的分类与交配方式问题，作者结合多基因系统学、基因组和接种试验，鉴定出新种桉树栗疫菌，证实其轻度致病且为同宗配合型。</div>
+      <div class="meta">Fungal biology · 2026-07-31</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Pham Nam Q, Wingfield Brenda D, Marincowitz Seonju, Marpaung Yosep M A N, Selebi Alinaswe P, Tarigan Marthin, Wingfield Michael J</div>
+<div class="meta">DOI: 10.1016/j.funbio.2026.101831</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42668170/">https://pubmed.ncbi.nlm.nih.gov/42668170/</a></div>
+<div class="meta">Keywords: Cryphonectria canker、Forest pathology、Mating-type locus、Myrtales、New taxon、Plantation forestry、Tree disease、Whole genome sequence</div>
+<div class="reason"><span class="abs-label">推荐理由</span>使用全基因组与系统发育解析真菌交配型，方法上接近但非质体研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>Cryphonectriaceae（Diaporthales，Ascomycota）包含多种重要真菌病原物，可在全球木本植物上引起枝干溃疡病，其中 Cryphonectria parasitica 是导致栗疫病的病原菌，并曾使北美美洲栗（Castanea dentata）几近灭绝。由于其显著的生态和经济影响，研究者持续关注该科其他物种的多样性、生物学特性和致病性。2023 年在北苏门答腊的一次病害调查中，研究人员在因维管束枯萎病原 Ceratocystis manginecans 感染而死亡的单一桉树无性系树木树皮上，发现了具有 Cryphonectriaceae 典型特征的结构。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究旨在鉴定该真菌、检测其致病性，并结合相关物种比较其交配生物学。研究采用 6 个基因位点（ITS、LSU、TUB1、TUB2、TEF1 和 RPB2）的 DNA 序列比较、系统基因组学分析以及形态学观察进行物种鉴定；并通过对 4 种桉树基因型开展接种试验评估致病性。研究还基于全基因组数据分析交配型位点（mating-type locus），并比较了另外 6 个 Cryphonectria 物种的基因组。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>多位点序列、系统基因组学和形态学证据表明，该真菌为一个此前未描述的 Cryphonectria 新种，命名为 Cry. eucalypticola。接种试验显示，Cry. eucalypticola 仅具有轻度致病性，且不同桉树基因型对感染的易感性存在差异。交配型位点分析表明该菌为同宗配合（homothallic）；对另外 6 个 Cryphonectria 物种基因组的分析首次显示，该属同时包含同宗配合和异宗配合（heterothallic）类群。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这是首次确认报道 Cryphonectria 物种与桃金娘目（Myrtales）树木相关，而此前已描述的该属物种均见于北半球壳斗目（Fagales）树木上。该真菌侵染力较低，且出现在受 Cer. manginecans 感染的濒死树木上，提示其在健康树木中可能以内生菌（endophyte）形式存在，并在宿主濒死时于树皮上产孢。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5076&amp;v=1&amp;s=f1390ca9014309e2" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5076&amp;v=2&amp;s=0f4115db4d6ba919" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5076&amp;v=3&amp;s=da47aadfbfe0a3a3" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5076&amp;v=4&amp;s=e5f9558a9d9b33ec" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5076&amp;v=5&amp;s=6486688205d58d5d" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 30 分</div>
+      <div class="card-title"><span class="badge cat-module">系统发育基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42668951/">Complete mitogenome of Pelecorhynchus vulpes (Macquart) (Diptera: Pelecorhynchidae) and its phylogenetics implications on Tabanomorpha.</a></div>
+      <div class="card-title-zh">Pelecorhynchus vulpes (Macquart) 的完整线粒体基因组（mitogenome）及其对虻下总科（Tabanomorpha）系统发育的意义</div>
+      <div class="news">由于虻下总科中Pelecorhynchidae系统位置未明，作者测序并结合线粒体基因系统发育分析，发现其与Athericidae和Tabanidae构成姐妹支系，推动虻下总科演化关系解析</div>
+      <div class="meta">PeerJ · 2026-08-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">González Christian R, Saldarriaga-Córdoba Mónica</div>
+<div class="meta">DOI: 10.7717/peerj.21470</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42668951/">https://pubmed.ncbi.nlm.nih.gov/42668951/</a></div>
+<div class="meta">Keywords: Mitochondrial genome、Phylogenetic analyses、Phylogeny、Tabanomorpha</div>
+<div class="reason"><span class="abs-label">推荐理由</span>含系统发育分析，但对象为双翅目线粒体基因组，非质体或内共生方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>虻下总科（Tabanomorpha）是低等短角亚目（lower Brachycera）中的一个关键谱系，但由于线粒体基因组数据缺乏，包括 Pelecorhynchidae 在内的若干科的系统发育位置仍未得到充分解析。本研究旨在通过补充 Pelecorhynchidae 的线粒体基因组数据，澄清其在虻下总科中的系统发育关系。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究测定并解析了 Pelecorhynchus vulpes (Macquart, 1850) 的完整线粒体基因组，这是该属和该科首次报道的线粒体基因组。作者对其基因组组成、碱基偏倚和基因排列进行了表征，并基于拼接的线粒体蛋白编码基因和核糖体 RNA 基因，采用贝叶斯推断（Bayesian inference）和最大似然法（maximum likelihood）开展系统发育分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Pelecorhynchus vulpes 的线粒体基因组为环状，全长 15,390 bp，包含典型的 37 个基因，即 13 个蛋白编码基因、22 个转运 RNA 基因、2 个核糖体 RNA 基因和 1 个控制区；其基因组具有显著的 A+T 偏倚（78.4%），并保留了昆虫祖先型基因排列。比较分析显示，该基因组与其他虻下总科成员在结构上高度保守，尤其与 Tabanidae 和 Athericidae 相似。系统发育分析支持 Pelecorhynchidae 与 Athericidae 和 Tabanidae 构成姐妹群；此外，智利与澳大拉西亚地区 Pelecorhynchus 类群之间的系统发育亲缘性与该类群起源于冈瓦纳大陆（Gondwanan origin）的假说一致，但也不能排除远距离扩散等其他情景。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果为 Pelecorhynchidae 的系统发育位置提供了新的基因组证据，并有助于理解虻下总科内部的进化关系。研究同时强调了补充代表性不足谱系的线粒体基因组数据的重要性，并为未来结合线粒体与核基因数据的综合研究、进一步解析虻下总科的演化历史提供了基础信息。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5074&amp;v=1&amp;s=a1b72b0312fa75a5" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5074&amp;v=2&amp;s=6b8e32923cbbf42c" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5074&amp;v=3&amp;s=37ab6e8bcd3f8e61" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5074&amp;v=4&amp;s=9f865ed6e3514f5f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5074&amp;v=5&amp;s=768436ad35c74ee9" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42665683/">Megascale microbiome analysis with DartUniFrac.</a></div>
+      <div class="card-title-zh">利用 DartUniFrac 进行超大规模微生物组分析</div>
+      <div class="news">为解决UniFrac难以扩展至超大微生物组数据问题，作者提出GPU加速的DartUniFrac并结合sketching算法，实现最高千倍提速及百万样本、十亿分类单元分析。</div>
+      <div class="meta">Nature biotechnology · 2026-08-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhao Jianshu, McDonald Daniel, Sfiligoi Igor, Lladser Manuel E, Patel Lucas, Weng Yuhan, Khatib Lora, Degregori Samuel, Gonzalez Antonio, Lozupone Catherine A, Knight Rob</div>
+<div class="meta">DOI: 10.1038/s41587-026-03260-8</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42665683/">https://pubmed.ncbi.nlm.nih.gov/42665683/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦微生物组距离算法，与质体演化和海蛞蝓研究关联很弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>UniFrac 用于衡量微生物组样本之间考虑系统发育关系的差异，但在现代数据集规模下其扩展性较差。随着数据规模增大，传统 UniFrac 难以高效处理大规模样本与分类单元数据。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究提出了一种算法 DartUniFrac，并实现了一个接近最优的版本，结合图形处理器（GPU）加速。该方法将 UniFrac 与加权 Jaccard 相似性（weighted Jaccard similarity）联系起来，并利用草图算法（sketching algorithms）实现快速计算。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>DartUniFrac 的速度最高可比 UniFrac 提升三个数量级。该方法可扩展到数百万样本的两两比较以及数十亿分类单元（taxa）的分析。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为超大规模微生物组数据的系统发育感知差异分析提供了高效可扩展的计算方案。通过连接 UniFrac 与加权 Jaccard 相似性并结合草图算法，DartUniFrac 推动了大规模微生物组比较分析的可行性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5064&amp;v=1&amp;s=c5b3ec0c44ad5bcc" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5064&amp;v=2&amp;s=299a19ec9233995d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5064&amp;v=3&amp;s=b585523c990e5113" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5064&amp;v=4&amp;s=273fed880342deb0" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5064&amp;v=5&amp;s=04b9bd614e3570c0" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 33 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42664967/">dsRNAscan maps human dsRNAome, revealing conservation, intermolecular dsRNA, and correlates of ADAR dependency.</a></div>
+      <div class="card-title-zh">dsRNAscan绘制人类双链RNA组图谱，揭示其保守性、分子间双链RNA及与ADAR依赖性的相关性</div>
+      <div class="news">为解决编辑位点法难系统描绘人类dsRNA组的问题，作者开发dsRNAscan整合编辑、结构探测与机器学习，绘制高置信dsRNA图谱并揭示其保守性、分子间形成及与ADAR依赖性的相关性。</div>
+      <div class="meta">Molecular cell · 2026-08-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Andrews Ryan J, Bass Brenda L</div>
+<div class="meta">DOI: 10.1016/j.molcel.2026.08.001</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42664967/">https://pubmed.ncbi.nlm.nih.gov/42664967/</a></div>
+<div class="meta">Keywords: A-to-I RNA editing、ADAR、ADAR dependency、Alu elements、DepMap、MDA5、PKR、double-stranded RNA、innate immunity、inverted repeats</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及RNA组资源与计算预测，对你的比较基因组主线仅有方法学旁参考值。</div>
+<div class="abstract"><span class="abs-label">背景</span>人类转录组中含有数百万个A-to-I编辑位点，这些位点来源于数量尚不明确且表征不足的双链RNA（dsRNA）。虽然编辑位点可提示dsRNA的存在，但该方法受转录水平、测序读深和ADAR表达限制，且无法识别未发生编辑的dsRNA。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>为克服上述局限，研究者开发了dsRNAscan，并将其应用于人类基因组以预测dsRNA。研究进一步结合基于A-to-I编辑数据和RNA结构探测数据训练的机器学习模型，筛选高置信度dsRNA预测结果，并分析其与脊椎动物保守性、分子间dsRNA以及细胞质免疫传感器可及dsRNA表达的关系。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>dsRNAscan在人类基因组中预测出500万个dsRNA，主要位于重复序列区和基因间区；其中约240万个高置信度预测结果富集于dsRNA结合蛋白结合位点。研究还预测出数百个在脊椎动物中保守的dsRNA，并观察到数千个编辑富集区域，推测其来源于正义-反义转录本形成的分子间dsRNA。对可被细胞质免疫传感器识别的分子内与分子间dsRNA进行表达定量后发现，两者的比值与癌细胞系中的ADAR依赖性相关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究构建了人类dsRNA组（dsRNAome）图谱资源，并揭示了其保守性、分子间dsRNA的存在及其与ADAR依赖性的相关性。人类dsRNA组资源可通过https://dsrna.chpc.utah.edu/获取。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4989&amp;v=1&amp;s=8b94779652b24cd7" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4989&amp;v=2&amp;s=f2335f07c7628054" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4989&amp;v=3&amp;s=6741ccec8f623fbf" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4989&amp;v=4&amp;s=6291f5b71e3e29b4" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4989&amp;v=5&amp;s=0907235ac6b45e25" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.25.747160">Synthesis cost is a hidden driver of convergent amino acid composition in plastid ribosomal proteins</a></div>
+      <div class="card-title-zh">合成成本是质体核糖体蛋白中氨基酸组成趋同的隐性驱动因素</div>
+      <div class="news">为解决质体核糖体蛋白氨基酸趋同是否由成本驱动的问题，作者结合跨谱系比较与结构建模，发现其趋同替换更符合合成成本最小化而非突变偏好。</div>
+      <div class="meta">bioRxiv · 2026-08-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chaudhari A., Sethi P., Vilbrun Y., Zhou J., Cai L.</div>
+<div class="meta">DOI: 10.64898/2026.08.25.747160</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.25.747160">https://www.biorxiv.org/content/10.64898/2026.08.25.747160</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦质体核糖体蛋白演化，直接相关plastid/chloroplast与比较基因组研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>蛋白质进化是在突变与选择共同作用下于进化空间中的变化过程。多数蛋白的氨基酸替换主要受功能与结构约束决定，但在选择压力放松的系统中，合成成本与突变偏倚也可能改变氨基酸进化的方向和速率。作者聚焦于高表达的质体核糖体蛋白（plastid ribosomal proteins, PRP），其由质体基因组和核基因组共同编码的58种保守蛋白组成。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究利用三个系统发育上相距较远且已反复检测到选择压力放松的植物谱系作为比较框架，并进一步证明半寄生族 Cymbarieae（Orobanchaceae）是PRP发生胞质—核协同进化速率升高的新案例。随后，作者比较四个植物谱系中PRP的氨基酸组成变化，结合蛋白质结构建模，评估替换类型、理化性质、分子量、侧链长度及其对蛋白折叠稳定性的影响，并检验这些变化与突变偏倚及合成成本最小化预期的一致性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，四个植物谱系的PRP均出现了趋同的氨基酸组成转变，主要归因于精氨酸到赖氨酸以及甲硫氨酸到异亮氨酸/缬氨酸/亮氨酸的替换。替换后的残基在理化性质上相似，但分子量更低、侧链更短，且蛋白质结构建模表明这些变化会显著降低蛋白折叠稳定性。进一步分析显示，这些组成转变与突变偏倚的预期相反，却符合合成成本最小化的预期；此外，成本最小化显著影响了理化性质相近氨基酸之间的所有保守性替换，而在非保守性替换中未见此现象。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>作者据此提出，合成成本最小化可作为PRP蛋白进化的次级选择驱动力，并在其功能选择压力放松的谱系和位点上被揭示出来。这一结论表明，对于高表达的PRP而言，降低合成成本可能具有潜在适应意义，并有助于解释不同植物谱系中氨基酸组成的趋同演化。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5070&amp;v=1&amp;s=47411fd2260f820f" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5070&amp;v=2&amp;s=dead5f7f4d629360" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5070&amp;v=3&amp;s=214899fb55ce0041" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5070&amp;v=4&amp;s=168e2f967bb8833c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=5070&amp;v=5&amp;s=a693746a048c6965" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 35 分</div>
+      <div class="card-title"><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42658812/">Highly contiguous reference genome assembly of the endangered Orcés&#x27; blue whiptail Holcosus orcesi.</a></div>
+      <div class="card-title-zh">极度濒危的 Orcés&#x27; blue whiptail Holcosus orcesi 的高连续性参考基因组组装</div>
+      <div class="news">为解决极危蜥蜴Holcosus orcesi缺乏高质量参考基因组问题，作者利用Nanopore长读长组装出1.68 Gb高连续性基因组，为其保护与演化基因组学奠基。</div>
+      <div class="meta">PloS one · 2026-08-27</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Pozo Gabriela, Cisneros-Heredia Diego F, Barragán-Orbe Doménica, Sánchez-Nivicela Juan C, Arbeláez Ernesto, Torres Maria de Lourdes</div>
+<div class="meta">DOI: 10.1371/journal.pone.0350380</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42658812/">https://pubmed.ncbi.nlm.nih.gov/42658812/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提供高连续度参考基因组资源，和你常用基因组组装方法相关，但物种与问题偏离。</div>
+<div class="abstract"><span class="abs-label">背景</span>Holcosus orcesi（Orcés&#x27; Blue Whiptail）是一种极度濒危蜥蜴，特有于厄瓜多尔南部胡博内斯河（Jubones River）上游流域。该物种仅分布于半干旱安第斯灌丛中狭窄的海拔范围内，是一个主要由低地类群构成的谱系中少数山地成员之一。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究利用牛津纳米孔技术（Oxford Nanopore Technologies）的长读长测序，构建了 H. orcesi 的首个高质量参考基因组。随后对组装结果进行了结构注释，并分析了基因组完整性、基因预测结果及重复序列组成。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该基因组组装总长度为 1.68 Gb，仅包含 91 条 contig，contig N50 为 76.2 Mb，BUSCO 完整度为 96.8%，使其成为目前连续性和完整性最高的有鳞类（squamate）基因组之一。结构注释预测得到 25,682 个基因，其中 85% 与已知蛋白具有同源性，45% 被赋予基因本体（Gene Ontology）术语。重复元件占基因组的 46.3%，其中长散在核元件（LINEs）为主要类型。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该基因组为 H. orcesi 及其他山地爬行动物未来的进化、比较和保护基因组学研究提供了基础资源，可支持群体基因组学、局部适应以及孤立种群基因组侵蚀等研究。通过扩展热带山地爬行动物的基因组代表性，这项工作有助于弥补全球生物多样性基因组学中长期存在的系统发育和地理空白，并为 H. orcesi 及相关类群的循证保护提供基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4715&amp;v=1&amp;s=f18231d1c390a5a1" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4715&amp;v=2&amp;s=d9a62fd5d5d6cb3e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4715&amp;v=3&amp;s=90b40f52f2c439d5" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4715&amp;v=4&amp;s=57a0296320c7f346" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4715&amp;v=5&amp;s=eb7262288fb78fce" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 34 分</div>
+      <div class="card-title"><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42664972/">Genome-scale perturb-seq in primary human CD4+ T cells maps context-specific regulators of T cell programs and human immune traits.</a></div>
+      <div class="card-title-zh">原代人CD4+ T细胞中的全基因组尺度Perturb-seq绘制T细胞程序及人类免疫性状的情境特异性调控因子图谱</div>
+      <div class="news">为解决原代人CD4+T细胞不同状态调控网络难系统解析的问题，作者利用全基因组probe-based perturb-seq，发现刺激条件重塑调控因子及基因程序并关联自身免疫风险。</div>
+      <div class="meta">Cell · 2026-08-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhu Ronghui, Dann Emma, Yan Jun, Reyes Retana Justine, Goto Ryunosuke, Guitche Reese C, Brixi Lillian, Ota Mineto, Hartman Austin, Roth Theodore L, Satpathy Ansuman T, Pritchard Jonathan K, Marson Alexander</div>
+<div class="meta">DOI: 10.1016/j.cell.2026.08.002</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42664972/">https://pubmed.ncbi.nlm.nih.gov/42664972/</a></div>
+<div class="meta">Keywords: CD4(+) T cell polarization、CD4(+) T cells、CRISPR、CRISPR interference、CRISPRi、T cell aging、cell fate decision、functional genomics、gene regulatory networks、human T cells、human genetics、perturb-seq、perturbation signatures、primary human cells、probe-based perturb-seq</div>
+<div class="reason"><span class="abs-label">推荐理由</span>研究人CD4+T细胞调控网络，与内共生和叶绿体演化方向不契合。</div>
+<div class="abstract"><span class="abs-label">背景</span>基因调控网络编码了细胞功能的基本逻辑，但系统性绘制这类网络仍然具有挑战性，尤其是在与人类生物学和疾病相关的细胞状态中。为解决这一问题，研究聚焦于原代人CD4+ T细胞在静息与刺激条件下的基因调控机制。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者在来自4名供体的2200万个原代人CD4+ T细胞中扰动了所有表达基因，并开发了基于探针的Perturb-seq平台，用于测量细胞在静息和刺激后状态下的转录组效应。随后利用扰动特征分析免疫通路调控基因，并对群体尺度转录组图谱中的T细胞状态进行建模。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究绘制了调控免疫通路的基因图谱，其中包括此前未被表征的细胞因子产生调控因子。重要的是，活性调控因子及其控制的基因程序在不同刺激条件下发生了显著变化。扰动特征还支持对群体尺度转录组图谱中T细胞状态的建模，提出了T细胞极化和年龄相关表型的调控因子，并揭示了与自身免疫病风险相关的情境特异性基因调控通路。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为解析T细胞功能和人类免疫性状提供了基础性资源与新方法。其结果有助于在不同生物学情境下解码T细胞基因调控网络，并为理解自身免疫病风险提供线索。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4929&amp;v=1&amp;s=fce946315da65c90" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4929&amp;v=2&amp;s=4d020ec53c372263" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4929&amp;v=3&amp;s=f0c864d07c4824e4" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4929&amp;v=4&amp;s=27b97d3d178945ac" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4929&amp;v=5&amp;s=40f5a9aacb3950b2" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 31 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42668167/">Comparative transcriptomics reveals conserved infection-associated gene expression in Phytophthora agathidicida across its natural gymnosperm host kauri and the model angiosperm host Nicotiana benthamiana.</a></div>
+      <div class="card-title-zh">比较转录组学揭示 Phytophthora agathidicida 在其天然裸子植物宿主 kauri 与模式被子植物宿主 Nicotiana benthamiana 中保守的感染相关基因表达</div>
+      <div class="news">为解决贝壳杉与烟草中疫霉感染转录程序是否保守问题，作者比较两宿主叶根转录组，发现其共享富集RXLR效应子等保守感染程序并支持烟草作模型宿主。</div>
+      <div class="meta">Fungal biology · 2026-07-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Bradshaw Rosie E, Shiller Jason B, Guo Yanan, Tarallo Mariana, Heslop Scott J, McDougal Rebecca L, Panda Preeti, Williams Nari M, Mesarich Carl H</div>
+<div class="meta">DOI: 10.1016/j.funbio.2026.101828</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42668167/">https://pubmed.ncbi.nlm.nih.gov/42668167/</a></div>
+<div class="meta">Keywords: Effector、Kauri dieback、Oomycete、Plant-pathogen interaction、Tree pathogen、Virulence factor</div>
+<div class="reason"><span class="abs-label">推荐理由</span>关注宿主-病原互作转录组，和你的多组学兴趣相关，但不涉及质体演化。</div>
+<div class="abstract"><span class="abs-label">背景</span>Phytophthora 物种可引起多种毁灭性植物病害，包括森林树木病害。Agathis australis（新西兰 kauri）易感于由 Phytophthora agathidicida 引起的致死性根腐和茎基腐，但由于其天然宿主实验操作困难，P. agathidicida 毒力因子的功能表征受到限制。Nicotiana benthamiana 被广泛用作研究植物-病原互作的模式宿主，因此有必要评估其是否可作为裸子植物 A. australis 的可靠替代模型。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者分析了 P. agathidicida 在 Nicotiana benthamiana 叶和根中的基因表达，并将结果与此前在 Agathis australis 中开展的转录组分析进行比较。通过比较不同宿主和器官中的转录表达谱，评估感染相关基因表达程序的保守性及宿主间差异。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在两种宿主及两类器官中，共鉴定出 1129 个共同上调的核心基因，这些基因富集于分泌型 RXLR 效应子（RXLR effector）、CAZyme 和 elicitin 蛋白，提示存在保守的感染相关转录程序。叶和根中表达基因组合的相似性支持使用技术上更易操作的叶片开展基因功能测定。尽管多数基因在不同宿主间表达相似，但也存在差异；一个仅在 Nicotiana benthamiana 中高表达的 CAP 蛋白在所测试条件下可促进 P. agathidicida 在 Nicotiana benthamiana 中生长，而在 Agathis australis 中无此作用。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果表明，P. agathidicida 在定殖裸子植物和被子植物宿主时采用了总体上保守的分子策略，从而支持将 Nicotiana benthamiana 作为功能研究的模式系统。与此同时，该研究也指出了在各宿主中高表达并被上调的病原基因，为后续宿主特异性机制研究提供了线索。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4953&amp;v=1&amp;s=e7d6388ddd6bd54d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4953&amp;v=2&amp;s=691b07f3dd9d2382" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4953&amp;v=3&amp;s=d9150c831d3567f7" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4953&amp;v=4&amp;s=c8b738e52688c55a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=lijiawei2%40genomics.cn&amp;p=4953&amp;v=5&amp;s=994a57ac79ad2e81" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日文献主要聚焦三类方向：一是比较/进化基因组学与系统发育，包括植物、真菌、昆虫、爬行动物及病原体的起源、适应与谱系关系；二是高质量基因组资源构建，如T2T或高连续性参考基因组；三是功能组学与计算方法，如原代CD4+T细胞Perturb-seq、dsRNA图谱绘制及超大规模微生物组距离计算。共同技术趋势是长读长测序、跨物种比较、系统发育结合结构/表达分析，以及面向大数据的算法与机器学习工具增多。对研究者的价值在于：可获取新数据资源、借鉴可扩展分析流程，并从进化机制、宿主-病原互作和群体致病性等问题中寻找可迁移的研究思路。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=lijiawei2%40genomics.cn&amp;d=2026-08-31&amp;s=bd62a550eb0fab57">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=lijiawei2%40genomics.cn&amp;d=2026-08-31&amp;s=bd62a550eb0fab57">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

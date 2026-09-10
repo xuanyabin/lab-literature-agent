@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-09-10</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-09-10</h1>
+    <p class="hello">panyunrui，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">昨日全库新增 768 篇 · 命中您的关键词 254 篇 · 本次推送 15 篇（必读 0 · 重要 4 · 参考 11）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-important">Important</span> · 62 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.07.749934">Integrated morphological, multi-omics, and functional profiling reveals microglial plasticity driven by AD risk genes</a></div>
+      <div class="card-title-zh">整合形态学、多组学与功能谱分析揭示由阿尔茨海默病风险基因驱动的小胶质细胞可塑性</div>
+      <div class="news">为解决AD风险基因如何扰动小胶质细胞状态耦联问题，作者整合iPSC小胶质细胞多组学、形态分析与CRISPR敲除，发现风险基因缺失打破形态-转录耦联并损害吞噬功能。</div>
+      <div class="meta">bioRxiv · 2026-09-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhang Y., Zhang A., Seo S., Fredrickson C., Jung M., Shan X., Phu L., Cramer A., Sanchez-Priego C., Kulkarni V. V., Rose C. M., Hoogenraad C. C., Jeong C. G.</div>
+<div class="meta">DOI: 10.64898/2026.09.07.749934</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.07.749934">https://www.biorxiv.org/content/10.64898/2026.09.07.749934</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>围绕阿尔茨海默病风险基因、小胶质可塑性与单细胞多组学，贴合你的方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>小胶质细胞是中枢神经系统的驻留巨噬细胞，对维持脑稳态至关重要，且具有高度动态性。尽管全基因组关联研究（GWAS）强烈提示小胶质细胞功能障碍与阿尔茨海默病（AD）相关，但协调其多样转录、形态和功能状态的机制联系仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究使用人诱导多能干细胞来源的小胶质细胞（iMicroglia）和单细胞RNA测序，鉴定出6种不同的转录谱，并通过靶向免疫荧光将其映射到特定形态表型。进一步结合转录组和形态学分析，评估小胶质细胞对Tau PFF、淀粉样蛋白β和凋亡神经元等AD相关病理刺激的反应；同时采用高效率CRISPR-Cas9核糖核蛋白（RNP）敲除特定AD GWAS基因，并通过批量RNA测序（bulk RNA-seq）分析遗传扰动后的转录变化。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究建立了小胶质细胞形态与分子身份之间的联系，并显示其具有显著可塑性，对不同AD相关刺激呈现出不同且刺激特异性的反应。批量RNA测序表明，AD风险基因的遗传扰动可引发广泛的转录重塑。关键的是，这些AD风险基因的缺失会破坏基础状态下形态-转录组耦联，并从根本上改变小胶质细胞的吞噬能力。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了AD GWAS基因可能如何驱动小胶质细胞进入功能失调状态，这些状态表现为形态改变、独特的多组学特征以及功能受损。研究为理解阿尔茨海默病风险基因影响小胶质细胞状态转换的机制提供了依据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6736&amp;v=1&amp;s=de60e0ee79fbf2d2" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6736&amp;v=2&amp;s=9687dc4a4a97cd7b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6736&amp;v=3&amp;s=2bdfa1d6313c4a6c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6736&amp;v=4&amp;s=9ec2dd6b2a69b8c1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6736&amp;v=5&amp;s=5e82ebc90c328608" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 67 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42711495/">Reconstructing signaling histories of single cells via perturbation screens and transfer learning.</a></div>
+      <div class="card-title-zh">通过扰动筛选和迁移学习重建单细胞的信号传导历史</div>
+      <div class="news">为解决体内单细胞信号状态及历史难以高通量推断的问题，作者构建扰动图谱并训练IRIS，发现保守信号响应可高精度重建胚胎发育信号历史与异质性。</div>
+      <div class="meta">Nature methods · 2026-09-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Hutchins Nicholas T, Meziane Miram, Lu Claire, Mitalipova Maisam, Fischer David S, Li Pulin</div>
+<div class="meta">DOI: 10.1038/s41592-026-03213-8</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42711495/">https://pubmed.ncbi.nlm.nih.gov/42711495/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>以迁移学习重建单细胞信号历史，契合你对单细胞转录组方法兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>操纵信号传导环境是改变细胞状态并服务于广泛应用的有效策略，但这要求了解细胞在体内（in vivo）经历的信号状态及其历史。对于这类信息，目前仍缺乏高通量发现方法。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者提出了一个实验与计算整合框架：从高通量体外（in vitro）扰动图谱中学习可迁移的信号响应特征，并据此推断体内细胞类型中的信号活性及其历史。研究团队在人多能干细胞（human pluripotent stem cells）中构建了信号扰动图谱，并用其训练名为 IRIS 的神经网络模型；随后将 IRIS 应用于小鼠胚胎单细胞图谱。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该框架能够以较高准确性和时间分辨率推断体内细胞类型的信号活性与历史。应用于小鼠胚胎单细胞图谱后，作者揭示了组合性信号编码使用的全局特征，识别出具有生物学意义的异质性，并重建了多种发育谱系中的信号传导历史。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该框架表明，不同细胞类型之间共享保守的信号响应特征。它为在体内绘制复杂信号相互作用提供了可扩展的解决方案，可用于指导靶向干预并支持细胞命运工程。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6658&amp;v=1&amp;s=a419e36f547252a3" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6658&amp;v=2&amp;s=92405aae02a4739a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6658&amp;v=3&amp;s=61e3a7d3c7380350" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6658&amp;v=4&amp;s=ea458fbf12540ed8" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6658&amp;v=5&amp;s=2c14d7f847791506" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-important">Important</span> · 65 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42711533/">Flexible use of conserved motifs constrains genome access in cell type evolution.</a></div>
+      <div class="card-title-zh">保守基序的灵活使用限制了细胞类型演化中的基因组可及性</div>
+      <div class="news">为解决细胞类型家族调控如何跨演化维持的问题，作者结合单核多组学与深度学习，发现家族级保守基序词汇表稳定而细胞类型调控语法快速演化。</div>
+      <div class="meta">Nature ecology &amp; evolution · 2026-09-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chai Chew, Gibson Jesse, Li Pengyang, McDonald Brennan D, Pampari Anusri, Patel Aman, Kundaje Anshul, Wang Bo</div>
+<div class="meta">DOI: 10.1038/s41559-026-03164-5</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42711533/">https://pubmed.ncbi.nlm.nih.gov/42711533/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>结合单核多组学解析细胞类型演化，贴合你对单细胞多组学的关注。</div>
+<div class="abstract"><span class="abs-label">背景</span>细胞类型可被组织为彼此相关的家族，但在深远的进化时间尺度上，界定并维持这些家族的调控机制仍不清楚。该研究旨在解析不同动物类群中，与细胞类型家族相关的基因组可及性调控规则是否具有保守性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究结合单核多组学测序（single-nucleus multi-omic sequencing）与深度学习，分析了两类差异极大的动物（包括扁形动物和脊椎动物）的可及基因组。作者进一步训练跨物种预测模型，比较在细胞类型家族层面与单个细胞类型层面的染色质可及性预测能力及其所依赖的序列基序（motifs）。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，数百个决定可及性的序列基序可划分为彼此不同但保守的集合，即“词汇”（vocabularies），且每一套词汇与特定细胞类型家族相关。然而，单个细胞类型偏好的这些基序之间的组合关系在很大程度上是物种特异的。基于某一物种训练的深度学习模型能够准确预测远缘物种中家族层面的染色质可及性，但往往依赖共享词汇中的不同基序得到趋同预测；相比之下，在家族内针对单个细胞类型训练的模型会丧失跨物种预测能力，提示决定细胞类型层面身份的调控句法（regulatory syntax）演化迅速。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>作者提出“集体维持”（collective maintenance）模型：界定细胞类型家族的基序词汇在进化上相对稳定，而这些基序的重组则产生细胞类型特异性的调控程序。这表明，家族身份可由大量保守调控因子的集合共同维持，类似发育同源性（developmental homology）的逻辑，即尽管网络发生广泛重连，性状身份仍可通过网络层面的保守性得以延续。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6643&amp;v=1&amp;s=651b8198453dc668" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6643&amp;v=2&amp;s=c6442978983725ad" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6643&amp;v=3&amp;s=388d12fc45ea0fad" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6643&amp;v=4&amp;s=c54c38fa86a9a643" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6643&amp;v=5&amp;s=d7452bf049365713" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 70 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42711429/">Bone marrow myelopoiesis dysfunction in Alzheimer&#x27;s disease limits monocyte homing to the brain and drives disease progression.</a></div>
+      <div class="card-title-zh">阿尔茨海默病中的骨髓髓系生成异常限制单核细胞向脑内归巢并推动疾病进展</div>
+      <div class="news">为解决阿尔茨海默病单核细胞入脑受限问题，作者结合5×FAD小鼠与患者样本干预IFN-I信号，发现骨髓髓系生成障碍限制单核细胞归巢并加速病程。</div>
+      <div class="meta">Nature neuroscience · 2026-09-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Abellanas Miguel Angel, Basurco Leyre, Purnapatre Maitreyee, Burgaletto Chiara, Castellani Giulia, Colaiuta Sarah Phoebeluc, Peralta-Ramos Javier Maria, Ibraheem Angham, Murad Sama, Antonello Paola, Kovacs Mariangeles, Androsova Yuliya, Nathansohn Bar, Partney Hannah, Cahalon Liora, Valdes-Mas Rafael, Josephides Joseph M, Salame Tomer M, Espelosin Maria, Cuadrado-Tejedor Mar, Garcia-Osta Ana, Deczkowska Aleksandra, Schwartz Michal</div>
+<div class="meta">DOI: 10.1038/s41593-026-02417-7</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42711429/">https://pubmed.ncbi.nlm.nih.gov/42711429/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦阿尔茨海默病神经炎症与外周免疫入脑机制，契合你的AD研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>骨髓来源巨噬细胞已被证明在应对阿尔茨海默病（Alzheimer&#x27;s disease, AD）中具有重要作用；增强其自发募集可在淀粉样变性小鼠模型中减轻炎症和疾病病理，并延缓认知下降。然而，限制这些细胞自发归巢至病变脑组织的因素仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究在小鼠模型和患者中考察了单核细胞发育是否受损，并在5×FAD小鼠模型中分析其分化异常的机制。研究进一步通过中和抗体阻断I型干扰素（type I interferon, IFN-I）信号，或以IFN-I受体缺陷骨髓重建5×FAD小鼠，以评估对髓系生成、单核细胞表型、脑内归巢及疾病病理的影响。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，小鼠模型和患者均存在单核细胞发育受损；在5×FAD小鼠中，单核细胞分化因IFN-I介导的适应不良性骨髓反应而被破坏，且AD患者循环单核细胞中也观察到类似表型。阻断IFN-I信号或采用IFN-I受体缺陷骨髓重建后，可恢复髓系生成，纠正单核细胞表型，改善疾病病理，并伴随单核细胞来源巨噬细胞向脑内归巢增加。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果揭示了AD中存在骨髓髓系生成功能障碍，并表明该异常会限制单核细胞向脑内归巢。该研究进一步强化了这样一种观点：AD的进展受到适应不良的全身性过程驱动。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6753&amp;v=1&amp;s=f22d9f239b52614e" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6753&amp;v=2&amp;s=d69e45796ae07fd4" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6753&amp;v=3&amp;s=81141e88b91e9ea8" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6753&amp;v=4&amp;s=5574856bbd4ef154" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6753&amp;v=5&amp;s=981174112c0b76b2" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 58 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42712554/">Natural microbial enrichment modulates microglial states and transcriptional programs relevant to Alzheimer&#x27;s disease.</a></div>
+      <div class="card-title-zh">自然微生物富集调节与阿尔茨海默病相关的小胶质细胞状态及转录程序</div>
+      <div class="news">为解决环境微生物暴露如何影响AD脑免疫问题，作者用室内rewilding小鼠模型发现其重塑5xFAD小胶质细胞转录状态，增强吞噬并更接近人类AD谱。</div>
+      <div class="meta">Frontiers in immunology · 2026-08-25</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Lala Bouali Mohamed, Kezai Amir Mohamed, Bazin Marc, Badiane Papa Yaya, Eskandari Nasim, Lévesque Véronique, Robillard Justin, Côté Steeve D, Soulet Denis, Tremblay Cyntia, Calon Frédéric, Morin Françoise, Vallières Luc, Hébert Sébastien S</div>
+<div class="meta">DOI: 10.3389/fimmu.2026.1843174</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42712554/">https://pubmed.ncbi.nlm.nih.gov/42712554/</a></div>
+<div class="meta">Keywords: Alzheimer’s disease、microglial states、neurodegenerative diseases、rewilding、transcriptional programs</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦AD小鼠微胶质与环境微生物暴露，紧扣神经炎症和淀粉样研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>环境微生物暴露的多样性是免疫成熟和宿主防御的关键驱动因素，但其对脑免疫和神经退行性疾病的影响仍缺乏充分研究。该研究聚焦于自然样微生物暴露是否会重塑外周及中枢神经系统（CNS）免疫网络，并影响阿尔茨海默病（AD）相关表型。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用受控室内“再野化”（indoor rewilding）策略，在实验动物饲养环境中引入类似自然农场的环境，并比较其与传统无特定病原体（SPF）饲养条件的差异。作者在野生型（WT）小鼠和阿尔茨海默病模型5xFAD小鼠中，分析了外周免疫状态、脑内小胶质细胞转录特征，以及形态学和组织化学变化。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>与SPF条件相比，再野化小鼠表现出更成熟的系统性免疫表型，包括效应性和记忆性B/T细胞增加、抗体分泌细胞亚群扩增以及免疫球蛋白同种型改变。在脑内，再野化重校准了5xFAD小鼠的小胶质细胞活化状态，减弱促炎性转录程序，同时增强稳态、补体和吞噬相关特征；其转录谱与野生小鼠更趋一致，且再野化5xFAD小鼠与人类AD转录特征更为相似。形态学和组织化学分析进一步证实，再野化小胶质细胞呈现代谢适应性更强、更加稳态的状态，并影响其与淀粉样蛋白β（amyloid-β）斑块的结合和清除。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究提示，通过“脏”小鼠模型（dirty mouse modeling）引入微生物多样性，可能提高神经免疫学和神经退行性疾病研究的转化相关性。该结果也表明，环境微生物暴露是影响阿尔茨海默病相关脑免疫状态的重要因素。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6745&amp;v=1&amp;s=10f721af274d45e8" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6745&amp;v=2&amp;s=34b8520a4aced0e3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6745&amp;v=3&amp;s=2cf8a39f0af233c0" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6745&amp;v=4&amp;s=5af2d858ab20c3d7" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6745&amp;v=5&amp;s=5016d2ce3a5b3b35" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 57 分</div>
+      <div class="card-title"><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42710736/">Adult primary whole-brain cultures from Thy1-aSyn mice (Line 61) retain Parkinson&#x27;s disease-relevant phenotypes.</a></div>
+      <div class="card-title-zh">来自 Thy1-aSyn 小鼠（Line 61）的成年原代全脑培养保留了与帕金森病相关的表型</div>
+      <div class="news">为解决幼龄脑原代培养难模拟年龄依赖性帕金森病变问题，作者建立成年Thy1-aSyn全脑原代培养，发现其保留神经元损伤、放电异常及微胶质增生等体内相关表型。</div>
+      <div class="meta">Neuroscience · 2026-09-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zalpanow Daniela, Merten Annika, Stelz Sonja, Ofner Andrea, Weiß Sandra, Richter Franziska, Lau Kristina, Kotzur Rebecca</div>
+<div class="meta">DOI: 10.1016/j.neuroscience.2026.09.003</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42710736/">https://pubmed.ncbi.nlm.nih.gov/42710736/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>建立成年aSyn小鼠全脑原代培养，直接对应帕金森病与神经炎症机制。</div>
+<div class="abstract"><span class="abs-label">背景</span>胎鼠或出生后啮齿动物脑来源的原代培养广泛用于研究 α-突触核蛋白（alpha-synuclein, aSyn）相关机制，但对年龄依赖性神经退行性过程的反映较差。为此，研究建立了过表达人体 aSyn 的成年 Thy1-aSyn 小鼠（Line 61）原代全脑培养，并与出生后及野生型培养进行比较。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究建立并维持成年 Thy1-aSyn 小鼠原代全脑培养 21 天，同时与出生后及野生型培养进行对照。通过电生理学、免疫组织化学、基因表达分析和蛋白生物化学方法对培养体系进行表征。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>成年和出生后培养物均包含主要神经细胞类型，包括神经元、小胶质细胞、星形胶质细胞和少突胶质细胞。aSyn 过表达与神经元存活力下降、神经元放电改变以及小胶质细胞反应性增强相关。重要的是，成年培养保留了 Thy1-aSyn 小鼠体内观察到的小胶质细胞增生（microgliosis）。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，成年 Thy1-aSyn 全脑培养可作为一种与疾病相关的体外模型，用于研究 aSyn 相关的神经元功能障碍、神经炎症和细胞间相互作用。该模型也可用于评估潜在治疗策略。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6749&amp;v=1&amp;s=a31a31a77a7b043b" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6749&amp;v=2&amp;s=e3b6af50b1eede46" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6749&amp;v=3&amp;s=7207a89eec967b96" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6749&amp;v=4&amp;s=6ae9124af7695594" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6749&amp;v=5&amp;s=c7da0871d7a2f5ec" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 55 分</div>
+      <div class="card-title"><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.08.750179">Characterization of the knock-in AppSAA mouse model as a powerful tool for Alzheimer&#x27;s disease preclinical research.</a></div>
+      <div class="card-title-zh">敲入型 AppSAA 小鼠模型的表征：作为阿尔茨海默病临床前研究的有力工具</div>
+      <div class="news">为解决AD临床前模型缺乏年龄依赖且转化相关病理的问题，作者系统表征AppSAA敲入鼠，发现其重现人类相关淀粉样病理并界定治疗窗口。</div>
+      <div class="meta">bioRxiv · 2026-09-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Garceau D. T., Ryan N. J., Pomeroy-Tuck J., Chidambaram R., Ragan T., PANDEY R. S., Carter G. W., Oblak A. L., Sasner M.</div>
+<div class="meta">DOI: 10.64898/2026.09.08.750179</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.08.750179">https://www.biorxiv.org/content/10.64898/2026.09.08.750179</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提供年龄依赖的AD敲入小鼠模型，覆盖淀粉样、神经炎症和转录组，紧贴你的阿尔茨海默病方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>阿尔茨海默病（AD）临床前研究需要具有随年龄进展且在生理上更具相关性的淀粉样蛋白病理模型，而不是依赖转基因品系中的过表达。为界定具有转化意义的治疗时间窗，研究者对人源化 AppSAA 敲入模型进行了系统表征。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究对纯合 AppSAA 小鼠及对照小鼠在 4 至 19 月龄期间进行评估，采用全脑三维斑块成像、脑淀粉样血管病（CAA）定量、多重神经病理学分析、脑转录组学和血浆生物标志物检测。并在 12 月龄时开展海马突触分析和情境依赖性记忆评估。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>随着年龄增长，斑块、CAA、斑块相关神经炎症以及营养不良性神经突（dystrophic neurites）逐渐累积。到 12 月龄时，脑转录组与人类 AMP-AD 共表达模块相一致，且血浆 pTau-217、GFAP 和 SNAP25 随年龄升高。AppSAA 小鼠保留了联想记忆，但出现记忆干扰和 CA1 树突棘丢失，且在靠近斑块区域时更为明显。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>AppSAA 小鼠能够重现随年龄进展且与人类相关的阿尔茨海默病表型，并为临床前研究提供了明确的治疗时间窗。该模型可由 The Jackson Laboratory 无限制获取。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6744&amp;v=1&amp;s=69ce764932580fd2" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6744&amp;v=2&amp;s=b7795f34e9bff54d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6744&amp;v=3&amp;s=b367838d72a6300b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6744&amp;v=4&amp;s=83366c3788e16760" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6744&amp;v=5&amp;s=3746063106f12937" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 55 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42712681/">Brain multiomic profiling identifies tau-related transcriptomic dysregulation in Alzheimer&#x27;s disease.</a></div>
+      <div class="card-title-zh">脑多组学谱分析鉴定阿尔茨海默病中与 tau 相关的转录组失调</div>
+      <div class="news">为解决阿尔茨海默病基因失调与核心蛋白病理对应不清问题，作者整合477例脑多组学，发现转录异常最显著关联tau负荷及其磷酸化状态。</div>
+      <div class="meta">Brain communications · 2026-08-27</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Oatman Stephanie R, Quicksall Zachary S, Wang Xue, Bergman Jeremiah, Reddy Joseph S, Vanelderen Floor, Nguyen Thuy, Malphrus Kimberly, Lincoln Sarah J, Martens Yuka A, Zhao Na, Yamazaki Yu, DeTure Michael, Murray Melissa E, Liu Chia-Chen, Bu Guojun, Kanekiyo Takahisa, Dickson Dennis W, Allen Mariet, Ertekin-Taner Nilüfer</div>
+<div class="meta">DOI: 10.1093/braincomms/fcag326</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42712681/">https://pubmed.ncbi.nlm.nih.gov/42712681/</a></div>
+<div class="meta">Keywords: APOE、amyloid、expression、tau、transcriptome</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦阿尔茨海默病tau与淀粉样相关脑多组学，契合你的神经退行研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>既往对阿尔茨海默病（Alzheimer&#x27;s disease）死后脑组织与对照的基因表达比较，已提示多种与疾病病理生理相关的生物学通路。尽管如此，目前对于基因表达失调如何支撑阿尔茨海默病核心特征性蛋白病变的认识仍然有限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究纳入一个表征完善的阿尔茨海默病供体队列，分析 477 例供体颞叶皮层（temporal cortex）组织的整体转录组（bulk transcriptome）数据，并在质量控制后针对多种内表型开展全转录组关联分析。所分析的内表型包括神经病理指标（Braak 分期、Thal 分期和脑淀粉样血管病评分）以及阿尔茨海默病相关脑蛋白水平（载脂蛋白 E、淀粉样蛋白-β40、淀粉样蛋白-β42、tau 和磷酸化 tau）。研究还采用加权基因共表达网络分析（weighted gene co-expression network analysis, WGCNA）构建共表达网络，并整合同一批供体的转录组、表观遗传学和遗传学数据。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究共检测到 5740 个经 Bonferroni 校正后显著的颞叶皮层基因与阿尔茨海默病内表型的关联，其中大多数与脑内 tau 水平相关。研究发现了与 tau 相关的共表达模块，这些模块富集于已知和新发现的阿尔茨海默病相关通路；较高总 tau 且较低磷酸化 tau 的有利（或中性）脑生化状态，与突触、DNA 损伤/修复、核酸代谢和髓鞘过程增强相关。相反，在总 tau 较低而磷酸化 tau 较高的不利状态下，血管和免疫通路上调，而线粒体和髓鞘通路下调。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果表明，脑内基因表达扰动与阿尔茨海默病内表型密切相关；其中部分关联可见于多个内表型，但许多关联对不同阿尔茨海默病相关蛋白具有特异性。基于这些发现，作者提出了一个假设模型，认为动态脑基因表达变化可追踪阿尔茨海默病蛋白稳态（proteostasis）的渐进性改变，并有望作为反映脑内疾病进展的动态精准生物标志物。该研究展示了在表征完善的脑组织中结合多组学整合与深度内表型分析，以更精确揭示阿尔茨海默病复杂生物学机制的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6748&amp;v=1&amp;s=3a3ed1d53ad324a9" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6748&amp;v=2&amp;s=a780459ec3cc1a10" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6748&amp;v=3&amp;s=2f8f4ebbce406ca0" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6748&amp;v=4&amp;s=383326d1b090f8c0" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6748&amp;v=5&amp;s=150c089cb31382a1" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 55 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.03.749263">mRNA editing of the Alzheimer&#x27;s risk gene APOE</a></div>
+      <div class="card-title-zh">阿尔茨海默病风险基因 APOE 的 mRNA 编辑</div>
+      <div class="news">为解决APOE等位型是否仅由基因组决定的问题，作者结合人脑、单细胞组学、小鼠与转染及蛋白质组分析，发现APOE mRNA编辑可使不同等位型转录本及部分蛋白互相转换。</div>
+      <div class="meta">bioRxiv · 2026-09-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Blanc V., Griffiths S. J., Haas J., Davidson N., Lathe R.</div>
+<div class="meta">DOI: 10.64898/2026.09.03.749263</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.03.749263">https://www.biorxiv.org/content/10.64898/2026.09.03.749263</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦阿尔茨海默病风险基因APOE，并结合脑微胶质单细胞转录组。</div>
+<div class="abstract"><span class="abs-label">背景</span>人类 APOE 基因的变异决定阿尔茨海默病及其他疾病的风险。人类三种主要 APOE 变体源于同一外显子中两个位点的 C→T 替换：上游 AE4 位点区分祖先型 APOE ε4 等位基因（APOE4，C）与人特异性的 APOE2/E3（T），下游 AE2 位点区分 APOE3/E4（C）与 APOE2（T）。长期以来，人们一直认为 APOE 等位型完全由基因组编码决定。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究比较了多名个体脑组织中 APOE 转录本与基因组模板的一致性，并检测 AE4、AE2 及其他位点是否存在核苷酸替换。作者还分析了脑小胶质细胞的单细胞转录组数据、人 APOE 敲入小鼠脑转录本，以及 HepG2 和 Huh7 细胞中转染小鼠或人 APOBEC1 后 APOE mRNA 和基因组 DNA 的编辑情况。另通过蛋白质组学数据检索，评估人血浆中是否存在非基因组编码的 APOE 肽段。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，多名个体脑内表达的 APOE C 或 U/T 变体转录本与其基因组模板不一致，在 AE4 和 AE2 位点可见最高约 10% 的 C→U 或 U→C 替换，而其他位点及基因组 DNA 中未见相应变化；脑小胶质细胞单细胞转录组中，AE2 位点可见零星的 C→U 替换（最高约 8%）。在人 APOE 敲入小鼠中，0.4% 至 1.6% 的脑转录本在 AE4 或 AE2 位点发生选择性 C→U 改变；在 HepG2 或 Huh7 细胞中转染小鼠或人 APOBEC1 后，APOE4 mRNA 的 AE4 位点可发生高效（&gt;90%）C→U 编辑，而 AE2 位点不发生该编辑，小鼠但非人 APOBEC1 还可在 AE4 位点引起较低水平（&lt;10%）的基因组 DNA C→T 编辑。蛋白质组学分析进一步显示，人血浆中最多约 4% 的 APOE 肽段并非由基因组直接编码，提示这些经编辑的 APOE 转录本在体内具有功能。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，APOE mRNA 会发生 RNA 编辑，从而使 APOE 的不同等位形式之间发生相互转换。该发现挑战了 APOE 等位型完全由基因组序列决定的传统观点，并提示 APOE 风险相关变异还可在转录后水平被调控。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6760&amp;v=1&amp;s=84f2ef16a6790ab6" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6760&amp;v=2&amp;s=0c08d31040c08cc1" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6760&amp;v=3&amp;s=062f086dca8e2ec0" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6760&amp;v=4&amp;s=f4bf4d4703aa9ab8" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6760&amp;v=5&amp;s=948477746ab3bf9a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42714756/">Atorvastatin Shows Limited Disease-Modifying Effects in an A53T α-Synuclein Mouse Model of Parkinson&#x27;s Disease.</a></div>
+      <div class="card-title-zh">阿托伐他汀在帕金森病A53T α-突触核蛋白小鼠模型中显示出有限的疾病修饰作用</div>
+      <div class="news">为解决阿托伐他汀能否修饰A53T α-突触核蛋白帕金森病程问题，作者在小鼠中结合行为、病理与转录组评估，发现其虽重塑脂质代谢却未改善核心病变。</div>
+      <div class="meta">Neurotoxicity research · 2026-09-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wei Lijian, Hua Junkai, Tang Shuangfeng, Lei Jianming, Li Guozhi, Wei LiWei, Mo MingShu</div>
+<div class="meta">DOI: 10.1007/s12640-026-00825-y</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42714756/">https://pubmed.ncbi.nlm.nih.gov/42714756/</a></div>
+<div class="meta">Keywords: Atorvastatin、Molecular docking、Parkinson’s disease、Transcriptomics、α-Synuclein</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接研究帕金森病小鼠α突触核蛋白模型，契合你对神经退行研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>他汀类药物在帕金森病（Parkinson&#x27;s disease, PD）中的神经保护作用仍不确定，其在遗传性α-突触核蛋白（α-synuclein, αSyn）疾病模型中的活性也缺乏充分表征。本研究评估了阿托伐他汀（atorvastatin, ATO）在黑质中过表达人体A53T突变αSyn的小鼠模型中的作用。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>小鼠经口灌胃给予ATO，剂量为10 mg/kg/天，持续5周。研究通过行为学测试、神经病理学评估、脑转录组学分析和分子对接对其效果进行评价。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>ATO抑制了与胆固醇生物合成相关的转录程序，并广泛重塑了脂质代谢相关网络，但未带来功能性或组织病理学获益。ATO未改善运动缺陷，未恢复多巴胺能标志物，也未降低αSyn蛋白水平或pSer129-αSyn免疫反应性；转录组分析进一步显示，ATO未能逆转A53T αSyn过表达诱导的核心疾病相关表达特征，反而增加了SNCA mRNA。靶向RNA测序和Western blot显示，Prkn、Gba1或Lamp2转录本丰度，以及PARKIN、GBA1或LAMP2A蛋白表达均未相应增加；分子对接提示ATO与αSyn的预测相互作用相对较弱，这为其缺乏疗效提供了支持性背景。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>总体而言，本研究表明ATO在这一由αSyn驱动的模型中疗效有限。结果支持在互补性的PD模型中进一步比较评估不同他汀类药物的作用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6751&amp;v=1&amp;s=4210fd56495f7ef3" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6751&amp;v=2&amp;s=73643586f3d2c5f0" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6751&amp;v=3&amp;s=14736d83e58cdccf" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6751&amp;v=4&amp;s=ce87cec9d91635b5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6751&amp;v=5&amp;s=ce5adf0a5012d843" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.06.16.732640">Analysis of the off-target interaction of amyloid PET tracers with human brain sulfotransferases</a></div>
+      <div class="card-title-zh">淀粉样蛋白PET示踪剂与人脑硫转移酶脱靶相互作用的分析</div>
+      <div class="news">为解决Aβ-PET示踪剂是否与脑SULT脱靶并干扰信号解释，作者结合转录组、多组学分析及分子对接/动力学，发现PiB及氟代衍生物可与小脑表达的SULT形成酶和示踪剂特异性稳定复合物。</div>
+      <div class="meta">bioRxiv · 2026-09-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Miccoli L., Fullone R., Delli Pizzi S., Tomaiuolo F., Sensi S. L., Floresta G., Granzotto A.</div>
+<div class="meta">DOI: 10.64898/2026.06.16.732640</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.06.16.732640">https://www.biorxiv.org/content/10.64898/2026.06.16.732640</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>围绕阿尔茨海默病淀粉样PET脱靶机制，贴合你对AD与amyloid关注。</div>
+<div class="abstract"><span class="abs-label">背景</span>靶向淀粉样β蛋白（amyloid-β, Aβ）的正电子发射断层显像（positron emission tomography, PET）示踪剂是阿尔茨海默病（Alzheimer&#x27;s disease, AD）诊断和分期的核心工具，但越来越多证据表明这些示踪剂会与脱靶分子结合，从而增加信号解读的复杂性。已有实验研究鉴定出硫转移酶（sulfotransferases, SULTs）是11C-Pittsburgh Compound-B（PiB）的结合伙伴，但临床使用的氟代PiB衍生物氟美他莫（flutemetamol）和flutafuranol是否与脑内表达的SULTs相互作用仍未被探索。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究结合多组学转录组分析、分子对接（molecular docking）和分子动力学（molecular dynamics, MD）模拟，评估SULT-示踪剂复合物的结构相互作用。通过分析Genotype-Tissue Expression项目和Human Protein Atlas，鉴定人脑中主要表达的SULT同工酶，并进一步比较PiB、氟美他莫和flutafuranol与这些同工酶催化口袋的结合特征及动态稳定性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>分析显示，SULT1A1、SULT1A3和SULT4A1是人脑中主要表达的SULT同工酶。分子对接和MD模拟表明，三种示踪剂均可在这些同工酶的催化口袋内形成能量上相近的复合物，但其动态稳定性具有酶和示踪剂特异性：PiB和氟美他莫在SULT1A1中稳定结合，而PiB在SULT4A1中失去初始构象；flutafuranol在SULT1A1中的结合较弱，但在SULT1A3和SULT4A1中可形成稳定复合物。值得注意的是，SULT1A1、SULT1A3和SULT4A1均在小脑中表达，而小脑是Aβ PET信号归一化所使用的参考脑区。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果为淀粉样蛋白PET示踪剂与脑内SULTs发生脱靶相互作用提供了结构层面的解释框架。研究提示，除纤维状Aβ沉积之外，细胞内酶学环境也可能导致Aβ PET信号的变异。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6752&amp;v=1&amp;s=41f59bb9abbfd810" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6752&amp;v=2&amp;s=983dde19061e8335" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6752&amp;v=3&amp;s=0dd5b3418a317ab1" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6752&amp;v=4&amp;s=fd9035de772912d5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6752&amp;v=5&amp;s=dcb18d82639b6bf5" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42714778/">Neuroimmune interactions: from molecular mechanisms to therapeutic targets.</a></div>
+      <div class="card-title-zh">神经免疫相互作用：从分子机制到治疗靶点</div>
+      <div class="news">为解决神经与外周免疫通讯致病机制及靶点问题，作者系统综述神经免疫通路，发现炎性小体、补体和趋化因子等失调驱动多病程异质性。</div>
+      <div class="meta">Molecular biomedicine · 2026-09-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Hao Yi-Hang, Shi Rong-Jia, Tang Ya-Ling, Liang Xin-Hua</div>
+<div class="meta">DOI: 10.1186/s43556-026-00565-7</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42714778/">https://pubmed.ncbi.nlm.nih.gov/42714778/</a></div>
+<div class="meta">Keywords: Blood–brain barrier、Cytokines、Molecular mechanisms、Neurodegeneration、Neuroimmune interactions、Neuroinflammation</div>
+<div class="reason"><span class="abs-label">推荐理由</span>系统综述神经免疫、血脑屏障与肠脑轴分子通路，贴合你的研究框架。</div>
+<div class="abstract"><span class="abs-label">背景</span>神经免疫相互作用表明，中枢神经系统（central nervous system, CNS）与外周免疫处于动态整合的双向通信之中。该过程由小胶质细胞、星形胶质细胞、外周免疫细胞和神经血管单元通过细胞因子、趋化因子、补体蛋白、神经递质和神经肽共同介导。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>这是一篇综述性文章，概述了神经免疫相互作用的分子机制及其在疾病发生、进展和异质性中的作用。文章重点讨论了模式识别受体、炎性小体、补体、趋化因子受体、神经肽信号和微生物群等相关通路与潜在治疗策略。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在分子层面，Toll样受体（Toll-like receptors）和核苷酸结合寡聚化结构域样受体（nucleotide-binding oligomerization domain-like receptors）可激活NF-κB、MAPK和JAK-STAT信号通路，调控细胞因子产生、氧化应激、细胞代谢和胶质细胞表型。NLRP3炎性小体激活可诱导caspase-1依赖的IL-1β和IL-18成熟并促进细胞焦亡（pyroptosis），补体C1q/C3-CR3信号介导突触修剪，CCL2-CCR2信号促进白细胞募集和小胶质细胞激活，细胞因子与基质金属蛋白酶可破坏内皮紧密连接并损害血脑屏障完整性。降钙素基因相关肽（calcitonin gene-related peptide, CGRP）和P物质（substance P）还能通过激活神经肽受体驱动神经源性炎症；这些分子回路共同调控胶质细胞激活、免疫细胞迁移、突触重塑、神经元兴奋性、血管功能和细胞存活，其失调可通过血脑屏障、肠-脑轴和迷走神经促发神经退行性、神经炎症性、精神性、神经发育性及外周疾病。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该综述指出，针对炎性小体、补体、趋化因子受体、神经肽信号和微生物群的干预是正在兴起的治疗方向。相关进展有望推动以生物标志物为指导的个体化神经免疫医学发展。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6754&amp;v=1&amp;s=c3f9d29e766339c8" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6754&amp;v=2&amp;s=97290304da16f6c6" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6754&amp;v=3&amp;s=70c53f61b0ec3e4b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6754&amp;v=4&amp;s=6acdc4738b287edb" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6754&amp;v=5&amp;s=d0238960751b3e45" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42712268/">Investigating the Role of Sodium Butyrate in Mouse Models of IBD: A Multimodal Structural and Functional MRI Study.</a></div>
+      <div class="card-title-zh">丁酸钠在小鼠炎症性肠病模型中的作用研究：一项多模态结构与功能磁共振成像研究</div>
+      <div class="news">为解决人体混杂因素下难评估丁酸盐脑效应的问题，作者用IBD小鼠多模态MRI发现丁酸钠减炎并重塑多脑区结构与功能，推进肠脑轴影像研究</div>
+      <div class="meta">Neural plasticity · 2026-01-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Fan Ran, Li Siqi, Bao Cuiping, Cui Weiwei, Yu Li, Yu Hong, Liu Xuehuan, Liu Jun</div>
+<div class="meta">DOI: 10.1155/np/9003986</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42712268/">https://pubmed.ncbi.nlm.nih.gov/42712268/</a></div>
+<div class="meta">Keywords: brain、butyrate、gut–brain axis、inflammatory bowel disease、magnetic resonance imaging</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接研究丁酸盐经肠脑轴影响小鼠脑结构功能，契合微生物代谢物兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>炎症性肠病（IBD）患者可通过肠-脑轴（gut-brain axis, GBA）出现中枢神经系统异常，并导致脑结构和功能改变。丁酸已被证明可经由肠-脑轴影响中枢神经系统，可能对IBD相关神经系统问题具有益处，但在人类研究中由于混杂因素较多，难以直接评估其作用。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究采用小鼠IBD模型，利用多模态磁共振成像（MRI）评估丁酸钠（sodium butyrate, NaB）对脑结构和功能的影响。15只小鼠平均分为健康对照组、IBD组和IBD+NaB组，均接受9.4T磁共振扫描，包括弥散张量成像（DTI）、三维T2加权成像和功能磁共振成像（fMRI），分别用于评估白质完整性、灰质核团体积和神经活动变化。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>与IBD组相比，NaB组炎症减轻；IBD组和NaB组左侧小脑下脚（绳状体）区域白质纤维束的平均弥散率（mean diffusivity, MD）均低于健康对照组。组间核团体积差异出现在两个区域：一个未定义区域和左侧尾壳核；组间神经活动差异出现在右侧脑桥网状核、丘脑外侧后核、左侧单小叶和右侧中脑网状核。此外，右侧伏隔核、左侧中间网状核和右侧海马CA3区的神经局部活动一致性也发生了改变。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果提示，NaB可减轻IBD小鼠的炎症程度，并通过肠-脑轴诱导脑结构和功能改变。该研究为理解丁酸盐在IBD相关中枢神经系统异常中的作用提供了影像学依据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6763&amp;v=1&amp;s=f056ca5b21ace26c" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6763&amp;v=2&amp;s=39d44e789238af18" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6763&amp;v=3&amp;s=12f44ea116f8588b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6763&amp;v=4&amp;s=557d16bd3a0c6c4a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6763&amp;v=5&amp;s=94c28152d70b4d12" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 49 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42712126/">Towards optimizing the host response to biotics: a report of an International Scientific Association for Probiotics and Prebiotics working group.</a></div>
+      <div class="card-title-zh">迈向优化宿主对生物制剂（biotics）的反应：国际益生菌与益生元科学协会工作组报告</div>
+      <div class="news">为解决生物制剂临床疗效不一致问题，作者基于ISAPP工作组研讨提出五项机制导向建议，发现精准调控宿主代谢与免疫并结合代谢组和新方法可提升临床转化。</div>
+      <div class="meta">Gut microbes · 2026-09-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Preidis Geoffrey A, Bercik Premysl, Marette Andre, O&#x27;Mahony Liam, Sperandio Vanessa, Quigley Eamonn Mm</div>
+<div class="meta">DOI: 10.1080/19490976.2026.2728828</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42712126/">https://pubmed.ncbi.nlm.nih.gov/42712126/</a></div>
+<div class="meta">Keywords: Prebiotic、enteric nervous system、gut–brain axis、host metabolism、immune response、metabolome、microbiome、probiotic</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦微生物群-肠脑轴与代谢物干预策略，契合你对gut-brain axis的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>本报告总结了国际益生菌与益生元科学协会（International Scientific Association for Probiotics and Prebiotics, ISAPP）在 2025 年年会上召集的一个工作组的讨论，旨在识别介导宿主对生物制剂反应的关键靶点。益生菌（probiotics）、益生元（prebiotics）、合生元（synbiotics）和后生元（postbiotics）已在多种情境中得到研究，但临床试验结果并不一致。既往多数研究中，治疗产品、剂量及给药策略的选择并非主要基于严格的机制性证据。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>鉴于近期对生物制剂、宿主与肠道微生物组相互作用认识的进展，工作组探讨是否能够采用一种更合理、信息更充分的方法，为特定适应证更精准地选择生物制剂。专家组重点讨论了生物制剂对免疫系统、宿主代谢、肠神经系统、人体共生微生物以及肠-脑轴的调节作用，并据此形成建议。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>专家组提出了五项建议，以提高生物制剂干预产生有意义临床影响的可能性：应致力于调节或精细化宿主代谢和免疫系统，而非简单“增强”其功能；除微生物组外，还应将人体代谢组（metabolome）作为读出指标和治疗靶点；应明确宿主对生物制剂的情境依赖性反应，包括肠道内空间位置、宿主遗传、环境影响和饮食因素。另两项建议为：探索除益生元纤维外、可产生生物活性产物的广泛微生物发酵底物；利用离体（ex vivo）人体组织方法、新型体外方法以及包括人工智能在内的先进计算工具来补充人体研究。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该专家组提出的路线图旨在加速将生物制剂研究转化为更易影响临床实践的发现。其核心意义在于推动基于机制证据和特定适应证的更精准生物制剂选择，从而提升临床转化价值。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6756&amp;v=1&amp;s=ea0770b3c4a1d830" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6756&amp;v=2&amp;s=f5be7fc8af65aa1d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6756&amp;v=3&amp;s=394e52a5540713d8" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6756&amp;v=4&amp;s=35a74fbc88ddc92c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6756&amp;v=5&amp;s=a2b241874513ba81" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42711518/">Mechanisms underlying disease-causing variants in promoters and enhancers.</a></div>
+      <div class="card-title-zh">启动子和增强子中致病变异的潜在机制</div>
+      <div class="news">为解决非编码顺式元件小变异致病性难判问题，作者综述病例、机制及实验与机器学习工具，发现其可经功能缺失或获得致病，但明确实例仍少。</div>
+      <div class="meta">Nature genetics · 2026-09-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Long Hannah K, Wu Kun, Barkham Ryan S, Bickmore Wendy A</div>
+<div class="meta">DOI: 10.1038/s41588-026-02743-3</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42711518/">https://pubmed.ncbi.nlm.nih.gov/42711518/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦非编码致病变异机制，可补充你对人类神经疾病遗传调控的理解。</div>
+<div class="abstract"><span class="abs-label">背景</span>对人类单基因遗传病（monogenic disorders）的研究，长期以来一直是深入理解蛋白质功能/功能障碍及揭示其背后生物学机制的重要工具。本文进一步探讨，日益扩充的非编码单基因疾病变异目录，能够为理解非编码基因组的功能提供哪些启示。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文聚焦于顺式调控元件（cis-regulatory elements）中的小型遗传改变，即发生在启动子（promoters）、增强子（enhancers）和沉默子（silencers）中的一个至数十个碱基对的变异，并讨论其可能的作用机制，如功能缺失或功能获得。作者还讨论了判定非编码基因组变异致病性的挑战，以及利用实验工具和机器学习工具推进该领域研究的机会。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>摘要表明，这类非编码单基因疾病变异可为认识非编码基因组功能提供重要见解。作者指出，启动子、增强子和沉默子中的小变异可能通过功能缺失或功能获得等机制致病，同时也提出目前明确实例较少，并讨论了其可能原因。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究强调，解析非编码顺式调控元件中的致病变异，有助于拓展人类遗传学对非编码基因组功能的认识。文章还指出，结合实验方法与机器学习工具，有望推动这一研究方向的发展。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6663&amp;v=1&amp;s=f604fff1fcf1245a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6663&amp;v=2&amp;s=ffc24f0674fdabe3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6663&amp;v=3&amp;s=3bd2d85cfb4e0a51" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6663&amp;v=4&amp;s=8ab8290b4ba72417" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=panyunrui%40genomics.cn&amp;p=6663&amp;v=5&amp;s=974b40ad4e6f53e8" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日文献主要聚焦神经退行性疾病，尤其阿尔茨海默病/帕金森病中的神经免疫、微胶质/单核细胞状态、tau与APOE相关分子机制，同时覆盖单细胞/单核多组学、脑多组学整合、扰动筛选与AI建模、疾病模型和转化方法学。共同趋势是多模态整合增强：scRNA-seq、单核多组学、转录组结合形态/功能/蛋白或影像数据，以及CRISPR扰动、分子对接、神经网络与迁移学习并用。对研究者的价值在于：可获取AD系统性免疫与骨髓来源细胞的新线索，借鉴IRIS等计算框架和多组学设计，优化微胶质机制研究、模型选择、PET信号解释及生物标志物开发。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=panyunrui%40genomics.cn&amp;d=2026-09-10&amp;s=350cf749e15a397a">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=panyunrui%40genomics.cn&amp;d=2026-09-10&amp;s=350cf749e15a397a">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

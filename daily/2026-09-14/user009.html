@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-09-14</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-09-14</h1>
+    <p class="hello">niupeiyuan，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">过去 3 天全库新增 900 篇 · 命中您的关键词 106 篇 · 本次推送 15 篇（必读 0 · 重要 1 · 参考 14）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">基因组演化与多样性</h2>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 32 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.09.750506">Coupling Stickland fermentation with reverse β-oxidation represents a new mode of medium-chain carboxylate production</a></div>
+      <div class="card-title-zh">将斯蒂克兰发酵（Stickland fermentation）与逆β-氧化（reverse β-oxidation）偶联代表了一种新的中链羧酸盐生产模式</div>
+      <div class="news">为解决链延长菌在富蛋白环境中如何产中链羧酸的问题，作者结合比较基因组与Peptonella生理学研究，发现Stickland发酵偶联反向β氧化可在乙酸受限时促进辛酸生成。</div>
+      <div class="meta">bioRxiv · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Lindner B. G., Nallasamy D. K., Roberts L., Gois I. M., Lawson C. E.</div>
+<div class="meta">DOI: 10.64898/2026.09.09.750506</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.09.750506">https://www.biorxiv.org/content/10.64898/2026.09.09.750506</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>关注细菌在蛋白环境中的新代谢模式，可启发你理解微生物组功能挖掘。</div>
+<div class="abstract"><span class="abs-label">背景</span>利用链延长菌（chain elongating bacteria, CEB）生产中链羧酸（medium-chain carboxylic acids, MCCAs）的生物技术，有望推动油脂化工产业摆脱现有土地利用方式、脆弱供应链及显著环境成本。要实现这一潜力，需要更全面理解CEB的生理特性；然而目前相关认识主要基于乳酸和乙醇利用，尽管这类细菌常繁盛于富含蛋白质的消化道和有机废物生物反应器中。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究通过对已知MCCA生产者进行比较基因组分析，并以新近分离的物种Peptonella octanoica及其属内其他成员为模型体系开展生理学考察。作者进一步分析了多条氨基酸发酵谱系中的保守代谢架构及其与MCCA生成之间的关系。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究表明，氨基酸利用是许多CEB中广泛分布但长期被忽视的性状。在若干氨基酸发酵谱系中，存在一种将斯蒂克兰发酵与逆β-氧化偶联的保守代谢架构，使细菌在乙酸盐或作为电子受体的氨基酸受限时仍能生产MCCA。该偶联通过在氢分压升高时推动更长链产物形成，来应对乳酸和氨基酸氧化的热力学约束；同时，氨基酸发酵型CEB不仅丰富存在于肠道微生物组，也存在于工程化生物反应器中，并可为蛋白质类有机废物高滴度生产正辛酸盐（n-octanoate）提供机制解释。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现为利用蛋白质类有机废物生物制造中链羧酸盐提供了新的生理学基础和机制框架。除生物制造外，该研究也拓展了我们对厌氧微生物组中CEB生态功能的理解，说明氨基酸发酵与链延长是相互交织的生态策略。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7289&amp;v=1&amp;s=eb5b772da2452644" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7289&amp;v=2&amp;s=a4e6ec3aa2284d36" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7289&amp;v=3&amp;s=1e1cc1a0421053f0" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7289&amp;v=4&amp;s=b3d3c6c921809c96" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7289&amp;v=5&amp;s=cccc70e9587c235e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 65 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42727575/">Metax enables accurate cross-domain taxonomic profiling of metagenomes.</a></div>
+      <div class="card-title-zh">Metax 实现宏基因组的准确跨域分类学谱分析</div>
+      <div class="news">为解决跨域复杂及低生物量样本物种定量不准，作者利用覆盖度概率模型结合EM框架的Metax，发现其在600余样本中显著提升分类准确性并识别污染与错误组装信号。</div>
+      <div class="meta">Cell · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Deng Zhi-Luo, Safaei Nasim, McHardy Alice Carolyn</div>
+<div class="meta">DOI: 10.1016/j.cell.2026.08.024</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42727575/">https://pubmed.ncbi.nlm.nih.gov/42727575/</a></div>
+<div class="meta">Keywords: abundance estimation、clinical metagenomics、cross-domain profiling、genome contamination、genome coverage、metagenomics、microbial detection、microbiome、pathogen detection、taxonomic profiler</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接面向宏基因组跨域分类，契合你做微生物组与metagenomic mining。</div>
+<div class="abstract"><span class="abs-label">背景</span>分类学谱分析（taxonomic profiling）是微生物组研究的基础，但对于同时包含细菌、病毒、真核生物和古菌的复杂群落，实现高物种水平准确性仍然具有挑战性。在低生物量、宿主成分占主导的样本中，这些局限性会进一步加剧。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究提出了跨域分类学谱分析工具 Metax，其将基于覆盖度的概率建模与期望最大化（expectation-maximization, EM）框架相结合，用于区分真实微生物信号与伪影。作者在超过 600 个样本中对其进行了评估，样本来源涵盖宿主相关、环境、污水和低生物量临床场景，并包含参考表示有限的基准数据集。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>与其他方法相比，Metax 提高了谱分析准确性，平均实现了高出 55% 的 F1 分数和低 45% 的 Bray-Curtis 差异度。广泛评估还表明，Metax 能够解析口腔微生物组中种植体周围炎（peri-implantitis）的细菌和病毒特征，并在血浆游离细胞 DNA（plasma-cell-free DNA）中揭示提示试剂来源污染物和参考序列错误组装的信号。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>通过利用全基因组覆盖度证据，Metax 可在多种样本类型和不同测序深度下实现稳健的跨域谱分析。即使在参考数据库高度不完整的情况下，该方法也能支持可靠的宏基因组分类学分析。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7275&amp;v=1&amp;s=b0886caf665e0ea1" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7275&amp;v=2&amp;s=0904b64d9e03e624" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7275&amp;v=3&amp;s=4683a5df5e2ce309" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7275&amp;v=4&amp;s=f7d85804a4f55423" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7275&amp;v=5&amp;s=7a151ee7af53a431" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-reference">Reference</span> · 56 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42729796/">FANTASIA suite: a reproducible and configurable framework for embedding-based functional annotation of proteins.</a></div>
+      <div class="card-title-zh">FANTASIA套件：一种用于基于嵌入的蛋白质功能注释的可复现且可配置框架</div>
+      <div class="news">为解决蛋白质嵌入功能推断中可控性与可复现性不足，作者开发FANTASIA框架，发现大邻域蛋白质组注释仍可行且过滤策略可支持防信息泄漏评估。</div>
+      <div class="meta">NAR genomics and bioinformatics · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Pérez-Canales Francisco M, Domínguez-Rodríguez Àlex, Carbonetto Belén, Fernández Rosa, Cases Ildefonso, Rojas Ana M</div>
+<div class="meta">DOI: 10.1093/nargab/lqag106</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42729796/">https://pubmed.ncbi.nlm.nih.gov/42729796/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>蛋白语言模型驱动功能注释，贴近你做肽挖掘与可解释蛋白表征。</div>
+<div class="abstract"><span class="abs-label">背景</span>由于蛋白质语言模型（protein language models）能够捕获序列、结构和功能信号，且这些信号可能超越传统的成对相似性，因此基于嵌入（embedding-based）的注释转移正越来越多地用于蛋白质功能推断。 然而，这类方法的系统化应用需要对模型选择、参考集组成、检索参数、证据可追溯性和输出格式进行控制。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了FANTASIA套件，这是一个用于基于嵌入的蛋白质功能注释的可配置框架。该套件结合了基于数据库的实现以支持可复现和可扩展分析，以及可移植的平面文件实现以支持快速本地注释和流程整合。作者还使用非模式生物和模式生物的蛋白质组进行评估，并通过外部CAFA5评测将所支持的模型与基线方法进行比较。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>基于非模式生物和模式生物蛋白质组的分析表明，较大的邻域规模（neighbourhood sizes）在蛋白质组尺度分析中仍具有实用性。分类学过滤和序列一致性过滤（sequence-identity filtering）有助于支持考虑信息泄漏的基准评估（leakage-aware benchmarking）。此外，作者基于经验性证据变量（empirical evidence variables）提供了实用指导。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>FANTASIA为在快速扩展的已测序生物多样性范围内拓展功能注释提供了一个受控、可扩展且可复现的框架。该工具有助于推动基于嵌入的蛋白质功能注释方法的规范化应用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7293&amp;v=1&amp;s=304e6d4f8140ec06" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7293&amp;v=2&amp;s=f1c20c28219949a2" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7293&amp;v=3&amp;s=5f3e1968a61fbb5e" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7293&amp;v=4&amp;s=38e1d24b929d31c3" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7293&amp;v=5&amp;s=2458e1436ad752f1" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-reference">Reference</span> · 54 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.09.750355">Reframing enzyme function prediction as conditional generation</a></div>
+      <div class="card-title-zh">将酶功能预测重新框定为条件生成</div>
+      <div class="news">为解决封闭集预测难发现非天然反应与杂泛酶的问题，作者利用条件生成框架Fluxion建模酶催化电子流，发现其可学习区域选择性并生成定向进化中的非天然产物。</div>
+      <div class="meta">bioRxiv · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Rieger W. J., Haeussermann S., Herrmann L., Li Z., Frohn B. P., Maluenda M., Lobinska G., Loomba S., Reisenbauer J. C., Boden M., Tong A., Mora A.</div>
+<div class="meta">DOI: 10.64898/2026.09.09.750355</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.09.750355">https://www.biorxiv.org/content/10.64898/2026.09.09.750355</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>将蛋白语言模型与条件生成结合，契合你对生成式蛋白设计的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>酶除其天然功能外，常常还具有底物或反应层面的兼容性，即“多底物/多反应活性”（promiscuous activity），这为新功能的产生提供了起点。寻找这类酶，尤其是能够催化非天然化学转化的酶，虽然极具价值，但由于现有机器学习方法多将功能预测视为封闭集分类或检索任务，因此难以发现未见过的化学反应。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者提出了生成式深度学习框架 Fluxion，通过对酶催化残基间动态电子流轨迹进行建模来学习酶催化过程。该方法结合合成化学与生物化学数据集，以及蛋白质语言模型表征，生成类似于描述酶反应机制中“推箭”（arrow-pushing）表示的多步电子流轨迹；其生成过程以酶的上下文为条件，包括酶序列、催化残基、底物和辅因子。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>结果表明，这种条件生成使 Fluxion 能够学习不同细胞色素 P450（cytochrome P450）酶之间依赖于酶本身的区域选择性（regioselectivity）：对于相同底物，不同酶序列会导致预测反应位点发生变化。作者进一步证明，Fluxion 的嵌入表示可用于下游任务，如在两个实验数据集上进行特异性预测，且无论是否微调（finetuning）均有效。最后，Fluxion 展现出将合成化学逻辑迁移到生物体系中的潜力，能够生成真实世界非天然定向进化筛选中观察到的非天然产物。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究证明了一个概念：基于酶机制表征的生成式建模，可将酶功能预测从静态数据库检索和封闭集分类推进到功能生成。该概念框架为发展用于发现非天然生物催化剂（non-native biocatalysts）的计算机模拟生成方法提供了重要起点。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7294&amp;v=1&amp;s=63e070f8034df218" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7294&amp;v=2&amp;s=c2fa5f3668196e10" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7294&amp;v=3&amp;s=36d188b38d8662ac" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7294&amp;v=4&amp;s=2cd2f358da67a39e" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7294&amp;v=5&amp;s=95ad0b87c13c6656" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 53 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.1101/2025.09.07.674730">Fast and accurate taxonomic domain assignment of short metagenomic reads using BBERT</a></div>
+      <div class="card-title-zh">使用 BBERT 对短宏基因组读段进行快速且准确的分类学域归属</div>
+      <div class="news">为解决宏基因组短读长因参考不足难注释的问题，作者利用核苷酸大模型BBERT实现无参考域分类，发现其可准确识别100 bp细菌读段并提升组装质量与速度。</div>
+      <div class="meta">bioRxiv · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Alekhin D., Alon M., Sidi T., Perez Mazeh S., Carmi G., Finkel O. M., Erez A.</div>
+<div class="meta">DOI: 10.1101/2025.09.07.674730</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.1101/2025.09.07.674730">https://www.biorxiv.org/content/10.1101/2025.09.07.674730</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接结合宏基因组与核酸语言模型，利于细菌肽挖掘前处理。</div>
+<div class="abstract"><span class="abs-label">背景</span>来自土壤等复杂环境的鸟枪法宏基因组（shotgun metagenomes）揭示了巨大的生物多样性。然而，由于缺乏足够全面的参考，大多数鸟枪法测序产生的短读段无法进行分类学或功能注释，从而掩盖了微生物群落的真实结构与功能。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究提出了 BBERT，这是一种针对短读段优化的核苷酸大语言模型（nucleotide large language model）。作者在大规模土壤宏基因组队列上对其进行测试，评估其在不依赖参考数据库的情况下，直接从长度短至 100 bp 的读段中判定分类学域、编码潜力和阅读框的能力，并考察其在宏基因组从头组装中的应用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>BBERT 能够在不依赖参考数据库的情况下识别细菌序列语法，从而准确地将短至 100 bp 的读段归入分类学域，并判断其编码潜力和阅读框。该模型体积小、速度快，可在较普通的 GPU 上分析宏基因组，还可将短宏基因组读段直接转换为细菌氨基酸序列用于下游分析。BBERT 还能改进宏基因组从头组装，减少错配和缺口并加快运行时间；在野生豆科植物根瘤宏基因组中，BBERT 过滤提高了分箱质量并显著加速了从头组装。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>BBERT 提供了对短读段的快速、无参考分类，使大规模宏基因组档案能够用于更准确的生态学和进化分析。该方法还有助于提升从头组装和后续分析流程的效率与质量。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7284&amp;v=1&amp;s=f9da7537c93616e0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7284&amp;v=2&amp;s=63a5fdee726b9056" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7284&amp;v=3&amp;s=428b8dff6fd68057" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7284&amp;v=4&amp;s=e01432d4a548c156" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7284&amp;v=5&amp;s=2e3316f57bd07977" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.06.749733">Inverse FoldDir: Structure-conditioned Protein Sequence Design by Dirichlet Flow Matching</a></div>
+      <div class="card-title-zh">Inverse FoldDir：基于狄利克雷流匹配（Dirichlet Flow Matching）的结构条件蛋白质序列设计</div>
+      <div class="news">为解决按蛋白骨架设计可控且实验可用序列问题，作者利用Dirichlet流匹配逆折叠，发现其结构恢复优于ESM-IF1，并获得保留GFP结合的高差异纳米抗体序列。</div>
+      <div class="meta">bioRxiv · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">TARTICI A., Stojkovic M., Tian A., Jewett M. C., Altman R. B., Wittmann B. J.</div>
+<div class="meta">DOI: 10.64898/2026.09.06.749733</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.06.749733">https://www.biorxiv.org/content/10.64898/2026.09.06.749733</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>结构条件蛋白序列生成契合你对蛋白语言模型与de novo肽设计的关注。</div>
+<div class="abstract"><span class="abs-label">背景</span>蛋白质工程对生物经济具有重要意义，可应用于材料、医学和能源等领域。其核心挑战之一是设计具有特定结构与功能的蛋白质序列；蛋白质逆折叠（protein inverse folding）旨在为目标蛋白骨架识别与之相容的氨基酸序列，并为蛋白质重设计及由结构生成方法产生的从头骨架提供序列设计能力。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者开发了可控的逆折叠方法 Inverse FoldDir，在氨基酸概率单纯形上进行迭代去噪。给定骨架结构后，模型通过学习得到的狄利克雷流（Dirichlet flow）联合更新所有位点，从而支持完整序列生成、固定残基补全（inpainting）以及用户定义的软性残基先验。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在留出的 CATH 4.2 测试集上，Inverse FoldDir 的平均 TM-score 为 84.5（0–100 量表），平均 Cα RMSD 为 1.76 Å；作为所评估基线中最强方法的 ESM-IF1 在这两项指标上分别为 83.3 和 1.86 Å。去噪轨迹分析表明，不同位点的确定速度不同，且部分残基在生成后期仍会改变身份，体现出全序列逐步优化而非一次性预测或不可逆的序列式解码。在抗 GFP 纳米抗体重设计实验中，35 条重设计序列中有 2 条在独立实验中保留了可重复的 sfGFP 结合信号，且与天然纳米抗体约有 43% 的序列差异。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提出了一种结构条件蛋白质重设计方法，将结构恢复能力、用户可控性和实验验证结合起来。摘要指出，该方法还为未来面向性质引导的采样（property-guided sampling）提供了自然的发展路径。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7278&amp;v=1&amp;s=adbc693c79f81817" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7278&amp;v=2&amp;s=7503346bee2ce24a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7278&amp;v=3&amp;s=9295f303d82bcf57" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7278&amp;v=4&amp;s=b143f2734af92f57" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7278&amp;v=5&amp;s=34591fd7d627e33b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 42 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.08.28.747922">Corpusome, a cross-body-site human microbiome corpus for representation learning</a></div>
+      <div class="card-title-zh">Corpusome：用于表征学习的跨身体部位人类微生物组语料库</div>
+      <div class="news">为解决微生物组模型受限于单队列粪便样本问题，作者构建跨体位点统一语料库Corpusome，整合18.8万样本并发现16S层体位点信号较技术方差高2.4倍，推动跨研究表征学习。</div>
+      <div class="meta">bioRxiv · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Xuan H., Huang Y., Bian J.</div>
+<div class="meta">DOI: 10.64898/2026.08.28.747922</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.08.28.747922">https://www.biorxiv.org/content/10.64898/2026.08.28.747922</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>契合你对微生物组与宏基因组表征学习数据资源的关注。</div>
+<div class="abstract"><span class="abs-label">背景</span>现有人类微生物组机器学习模型大多基于单一队列的粪便样本训练，限制了跨身体部位表征能力和跨研究泛化能力。该领域的进展受限，与其说是算法不足，不如说是缺乏一个经过协调统一、覆盖多个身体部位且包含技术元数据的人类微生物组语料库，从而无法对批次结构进行建模而非忽略。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究发布了 Corpusome，这是一个用于表征学习的、经过协调统一的双层（two-tier）跨身体部位人类微生物组语料库，共整合了 187,546 个人类微生物组样本，并纳入 curatedMetagenomicData、American Gut Project 和 EBI MGnify 平台的标准化谱系数据。该资源采用双层设计：宏基因组鸟枪法测序层（shotgun tier）包含 22,588 个样本、93 项研究，提供物种和通路水平谱系；16S 层包含 164,958 个样本，来自对 708 项 MGnify 研究的完整提取，提供属水平谱系并扩展到口腔、皮肤、呼吸道和泌尿生殖道等部位。语料库覆盖 6 个身体部位和 2 种数据模态，并配有经过统一整理的元数据以支持批次感知建模（batch-aware modelling）。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Corpusome 在保留功能深度的同时实现了跨身体部位覆盖广度：shotgun 层提供更深的物种和通路信息，16S 层显著扩展了不同身体部位的样本覆盖范围。在 16S 层中，身体部位信号相对于技术/来源变异更强，约高出 2.4 倍。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提供了一个经过统一协调的跨身体部位人类微生物组语料库，为表征学习提供基础资源。其包含技术元数据并支持批次感知建模，有助于提升跨身体部位表征和跨研究泛化能力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7103&amp;v=1&amp;s=4097d28cc52cb869" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7103&amp;v=2&amp;s=80befe51c57dad18" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7103&amp;v=3&amp;s=f2df2a427de50277" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7103&amp;v=4&amp;s=7d6927fd91f9cb4e" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7103&amp;v=5&amp;s=0f75b0ed5d6332b7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42721960/">Teamwork makes the dream work? Ensemble learning in computational pathology.</a></div>
+      <div class="card-title-zh">团队合作让梦想成真？计算病理学中的集成学习</div>
+      <div class="news">为解决计算病理学中多预训练模型互补信息整合难题，作者利用五种病理基础模型集成学习，发现其可提升肿瘤分型、生物标志物及治疗反应预测表现，推动计算病理学发展</div>
+      <div class="meta">Cancer cell · 2026-09-10</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Schulz Stefan, Foersch Sebastian</div>
+<div class="meta">DOI: 10.1016/j.ccell.2026.08.013</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42721960/">https://pubmed.ncbi.nlm.nih.gov/42721960/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>集成预训练模型可借鉴AI方法，但不涉及肽发现或微生物组。</div>
+<div class="abstract"><span class="abs-label">背景</span>计算病理学（computational pathology）中，不同的病理基础模型（pathology foundation models）可能具有互补信息。该文关注如何通过集成学习（ensemble learning）利用这些互补信息，以提升病理分析任务的表现。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>Luo 等报道了一种集成方法，将五个预训练的病理基础模型整合为切片层面的表征（slide-level representation）。该方法旨在综合利用这些模型的互补信息。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该集成方法在肿瘤分型、生物标志物预测和治疗反应预测方面带来了性能提升。结果表明，整合多个预训练模型的切片级表征具有实际优势。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这项工作显示了集成方法以及多模态方法（multimodal approaches）在计算病理学中的潜力。其意义在于为提升病理相关预测任务的性能提供了新的思路。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7296&amp;v=1&amp;s=aaf3f224b04c5c05" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7296&amp;v=2&amp;s=2c8703570a314c8b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7296&amp;v=3&amp;s=1bd3b694a7ad0511" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7296&amp;v=4&amp;s=7c9ed51b0e6167cc" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7296&amp;v=5&amp;s=4faabd436dc685fc" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 36 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.02.06.704115">Large language models unlock the ecology of species interactions</a></div>
+      <div class="card-title-zh">大语言模型解锁物种相互作用生态学</div>
+      <div class="news">为解决物种相互作用数据跨时空与类群稀缺难题，作者利用大语言模型挖掘多语公民科学评论，发现其可高准确提取鸟类与植物—传粉者互作，推动生态监测研究。</div>
+      <div class="meta">bioRxiv · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zou H.-X., Yang X., Hajamaideen T. H., Stein O. J., Beltran R. S., Freeman B. G., Lindquist M., Miller E. T., Mengarelli S., Probst C. M., Valdovinos F. S., Van Berkel D. B., Zarnetske P. L., Weeks B. C., Zhu K.</div>
+<div class="meta">DOI: 10.64898/2026.02.06.704115</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.02.06.704115">https://www.biorxiv.org/content/10.64898/2026.02.06.704115</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>用LLM抽取物种互作，方法上贴近你对AI与微生物生态数据挖掘的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>物种相互作用塑造种群动态、地理分布、进化轨迹以及对环境变化的响应。然而，由于野外采集困难，在大范围空间、时间和分类尺度上，这类相互作用数据仍然稀缺。公民科学平台包含数十亿条生物多样性观测记录，且常附有可能记录生物间相互作用的非结构化文本评论，因此是一个很有前景的数据来源。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究提出了一个利用大语言模型（large language models, LLMs）的工作流程，用于从多语言公民科学评论中收集物种相互作用观测。作者以鸟类—鸟类和植物—传粉者两类相互作用为案例，评估LLMs对相互作用类型及参与物种的识别、提取与分类能力。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>两个案例研究表明，LLMs能够以较高准确性快速提取相互作用类型及参与物种。由此获得的数据可显著扩展物种相互作用数据在空间、时间和分类学上的覆盖范围与分辨率，并有助于追踪生态变化。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该方法有望支持对长期生态学问题开展新的检验，并提升我们表征、预测和保护全球变化背景下生物多样性的能力。在进行适当验证、专家审查，并关注用户及敏感物种数据隐私的前提下，这一方法为刻画、预测和保护生物多样性提供了新的机会。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7277&amp;v=1&amp;s=6a1d09c5f73c246c" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7277&amp;v=2&amp;s=d76d202b71b35ba5" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7277&amp;v=3&amp;s=23d416f5d3ceeca6" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7277&amp;v=4&amp;s=a43829b6b82da224" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7277&amp;v=5&amp;s=ca91c5619b6d98b5" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 35 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42721959/">Ensemble learning of pathology foundation models for precision oncology.</a></div>
+      <div class="card-title-zh">用于精准肿瘤学的病理学基础模型集成学习</div>
+      <div class="news">为解决病理基础模型表现不一、泛化受限问题，作者利用集成五种预训练模型的ELF构建统一切片表征，发现其在分类、标志物检测及多癌种治疗反应预测中均优于单一模型。</div>
+      <div class="meta">Cancer cell · 2026-09-10</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Luo Xiangde, Wang Xiyue, Eweje Feyisope, Zhang Xiaoming, Gomez Marti Juan Luis, Cascarino Sarah, Yang Sen, Li Yuchen, Quinton Ryan, Xiang Jinxi, Ji Yuanfeng, Li Zhe, Chen Yijiang, Bergstrom Colin, Kim Ted, Olguin Francesca Maria, Yuan Kelley, Abikenari Matthew, Heider Andrew, Willens Sierra, Rajaram Sanjeeth, West Robert, Neal Joel, Schoenfeld Adam, Diehn Maximilian, Vanderbilt Chad, Li Ruijiang</div>
+<div class="meta">DOI: 10.1016/j.ccell.2026.08.008</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42721959/">https://pubmed.ncbi.nlm.nih.gov/42721959/</a></div>
+<div class="meta">Keywords: anticancer therapy response prediction、computational pathology、ensemble learning、immunotherapy response prediction、molecular biomarker detection、pathology foundation models、precision oncology</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦病理图像基础模型集成，与蛋白语言模型和抗菌肽研究关联很弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>组织病理学（histopathology）对癌症诊断和治疗选择至关重要，病理学基础模型（foundation models）可从全视野切片图像（whole-slide images, WSIs）中学习视觉表征。现有基础模型由于基于不同数据集并采用不同训练策略，导致性能不一致且泛化能力有限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究提出了 ELF（Ensemble Learning of Foundation models），将5个预训练病理学基础模型整合为统一的切片级表征。ELF在覆盖20个解剖部位的53,699张WSIs上训练，通过集成学习捕获不同模型间的互补信息；其切片级架构面向数据高效的下游评估，包括治疗反应预测等有限数据场景。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究在多种癌症类型中评估了ELF在疾病分类、生物标志物检测，以及抗癌治疗和免疫治疗反应预测中的表现。结果显示，ELF在所测试任务上均优于被评估的组成模型及其他切片级基础模型。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，集成学习有助于提升病理学基础模型在肿瘤学应用中的性能与泛化能力。结果支持进一步评估集成学习在肿瘤病理应用中的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7274&amp;v=1&amp;s=0a08936137cf95db" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7274&amp;v=2&amp;s=cef739033596f0b8" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7274&amp;v=3&amp;s=b9941f0226958181" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7274&amp;v=4&amp;s=b484c1ee4c9504be" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7274&amp;v=5&amp;s=fc763cd00eb4f91c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 42 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.10.750680">Microbial succession in casing layer shapes bacterial blotch disease associated communities in cultivated white button mushroom: From casing layer to disease</a></div>
+      <div class="card-title-zh">覆土层中的微生物演替塑造栽培双孢蘑菇白色斑点病相关群落：从覆土层到疾病</div>
+      <div class="news">为解决白蘑菇斑点病是否由单一致病菌驱动的问题，作者结合16S与宏基因组追踪覆土至子实体微生物演替，发现该病实为群落重组和网络简化驱动的群落级过程。</div>
+      <div class="meta">bioRxiv · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Mudiyanselage S. D., Gazis R., Martins S. J.</div>
+<div class="meta">DOI: 10.64898/2026.09.10.750680</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.10.750680">https://www.biorxiv.org/content/10.64898/2026.09.10.750680</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>结合16S与宏基因组解析细菌群落演替，贴近你的微生物组与宏基因组兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>栽培双孢蘑菇（Agaricus bisporus）的细菌性斑点病（bacterial blotch）长期以来通常被归因于个别假单胞菌属（Pseudomonas）病原体。然 而，在受病害影响的蘑菇中反复检测到多样化细菌类群，提示该病可能涉及更广泛的微生物群落组织变化。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究比较了有症状与无症状蘑菇相关的细菌群落，并在美国两家商业化蘑菇农场中，考察覆土层在早期、出菇期（pinning）和采收期的细菌演替。研究结合16S rRNA基因扩增子测序与宏基因组鸟枪法测序（shotgun metagenomics）进行分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>无论是否发病，蘑菇相关群落均以假单胞菌属（Pseudomonas）为优势，说明细菌性斑点病并非仅与该优势属丰度升高有关；相反，有症状蘑菇表现出显著的群落重构、特定类群富集以及明显降低的微生物网络复杂性。物种水平宏基因组分析显示，假单胞菌属内部多个与斑点病相关谱系发生了方向相反的变化，同时伴随Mycetocola和Ewingella等非假单胞菌类群变化；尽管分类组成改变，优势假单胞菌群体的功能谱总体较为保守，但疾病相关样本中与中心代谢、O-抗原生物合成和肽聚糖成熟相关通路富集。覆土层群落发生明显的定向演替：由早期Exiguobacterium和Leuconostoc占优，转向后期Flavobacterium、Pedobacter和Pseudomonas富集；在病害发生率较高的农场中，Pseudomonas在覆土层中的相对丰度从早期约2%升至采收期的51%，且α多样性无显著变化，表明群落发育主要体现为类群替代与重新分配。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究结果支持一种以微生物组为中心的细菌性斑点病解释框架，即该病与宿主和发育阶段依赖的微生物演替、物种水平群落重构以及微生物连通性改变相关。这一框架超越了单一病原体范式，强调细菌性斑点病是由蘑菇宿主及其周围微生物组动态互作共同塑造的群落层面疾病过程。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7290&amp;v=1&amp;s=535e46b8ea560122" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7290&amp;v=2&amp;s=e6966a5bb1fbc731" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7290&amp;v=3&amp;s=3b0bdc958d332e1f" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7290&amp;v=4&amp;s=03272856386ef8d2" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7290&amp;v=5&amp;s=f803b393c7bfee5f" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42725723/">Bacterial microbiomes and antifungal effect of Danish wood ant (Formica polyctena) populations.</a></div>
+      <div class="card-title-zh">丹麦木蚁（Formica polyctena）种群的细菌微生物组及其抗真菌作用</div>
+      <div class="news">为解决红林蚁是否携带并沉积抑菌表面菌群问题，作者结合多部位微生物组分析与平板沉积拮抗实验，发现其可快速沉积抗真菌微生物且表面菌群为选择性获得，推动蚁类生物防治研究。</div>
+      <div class="meta">Applied and environmental microbiology · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Jensen Ida Cecilie, Nazipi Bushi Seven, Mogensen Anders Lander, Braad Lund Marie, Offenberg Joachim, Schramm Andreas</div>
+<div class="meta">DOI: 10.1128/aem.00763-26</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42725723/">https://pubmed.ncbi.nlm.nih.gov/42725723/</a></div>
+<div class="meta">Keywords: Formica polyctena、ant-associated microorganisms、biological control、microbiomes、plant pathogens</div>
+<div class="reason"><span class="abs-label">推荐理由</span>解析蚂蚁相关细菌微生物组与抗真菌菌株，贴近你对微生物组挖掘抗菌分子的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>包括木蚁（Formica polyctena）在内的蚂蚁不仅能够控制节肢动物害虫，近期研究还表明其对植物病原体具有潜在抑制作用。后一种效应很可能与蚂蚁相关的抗菌微生物有关，因此本研究考察了丹麦5个地点木蚁及其巢穴的细菌微生物组，并评估其沉积具有抑菌作用微生物的能力。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者在丹麦5个地点采集木蚁及其巢穴样本，并将蚂蚁的腿和身体分开取样，以检验腿部细菌群落是否区别于身体和巢穴微生物组。通过让蚂蚁在琼脂平板上行走，评估其沉积对Monilinia fructigena、Botrytis cinerea和Fusarium graminearum具有抑制作用的抗菌微生物，并分离具有抗菌活性的细菌和真菌菌株，再与蚂蚁微生物组中的16S rRNA扩增子序列进行比对。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>木蚁在琼脂平板上行走10秒内即可沉积抗菌微生物，暴露24小时后平板上出现致密微生物生长；研究共分离到7株具有抗菌活性的细菌和7株真菌，其中6株细菌分离物与所有地点蚂蚁微生物组中的16S rRNA扩增子序列相匹配。这些序列在蚂蚁身体和腿部上的丰度和检出率高于巢穴，提示其来源于蚂蚁体表微生物组；此外，5个地点的蚂蚁细菌微生物组总体相似，且均由内共生菌Wolbachia高度占优势，但身体、腿部和巢穴的细菌微生物组彼此存在显著差异。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究表明，木蚁具有独特的腿部微生物组，并稳定关联着对重要植物病原真菌具有潜在抑制作用的抗真菌微生物。这是首个系统研究木蚁（Formica polyctena）及其巢穴细菌微生物组的工作，支持木蚁微生物组是选择性获得而非随机来自环境，并凸显了蚂蚁及其相关微生物作为农业生物防治因子的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7070&amp;v=1&amp;s=b2d37582e3d136fb" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7070&amp;v=2&amp;s=a4d7cae70d79380a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7070&amp;v=3&amp;s=402e81f25e2aa35a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7070&amp;v=4&amp;s=54fac202e6e2e148" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7070&amp;v=5&amp;s=b1c98f2e1fb9d359" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 37 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42717083/">TM184C is a GPCR-like regulator of intercellular exchange and autophagy.</a></div>
+      <div class="card-title-zh">TM184C是一种GPCR样的细胞间交换与自噬调控因子</div>
+      <div class="news">为解决超暗七跨膜蛋白TM184C是否具GPCR样功能之谜，作者挖掘海量AlphaFold2结构模型，发现其通过β-arrestin/GRK调控细胞间桥连接与物质交换并限制自噬通量。</div>
+      <div class="meta">Nature · 2026-09-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Lee Kyutae D, Taylor Samuel, Arcuri Jennifer, Chandthakuri Shraddha, Pujols Jacinda, Colon Bruno, Wang Qiang, Wu Chenzhou, Meng Zhipeng, Thompson-Ceccato Sebastian J, Mitchell Jonathan, Bayik Defne, Carbone Alexandra, Slepak Vladlen, Slepak Tatiana I, Welford Scott M, Ivan Michael E, Wang Dazhi, Goldberg Blake O, Baringer Warner, Maradzike Elvis, Isom Daniel G</div>
+<div class="meta">DOI: 10.1038/s41586-026-10993-8</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42717083/">https://pubmed.ncbi.nlm.nih.gov/42717083/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>用结构挖掘暗蛋白启发蛋白功能发现，但不涉及细菌肽或PLM设计。</div>
+<div class="abstract"><span class="abs-label">背景</span>蛋白质功能注释大多依赖序列相似性，但许多功能仍隐藏在可检测同源性之外。研究者通过挖掘数百万个AlphaFold2模型，鉴定出两个与G蛋白偶联受体（GPCR）具有结构同源性的人类“超暗”七次跨膜蛋白家族：TM184和PRRT。TM184C是其中表达最广、进化上最保守的超暗GPCR样蛋白。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究基于对数百万个AlphaFold2结构模型的挖掘，识别与GPCR具有结构同源性的蛋白家族。作者检测了这些蛋白是否具有GPCR标志性活性，包括β-arrestin募集和GPCR激酶（GRK）依赖性磷酸化，并重点分析TM184C的亚细胞定位、囊泡行为、细胞间连接形成及其在自噬中的作用。研究还利用缺失同源蛋白Hfl1的酵母，检验人TM184C对自噬体稳态的恢复能力。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>TM184C定位于高度动态的细胞内囊泡而非质膜，这些囊泡沿微管运动、聚集于细胞突起，并促进形成类似隧道纳米管和肿瘤微管的细胞间连接。这些桥样结构介导细胞器共享，该过程依赖TM184C的C端尾部及其arrestin code基序，提示GPCR样的β-arrestin和GRK调控与囊泡功能及细胞间连通性相关。TM184C还通过限制LC3B脂化和自噬体积累来约束自噬通量；这一功能具有深度保守性，因为人TM184C可恢复缺失其同源蛋白Hfl1的酵母中的自噬体稳态。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，基于结构的蛋白发现策略能够揭示“暗蛋白质组”中的隐藏功能。研究将TM184C鉴定为一种古老的GPCR样调控因子，参与自噬、细胞间连通性和物质交换的调节。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=6943&amp;v=1&amp;s=84f7374fbd849713" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=6943&amp;v=2&amp;s=80367cd0a6bd0222" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=6943&amp;v=3&amp;s=8e4c49370a5ae332" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=6943&amp;v=4&amp;s=bce2aca2c12114dd" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=6943&amp;v=5&amp;s=0fc0ef53317af192" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 33 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.09.750284">Solid Foods Drive the Maturation of the Gut Microbiota During Infancy</a></div>
+      <div class="card-title-zh">固体食物驱动婴儿期肠道微生物群的成熟</div>
+      <div class="news">为解决断奶期固体食物如何驱动婴儿肠道菌群成熟问题，作者结合纵向饮食记录与全长16S测序，发现补充喂养提升多样性并促进成人相关产丁酸菌建立。</div>
+      <div class="meta">bioRxiv · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wang Y., Ku H., Safarchi A., Rebuli M., Almond T., Muhlhausler B., Tran C. D., Conlon M. A.</div>
+<div class="meta">DOI: 10.64898/2026.09.09.750284</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.09.750284">https://www.biorxiv.org/content/10.64898/2026.09.09.750284</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及肠道细菌微生物组演替，但与抗菌肽设计和模型方法关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>生命早期健康肠道微生物群的建立是决定长期健康的重要因素，但作为关键营养转变的固体食物引入如何塑造肠道微生物群发育，仍研究不足。本研究旨在表征添加辅食（complementary feeding）在断奶期间对婴儿肠道微生物群组成演替与功能成熟的影响。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究在5个时间点收集婴儿粪便样本及相应膳食数据：断奶前（PREW，4–6月龄）、首次引入固体食物后4周、8周、12周（WK4、WK8、WK12），以及向家庭饮食过渡的断奶后期（LATW，约12月龄）。采用全长16S rRNA基因测序分析粪便微生物群组成，并结合饮食摄入数据评估辅食添加与微生物群变化的关联。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>引入固体食物后，肠道微生物群发生显著重塑，表现为丰富度、均匀度和系统发育多样性显著增加（p &lt; 0.01），并出现与成人相关的菌群类群，包括Faecalibacterium、Ruminococcus及Lachnospiraceae成员。这些变化在断奶后期最为明显，且与植物来源复杂碳水化合物和膳食蛋白摄入增加密切相关（Spearman相关，r &gt; 0.30，FDR &lt; 0.001）；作为肠道微生物群成熟功能特征的丁酸生成能力，也与Ruminococcus bromii和Faecalibacterium prausnitzii等关键成人样物种的建立相关（Spearman相关，r &gt; 0.30，FDR &lt; 0.001）。此外，辅食添加对肠道微生物群的重塑还减弱了与生命早期因素（包括分娩方式和家庭宠物暴露）相关的微生物多样性差异。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究表明，辅食添加期间的营养转变是驱动婴儿肠道微生物群发育与成熟的关键因素。断奶期因此构成塑造肠道微生物群的重要窗口，并可能成为促进肠道健康及相关福祉的生命早期营养干预靶点。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7286&amp;v=1&amp;s=2ea46ea6be142021" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7286&amp;v=2&amp;s=aadf371ccaffc053" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7286&amp;v=3&amp;s=1791f70b39a52c5f" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7286&amp;v=4&amp;s=b5341524b6f23115" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7286&amp;v=5&amp;s=0909e055030bcd4c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 31 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.06.749702">Environmental factors and microbe-microbe interactions drive the structure of the core microbiota of terrestrial microalgae</a></div>
+      <div class="card-title-zh">环境因子与微生物间相互作用驱动陆生微藻核心微生物群的结构</div>
+      <div class="news">为解析陆生光合生物核心微生物组低分类分辨率下的驱动因素，作者结合141地群落调查、Meta分析与互作网络分析，发现气候土壤植物群落及核心ASV中心互作共同塑造其地点特异结构。</div>
+      <div class="meta">bioRxiv · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Garrigues V., Guan R., Preteseille N., Leccia I., Wagner E., Roux F., Duran P.</div>
+<div class="meta">DOI: 10.64898/2026.09.06.749702</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.06.749702">https://www.biorxiv.org/content/10.64898/2026.09.06.749702</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>与细菌微生物组相关，但重心是藻类核心群落生态而非肽发现。</div>
+<div class="abstract"><span class="abs-label">背景</span>植物及其他光合生物通过特化关联与其环境及周围微生物群发生互作。此前已有研究在较高分类层级（如目水平）提出存在全球性核心微生物群，但在更低分类分辨率下，哪些环境因子以及微生物间相互作用如何驱动该核心微生物群的变异仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究利用法国西南部141个样点的环境多样性，对藻类种群及其相关细菌和真菌微生物群进行表征。随后结合已发表数据开展荟萃分析（meta-analysis），正式鉴定陆生光合生物的全球核心微生物群，并进一步分析该核心微生物群内部多样性、塑造样点特异性群落组成的环境驱动因素，以及通过互作网络分析评估微生物间相互作用对稳定核心群落组装的贡献。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定出陆生光合生物的全球核心微生物群由7个细菌目和5个真菌目组成。环境因子对核心目总相对丰度的影响较小，但在扩增子序列变体（ASV）水平上，核心微生物群受到气候因子、土壤因子（edaphic factors）和植物群落描述指标的影响。互作网络分析显示，核心ASV在藻类相关微生物网络中占据中心位置，且不同核心目驱动了核心微生物群结构的样点特异性变异。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，环境背景与微生物间相互作用共同塑造了光合生物相关核心微生物群的组成与稳定性。该研究也说明，在较低分类分辨率下理解核心微生物群变异，需要同时考虑环境驱动和微生物互作。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7285&amp;v=1&amp;s=322eabf9fc2749c5" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7285&amp;v=2&amp;s=cf97a62d55bc4567" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7285&amp;v=3&amp;s=fb16c9c7a75054e7" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7285&amp;v=4&amp;s=e95058fd2bf6e0ad" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=7285&amp;v=5&amp;s=65f7a30a2b7d3e62" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日文献主要聚焦三类方向：一是微生物组与宏基因组分析，包括跨域物种定量、短读长分类、跨体位点人类微生物组资源、婴儿肠道与农业/环境微生物生态；二是AI驱动的蛋白质与酶功能研究，如蛋白功能注释、酶功能生成式预测、结构约束序列设计；三是医学AI，尤其计算病理基础模型集成。共同趋势是AI辅助分析工具明显增多，且强调可复现、可配置、跨数据集泛化，以及将多模态/多来源数据整合为统一表征。对研究者的价值在于：可直接借鉴新算法与数据资源提升宏基因组、蛋白设计和病理预测流程，也有助于把握“机制建模+基础模型+集成学习”这一方法学方向。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=niupeiyuan%40genomics.cn&amp;d=2026-09-14&amp;s=61e9767155b5fc99">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=niupeiyuan%40genomics.cn&amp;d=2026-09-14&amp;s=61e9767155b5fc99">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

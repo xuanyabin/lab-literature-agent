@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-09-16</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-09-16</h1>
+    <p class="hello">轩亚冰，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">昨日全库新增 751 篇 · 命中您的关键词 177 篇 · 本次推送 15 篇（必读 0 · 重要 3 · 参考 12）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 62 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42743262/">Ten quick tips for spatial transcriptomics analysis.</a></div>
+      <div class="card-title-zh">空间转录组学分析的十个实用建议</div>
+      <div class="news">由于空间转录组平台与工具激增致初学者分析困难，作者以综述提出覆盖全流程的十条实用建议，发现可形成平台无关分析路线图并指出三维重建仍是关键瓶颈。</div>
+      <div class="meta">PLoS computational biology · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Kurogi Nagomi, Shimbara Koki, Koreeda Tatsuya, Tsuyuzaki Koki</div>
+<div class="meta">DOI: 10.1371/journal.pcbi.1014757</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42743262/">https://pubmed.ncbi.nlm.nih.gov/42743262/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接对应你关注的空间转录组、单细胞整合与分析流程选择。</div>
+<div class="abstract"><span class="abs-label">背景</span>空间转录组学（spatial transcriptomics, ST）能够在保留组织切片空间位置信息的同时进行全基因组范围的基因表达谱分析。自 2016 年 Ståhl 等人的奠基性工作以来，该领域迅速发展，已形成涵盖测序型平台和成像型平台的多种技术路线，但平台类型、数据结构和计算工具的多样性也给初学者带来挑战。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文是一篇综述，围绕空间转录组学研究的完整流程提出十个实用建议。内容包括评估 ST 是否适合特定生物学问题、根据研究目标选择平台、理解与处理 ST 数据，以及选择用于分析和可视化的软件工具；同时讨论了与单细胞 RNA 测序和空间蛋白质组学等互补模态的整合、公共数据集的利用及结果共享。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>本文总结了一个覆盖实验设计到生物学发现的、简明且不依赖特定平台的空间转录组学应用路线图。作者还指出了当前 ST 的局限性，尤其是基于连续组织切片重建三维组织结构仍然具有挑战。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该综述为生物学家、生物信息学家和临床科学家提供了将空间转录组学纳入研究的实用指导，有助于降低入门门槛并规范分析流程。其价值在于帮助研究者在生物学背景下解释空间模式，并更有效地整合多模态数据以支持生物学发现。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7542&amp;v=1&amp;s=5c114c6b7c9f71da" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7542&amp;v=2&amp;s=d70650828a14b7f8" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7542&amp;v=3&amp;s=5ef0ee4302b947dd" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7542&amp;v=4&amp;s=683fe81b221d9857" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7542&amp;v=5&amp;s=2207f43217a810e6" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 54 分</div>
+      <div class="card-title"><span class="badge cat-module">脑图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42735685/">Amygdalostriatal transition zone neurons encode sustained cue responses to guide defensive behaviors.</a></div>
+      <div class="card-title-zh">杏仁核-纹状体过渡区神经元编码持续性的线索反应以引导防御行为</div>
+      <div class="news">为解决威胁持续时防御行为缺乏持续编码问题，作者结合单核测序与在体功能操控，发现ASt尤其Drd2+神经元持续表征威胁线索并驱动条件性恐惧防御。</div>
+      <div class="meta">Neuron · 2026-09-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Mills Fergil, Lee Christopher R, Howe James R, Li Hao, Keisler Maria N, Shao Shan, Taschbach Felix H, Lemieux Mackenzie E, Aloboudi Faith, White Jesse, Chan May G, Borio Matilde, Keyes Laurel R, Chen Hannah S, Bushra Fabiha, Schneider Gates P, Lemmon Dani P, Lee Kyung J, Gross Alexa L, Batra Kanha, Patel Reesha R, Asokan Meenakshi M, Delahanty Jeremy, Cazares Christian, Heyman Christopher R, Poll Nicholas B, Maree Liezl, Wichmann Romy, Pereira Talmo D, Benna Marcus K, Root Cory M, Tye Kay M</div>
+<div class="meta">DOI: 10.1016/j.neuron.2026.08.012</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42735685/">https://pubmed.ncbi.nlm.nih.gov/42735685/</a></div>
+<div class="meta">Keywords: amygdala、amygdalostriatal transition zone、defensive behavior、dopamine receptor、fear conditioning、striatum</div>
+<div class="reason"><span class="abs-label">推荐理由</span>用snRNA-seq定义新脑区细胞类型，契合你对单细胞图谱与行为演化方法的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>为了确保生存，大脑必须快速识别威胁，并在危险存在期间持续维持防御行为。杏仁核长期被视为恐惧反应的关键脑区，但杏仁核神经元对威胁线索的反应大多是短暂的，其持续时间短于实际观察到的防御反应，因此提示可能存在尚未明确的相关神经环路成分。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用单核RNA测序（single-nucleus RNA sequencing, snRNA-seq）分析杏仁核-纹状体过渡区（amygdalostriatal transition zone, ASt）的遗传特征，并将其与邻近的纹状体和杏仁核结构进行比较。研究还结合在体电生理记录和钙成像检测ASt神经元对预测电击线索的反应，并通过光刺激和光遗传抑制实验评估ASt及其中Drd2+神经元在防御行为中的作用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>snRNA-seq结果表明，ASt在遗传上不同于邻近的纹状体和杏仁核结构。在体电生理和钙成像显示，ASt神经元对预测电击的线索具有强而持续的反应。进一步地，ASt的光刺激足以驱动僵直和回避行为，而光遗传抑制实验表明，Drd2+ ASt神经元是线索条件性恐惧反应所必需的。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果将ASt确立为介导恐惧反应环路中的一个此前未被充分认识但至关重要的脑结构。该结构在编码习得性关联并指导防御行为方面发挥关键作用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7578&amp;v=1&amp;s=5a7ebaa936a505cc" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7578&amp;v=2&amp;s=338147a9b5eb21b3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7578&amp;v=3&amp;s=4b22120faad9747c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7578&amp;v=4&amp;s=c5c13647fc3998d8" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7578&amp;v=5&amp;s=5b91a0f69889e66c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42737743/">A High-Resolution Stereo-Seq Spatial Transcriptomic Resource for Adult Holstein Cattle Liver.</a></div>
+      <div class="card-title-zh">成年荷斯坦奶牛肝脏高分辨率 Stereo-seq 空间转录组资源</div>
+      <div class="news">为解决牛肝空间分子结构长期不清的问题，作者利用Stereo-seq绘制500 nm分辨率图谱，发现Bin50可较好保留可解释的肝脏空间转录组织，推动家畜空间组学研究。</div>
+      <div class="meta">International journal of molecular sciences · 2026-09-02</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Akter Shamima, Li Congjun, Bhowmik Nayan, Yang Liu, Ma Li, Van Tassell Curtis P, Baldwin Vi Ransom L, Liu George E</div>
+<div class="meta">DOI: 10.3390/ijms27177844</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42737743/">https://pubmed.ncbi.nlm.nih.gov/42737743/</a></div>
+<div class="meta">Keywords: Holstein cattle、Stereo-seq、bovine liver、livestock genomics、spatial gene expression、spatial transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提供Stereo-seq空间图谱资源，可借鉴于昆虫组织空间转录组研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>牛肝是一个高度分区化的器官，在持续糖异生和氮循环再利用中发挥关键作用。然而，受传统整体组织测序和单细胞方法局限，其空间分子结构迄今仍缺乏系统表征。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用空间增强分辨率组学测序（Spatial Enhanced Resolution Omics-sequencing, Stereo-seq），构建了成年荷斯坦奶牛肝脏的亚细胞分辨率（500 nm）转录组图谱，并引入优化的参考引导型流程以克服家畜标准注释的局限。原始测序数据通过 Stereo-seq Analysis Workflow 处理，并结合 Stereopy、Seurat、SingleR 和参考引导型流程进行分析；同时评估了 Bin20、Bin50、Bin100、Bin150 和 Bin200 等不同空间聚合尺度。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>随着 bin 尺度增大，分子标识符计数和检出基因复杂度提高，但空间分辨率逐步降低，因此研究选定 Bin50（对应 50 × 50 DNA nanoballs，名义覆盖范围约 25 × 25 µm）作为主要分析的实用中间聚合水平。质量控制评估、Leiden 聚类、UMAP 可视化、基于参考的细胞类型注释、簇标记基因分析以及经典肝脏基因的空间定位共同表明，该数据资源保留了具有生物学可解释性的肝脏转录组织结构。研究还公开了原始测序数据、处理后的空间矩阵、注释对象和分析代码，以支持再分析和计算基准测试。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究构建了来源于成年荷斯坦奶牛肝组织的 Stereo-seq 空间转录组资源。该初始资源为未来开展牛肝生物学、比较基因组学以及家畜健康和生产性状空间基础研究提供了重要基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7554&amp;v=1&amp;s=7234a6341f90a38a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7554&amp;v=2&amp;s=7681b19e1836e3e4" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7554&amp;v=3&amp;s=82cb47f7d82add45" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7554&amp;v=4&amp;s=84b46bba5eb7a15b" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7554&amp;v=5&amp;s=f778caf951825ada" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-module">三维时空图谱</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42735688/">Norway spruce spatiotemporal programs of conifer reproductive development.</a></div>
+      <div class="card-title-zh">挪威云杉生殖发育的时空程序</div>
+      <div class="news">为解决针叶树生殖发育时空机制不清问题，作者构建挪威云杉时序空间转录组图谱，发现营养向生殖转变的分子区域程序及DAL55、YABBY演化线索。</div>
+      <div class="meta">Cell · 2026-09-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Saarenpää Sami, Zivi Nathan, Masarapu Yuvarani, Mishra Laxmi S, Rouot Sofia, Orozco Alina, Herrera-Foessel Sybil A, Ahlgren Kalman Teitur, Liva Mario, Yadav Sonam, Englund Marie, Street Nathaniel R, Sundström Jens F, Giacomello Stefania</div>
+<div class="meta">DOI: 10.1016/j.cell.2026.08.033</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42735688/">https://pubmed.ncbi.nlm.nih.gov/42735688/</a></div>
+<div class="meta">Keywords: Picea abies、conifer development、evo-devo、evolution、gene expression、plants、regulatory networks、reproductive development、spatial transcriptomics、spatiotemporal</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽为植物空间转录组图谱，但其时空图谱思路可借鉴你的空间组学研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>针叶树是森林生态系统的重要组成部分，但由于其基因组复杂，其生殖发育仍缺乏充分研究。该研究聚焦挪威云杉（Picea abies）生殖发育过程中的时空分子程序。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究构建了野生型挪威云杉发育中生殖枝和营养枝在3个时间点、共88个组织切片的时间分辨空间转录组（spatial transcriptomics, ST）图谱，并纳入 acrocona 突变体的转变枝进行比较。通过分析不同材料的时空基因表达动态，研究鉴定了营养生长向生殖生长转变过程中活跃的分子过程及其在枝条中的特定空间区域，并对 MADS-box 基因 DAL55 进行了鉴定和实验表征。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究识别出营养向生殖转变期间活跃的分子过程及其特异空间分布。研究还发现并实验表征了在侧生器官发育过程中活跃的 MADS-box 基因 DAL55。此外，研究揭示了裸子植物与被子植物 YABBY 基因之间的进化关系，这些基因与复杂结构中内层或外层细胞层的形成相关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该时空图谱鉴定了与植物生殖器官相关的基因、通路及进化关系。研究为针叶树生殖发育研究提供了有价值的资源。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7548&amp;v=1&amp;s=ace6ffff007356c0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7548&amp;v=2&amp;s=c2fdbcda80bde9db" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7548&amp;v=3&amp;s=f882d3e55aa93f9a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7548&amp;v=4&amp;s=97359a5475321257" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7548&amp;v=5&amp;s=d49f308fe14406a6" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 39 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42741187/">Bridging macro bibliometrics and micro molecular mechanisms: an integrated analysis of global aortic dissection research.</a></div>
+      <div class="card-title-zh">连接宏观文献计量学与微观分子机制：全球主动脉夹层研究的综合分析</div>
+      <div class="news">为解决主动脉夹层知识结构与分子机制整合不足，作者结合全球文献计量与单细胞转录组分析，发现平滑肌重塑和SPP1⁺巨噬细胞增加，并锁定ANGPTL4、MMP19为稀疏候选分子。</div>
+      <div class="meta">Frontiers in cardiovascular medicine · 2026-08-31</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Hu Yunnan, He Yixie, Xu Fan, Chen Liangwan</div>
+<div class="meta">DOI: 10.3389/fcvm.2026.1822129</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42741187/">https://pubmed.ncbi.nlm.nih.gov/42741187/</a></div>
+<div class="meta">Keywords: aortic dissection、bibliometrics、endovascular therapy、immune microenvironment、machine learning、single-cell transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>结合单细胞与机器学习文献计量，方法上贴近你的计算生物学兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>主动脉夹层（aortic dissection，AD）是一种高发病率和高死亡率的灾难性心血管急症。尽管其诊断与治疗已取得进展，但复杂发病机制、最佳治疗策略及术后并发症仍是主要挑战；同时，将全球知识结构与分子机制相结合的定量分析仍较为有限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者检索了 2000 年 1 月 1 日至 2025 年 12 月 31 日 Web of Science Core Collection 和 Scopus 中的 AD 相关文献，采用 Excel、VOSviewer、CiteSpace、Scimago Graphica 和 bibliometrix 进行文献计量分析，并用逻辑增长模型刻画发文趋势。单细胞 RNA 测序数据集 GSE254132 和 GSE213740 分别作为发现队列和外部验证队列，应用 Seurat、Harmony、供体水平伪批量差异表达分析及精确供体标签置换检验；同时将差异表达基因与靶点特异的 PubMed 文献轨迹相结合，以区分已被充分研究的 AD 基因与文献稀缺候选分子。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>共纳入 5,170 篇文献，AD 研究发文量在 2010 年后加速增长，并于 2025 年达到 712 篇；中国发文量最多，美国被引频次最高且国际合作最强。研究识别出四个汇聚前沿：腔内治疗、炎症与血管壁重塑、候选分子标志物以及基于机器学习的预后评估；单细胞分析显示 AD 与血管平滑肌细胞重塑及 SPP1⁺ 重塑型巨噬细胞比例升高相关，且在外部队列中重现了该重塑方向。2000—2025 年间，PubMed 在生物医学领域分别收录了 1,483 篇 angiopoietin-like 4（ANGPTL4）和 240 篇 matrix metalloproteinase 19（MMP19）相关文献，2021—2025 年较 2016—2020 年发文量分别增长 49.9% 和 43.5%，但逐条筛查发现每个靶点仅有 2 篇与 AD 直接相关的原创研究。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究描绘了全球 AD 研究的整体结构及其优先方向的演变，并利用人类单细胞数据作为生物学交叉验证和候选分子优先级筛选层。综合证据提示 ANGPTL4 和 MMP19 是值得开展机制研究的“文献稀缺”分子，但尚不能视为已验证的治疗靶点；在赋予其诊断或治疗价值之前，仍需独立队列和功能实验进一步验证。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7553&amp;v=1&amp;s=d8c7151f1106701a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7553&amp;v=2&amp;s=1921661121492a6b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7553&amp;v=3&amp;s=d0977e133c55cf41" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7553&amp;v=4&amp;s=f214f16adf576704" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7553&amp;v=5&amp;s=5fa016a77176c076" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 67 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42742132/">Comprehensive RNA velocity by modeling the cascade of gene regulation, transcription, and splicing from single-cell RNA sequencing data with TSvelo.</a></div>
+      <div class="card-title-zh">TSvelo：利用单细胞RNA测序数据，通过建模基因调控、转录与剪接级联过程实现全面的RNA速度分析</div>
+      <div class="news">为解决scRNA-seq中RNA velocity难准确定量的问题，作者提出神经常微分方程框架TSvelo，发现其可统一推断潜在时间并在多谱系数据上优于现有方法。</div>
+      <div class="meta">eLife · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Li Jiachen, Wang Zhe, Shen Hong-Bin, Yuan Ye</div>
+<div class="meta">DOI: 10.7554/eLife.108950</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42742132/">https://pubmed.ncbi.nlm.nih.gov/42742132/</a></div>
+<div class="meta">Keywords: RNA velocity、cell trajectory、computational biology、mouse、scRNA-seq analysis、systems biology</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提出scRNA-seq的RNA velocity新框架，贴合你单细胞与AI方法开发需求。</div>
+<div class="abstract"><span class="abs-label">背景</span>RNA速度（RNA velocity）方法通过利用单细胞RNA测序（scRNA-seq）数据对剪接过程进行建模，以拟合基因动态并推断细胞命运。然而，由于剪接时间尺度短、噪声高且数据复杂度大，现有RNA速度方法往往难以精确捕捉单个基因和单个细胞的复杂速度动态，从而降低下游分析的可靠性与稳健性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者提出了TSvelo，这是一个全面的RNA速度数学框架，可利用具有高度可解释性的神经常微分方程（neural ordinary differential equations）对基因调控、转录（transcription）和剪接（splicing）的级联过程进行建模。TSvelo能够同时精确刻画所有基因在转录-未剪接-已剪接三维空间中的动态，推断单个细胞内由各基因共享的统一潜在时间，并可应用于多谱系数据集。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在6个scRNA-seq数据集（其中包括2个多谱系数据集）上的实验表明，TSvelo表现出优越性。摘要还指出，该方法能够更精确地捕捉所有基因的三维动态，并适用于多谱系数据分析。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提出了一种更全面的RNA速度建模框架，有望提升对基因和细胞复杂动态的刻画精度。由此可提高细胞命运推断及相关下游分析的可靠性和稳健性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7547&amp;v=1&amp;s=3546fc9d77f78d37" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7547&amp;v=2&amp;s=27287a15251e3394" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7547&amp;v=3&amp;s=debd337718b1c88f" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7547&amp;v=4&amp;s=424159f71d3601f1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7547&amp;v=5&amp;s=9a49f456e49a41dd" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-important">Important</span> · 60 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42742167/">Learning millisecond protein dynamics from what is missing in NMR spectra.</a></div>
+      <div class="card-title-zh">从核磁共振光谱中缺失的信息学习毫秒级蛋白质动力学</div>
+      <div class="news">为解决蛋白质µs-ms构象转换缺乏大规模数据问题，作者利用BMRB缺失NMR赋值训练深度学习模型，发现其可预测弛豫交换及催化、配体结合相关毫秒动力学。</div>
+      <div class="meta">Nature · 2026-08-10</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wayment-Steele Hannah K, El Nesr Gina, Hettiarachchi Ramith, Ojoawo Adedolapo M, Kariyawasam Hasindu, Ovchinnikov Sergey, Kern Dorothee</div>
+<div class="meta">DOI: 10.1038/s41586-026-10989-4</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42742167/">https://pubmed.ncbi.nlm.nih.gov/42742167/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>结合蛋白语言模型预测动力学，贴近你关注的AI与计算生物学。</div>
+<div class="abstract"><span class="abs-label">背景</span>许多蛋白质的生物学功能依赖于在微秒至毫秒（µs-ms）时间尺度上发生的多种构象之间的相互转变。由于缺乏标准化的大规模实验数据，人们一直难以对这类运动形成更具预测性的理解。作者在整理100多个核磁共振（NMR）弛豫数据集后，意识到一种反映µs-ms动力学的可观测量可能就隐藏在现有数据中。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>毫秒级动力学可导致NMR信号展宽至无法检测，使约10,000个存储于生物磁共振数据银行（BMRB）的蛋白质化学位移数据集中部分残基未被指认。作者据此大胆假设：缺失指认的残基是由于µs-ms运动引起的交换展宽（exchange broadening），并训练了多种深度学习模型来预测这些缺失指认。表现最佳的模型被命名为Dyna-1，其利用了多模态语言模型ESM-32的一个中间层。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>这些模型不仅能够预测缺失指认，还能预测由NMR弛豫实验测得的交换现象，而这正是µs-ms动力学的指征。其中，Dyna-1对与生物学功能直接相关的动力学预测尤为出色，包括酶催化和配体结合。作者还发现，经历µs-ms交换的残基往往更为保守，这与Dyna-1的预测表现相一致。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，可利用NMR光谱中“缺失”的信息来学习和预测蛋白质的毫秒级动力学。作者预计，本文提出的数据集和模型将有助于揭示动力学与功能之间的共同语言，并带来变革性影响。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7580&amp;v=1&amp;s=203bb51d9ea7ced7" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7580&amp;v=2&amp;s=5cfce75ef2df631a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7580&amp;v=3&amp;s=a1efe0871176f68c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7580&amp;v=4&amp;s=f816a62eab5ff65c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7580&amp;v=5&amp;s=9da6defc59b7b984" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 57 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42743026/">Domain Elastic Transform: Bayesian Function Registration for High-Dimensional Scientific Data.</a></div>
+      <div class="card-title-zh">域弹性变换：用于高维科学数据的贝叶斯函数配准</div>
+      <div class="news">为解决不规则稀疏流形上高维函数非刚性配准难题，作者提出无网格贝叶斯DET，发现其在空间转录组中显著提升空间重叠、拓扑及解剖边界一致性。</div>
+      <div class="meta">IEEE transactions on pattern analysis and machine intelligence · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Hirose Osamu, Rodola Emanuele</div>
+<div class="meta">DOI: 10.1109/TPAMI.2026.3733393</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42743026/">https://pubmed.ncbi.nlm.nih.gov/42743026/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提出空间转录组无网格配准，契合你关注的空间组学计算方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>传统非刚性配准通常分为点集配准和图像配准两类：前者用于对齐稀疏几何结构，后者用于对齐规则网格上的连续强度场。对于空间转录组学（spatial transcriptomics）这类新兴科学数据，高维向量值函数（如基因表达）定义在不规则且稀疏的流形上，这种二分法造成了方法学瓶颈：研究者要么通过体素化牺牲单细胞分辨率以使用图像方法，要么忽略功能信号以使用几何方法。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者提出域弹性变换（Domain Elastic Transform, DET），这是一个无网格（grid-free）的概率框架，可联合进行几何与功能对齐。DET将数据视为定义在不规则域上的函数，因而无需分箱（binning）即可直接配准高维信号；同时在广义贝叶斯框架下，将域形变建模为由联合空间-功能似然引导的弹性运动。该方法完全无监督，并通过先在采样点上配准、再进行位移插值来实现可扩展性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>作者在空间转录组配准任务中评估了DET，数据包括MERFISH小鼠脑切片和Stereo-seq小鼠胚胎图谱。在一个包含90个案例、无先验初始化且存在严重扰动的MERFISH基准测试中，DET在所评估流程中取得了最强的空间重叠和拓扑表现，而加速版PASTE2在标签转移调整兰德指数（ARI）方面最高。在一个无跨发育阶段真实配准标准的图谱尺度MOSTA可行性研究中，非刚性细化提升了同一流程内若干解剖域和边界一致性指标。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果表明，无网格函数配准（grid-free function registration）可作为现有基于点集、基于图像以及最优传输方法在高维科学数据分析中的有益补充。DET的实现已公开于 https://github.com/ohirose/bcpd。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7550&amp;v=1&amp;s=f19f12bc4e3ac57b" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7550&amp;v=2&amp;s=cfd9b300d4dd8ad6" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7550&amp;v=3&amp;s=75d3183d0d658967" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7550&amp;v=4&amp;s=39070fe75cf5febf" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7550&amp;v=5&amp;s=49f30638675cbc73" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 49 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42742686/">Latent learning improves foraging efficiency in ants.</a></div>
+      <div class="card-title-zh">潜伏学习提高蚂蚁的觅食效率</div>
+      <div class="news">为解决蚂蚁觅食中是否利用潜伏学习提升导航效率的问题，作者比较空迷宫预暴露与对照组表现，发现预经验可加快寻食返巢且低探索个体更易解迷，推动动物行为学研究</div>
+      <div class="meta">Die Naturwissenschaften · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wagner Bastien, d&#x27;Ettorre Patrizia, Maák István E</div>
+<div class="meta">DOI: 10.1007/s00114-026-02163-7</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42742686/">https://pubmed.ncbi.nlm.nih.gov/42742686/</a></div>
+<div class="meta">Keywords: Ants、Exploratory activity、Maze、Navigation in the environment、Spatial learning</div>
+<div class="reason"><span class="abs-label">推荐理由</span>关注蚂蚁觅食行为演化与个体差异，契合你的社会昆虫行为研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>学习使动物能够适应变化的环境并对刺激作出适应性反应，但有一种不依赖奖励或惩罚的学习形式，即潜伏学习（latent learning）。这类知识在学习时并不显现，而是在出现合适诱因后才表现出来；它有助于动物在环境中导航，尤其在资源分布不可预测时可提高觅食效率。尽管潜伏学习已在包括人类在内的脊椎动物中得到充分记录，但在无脊椎动物中的研究仍相对不足。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究以生活在开阔、阳光充足环境中的蚂蚁 Aphaenogaster senilis 为对象，比较两组个体在迷宫中获取食物的导航效率。一组蚂蚁此前接触过空迷宫（有经验组），另一组未接触过（对照组）。此外，研究还采用开放场测试（open-field test）表征成功解开迷宫与未解开迷宫个体的探索活动。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>当迷宫中存在食物时，先前接触过空迷宫的蚂蚁比对照组更快找到食物，这与潜伏学习对觅食效率具有正面作用一致。并且，有经验组在首次发现食物后返回巢穴的速度也快于对照组，表明无奖励探索期间获得的信息随后促进了目标导向行为。开放场测试显示，能够解开迷宫的个体比不能解开的个体探索性更低，提示可能存在速度—准确性权衡。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，蚂蚁在个体觅食过程中会利用潜伏学习。研究同时强调了个体间差异在觅食策略中的作用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7543&amp;v=1&amp;s=46ba0b23ddaf9a1f" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7543&amp;v=2&amp;s=48fadb4ed2eb1ec1" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7543&amp;v=3&amp;s=d19cd58fd03147a7" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7543&amp;v=4&amp;s=a0e31813bbda849a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7543&amp;v=5&amp;s=647d5cb583e3e3d0" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 49 分</div>
+      <div class="card-title"><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42736414/">An engineered nanopore identifies saccharides, amino acids, peptides and ribonucleotides.</a></div>
+      <div class="card-title-zh">一种工程化纳米孔可识别糖类、氨基酸、肽和核糖核苷酸</div>
+      <div class="news">为解决单一纳米孔难以同时识别蛋白质、RNA与糖类的问题，作者构建MspA-FPBA并结合机器学习，实现多类生物分子98.7%准确识别及复杂样本分析。</div>
+      <div class="meta">Nature biotechnology · 2026-09-14</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Yao Lang, Wang Zixuan, Chen Jialu, Sun Wen, Wang Kefan, Xiao Yunqi, Zhang Hanhan, Li Wenzheng, Wang Yifan, Zhao Lulu, Dai Xinyi, Qian Lu, Zhang Panke, Huang Shuo</div>
+<div class="meta">DOI: 10.1038/s41587-026-03308-9</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42736414/">https://pubmed.ncbi.nlm.nih.gov/42736414/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>纳米孔结合机器学习识别多类分子，贴近你对AI生物学方法的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>利用单一纳米孔同时表征蛋白质、RNA 和聚糖，仍然是一项重大挑战。为推动实现这一目标，研究者对纳米孔进行了工程化改造。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者将多功能接头马来酰亚胺-C2-甲酰苯硼酸（maleimido-C2-formylphenylboronic acid, maleimido-C2-FPBA）引入 Mycobacterium smegmatis porin A（MspA）纳米孔的孔收缩位点，构建了工程化纳米孔 MspA-FPBA。随后结合机器学习，对多类分析物的纳米孔事件特征进行识别，并将该体系用于酵母细胞提取物分析及 G2 糖肽的组成分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>MspA-FPBA 可同时识别多种分析物，包括 21 种蛋白源性氨基酸、3 种翻译后修饰（post-translationally modified, PTM）氨基酸、4 种经典核苷单磷酸（nucleoside monophosphates, NMPs）、3 种表观遗传修饰 NMP、4 种单糖和 5 种肽。结合机器学习后，该传感器的总体准确率达到 98.7%。此外，它还能为特定类型分析物产生可预测的事件特征，使机器学习模型无需严格依赖预先存档的事件特征即可识别分析物，这一点已通过酵母细胞提取物的纳米孔分析得到证明；研究者还将其应用于 G2 糖肽的组成分析。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，工程化 MspA-FPBA 纳米孔具备在单一平台上识别多类生物分子的潜力。未来若将水解酶（hydrolase）与 MspA-FPBA 集成，可能进一步提升其作为单一系统识别多样生物分子的实用性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7575&amp;v=1&amp;s=38148db1fd822916" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7575&amp;v=2&amp;s=66a018caac415d22" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7575&amp;v=3&amp;s=85f46a63b74d6fb9" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7575&amp;v=4&amp;s=a394b2a953a84759" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7575&amp;v=5&amp;s=75b18f5e96221d1b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 47 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42740972/">Climate Change Impact on the Potential Distribution and Invasion Risk of Tetramorium caldarium (Roger, 1857): A Species Distribution Modeling Approach Using MaxEnt.</a></div>
+      <div class="card-title-zh">气候变化对 Tetramorium caldarium (Roger, 1857) 潜在分布与入侵风险的影响：基于最大熵（MaxEnt）的物种分布模型研究</div>
+      <div class="news">为评估气候变化下嗜热入侵蚁T. caldarium扩张风险，作者用MaxEnt建模发现其核心分布至2070年总体稳定且温带适生区增加，人为传播防控更关键。</div>
+      <div class="meta">Ecology and evolution · 2026-09-13</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Nasser Mohamed, Sharaf Mostafa R, AlKhalaf Areej A, Hita-Garcia Francisco, Radchenko Alexander, Judd Stephen, Alqaydi Mariam S, Alteneiji Meera M, AlAshaal Sara</div>
+<div class="meta">DOI: 10.1002/ece3.74319</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42740972/">https://pubmed.ncbi.nlm.nih.gov/42740972/</a></div>
+<div class="meta">Keywords: MaxEnt、biosecurity、climate change、introduced species、niche modeling、species distribution modeling、tramp ants</div>
+<div class="reason"><span class="abs-label">推荐理由</span>研究入侵蚂蚁潜在分布与气候适生区，契合你对蚂蚁与社会性昆虫生态演化的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>气候变化正在重塑全球物种分布并改变入侵动态，但对嗜热性入侵物种在未来气候条件下如何响应的认识仍不完整。Tetramorium caldarium 是一种泛热带的“流浪蚂蚁”物种，已在六大洲建立外来种群，因此有必要评估其当前与未来的适生范围及扩散风险。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用最大熵（Maximum Entropy, MaxEnt）物种分布模型，基于346条筛选后的分布记录和5个经相关性分析筛选的生物气候变量（bio_1、bio_4、bio_7、bio_11、bio_12），评估 Tetramorium caldarium 当前及未来的适生生境。未来气候投影使用 MRI-CGCM3 模式输出，在两种典型浓度路径（Representative Concentration Pathways, RCP 2.6 和 RCP 8.5）下分别预测2050年和2070年的分布，并结合三维生态位分析和 Jackknife 分析评估气候限制因子。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>模型预测性能优异（AUC = 0.942，TSS = 0.68），显示 Tetramorium caldarium 当前广泛分布于南北纬30°之间的热带和亚热带适生区域。三维生态位分析表明其气候生态位宽广，可出现在14°C至29°C的温度梯度以及年降水500至3500 mm以上的环境中；Jackknife 分析显示温度季节性（43.7%）和最冷季度温度（25.9%）是主要限制因子，而降水贡献较小（4.5%）。未来预测表明其核心分布到2070年总体较稳定，净适生生境增加范围为27.5万 km2（RCP 2.6，2050）至63万 km2（RCP 8.5，2070），其中中国南部、美国东南部、地中海盆地和阿根廷北部为未来扩散高风险区域。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究表明，Tetramorium caldarium 具有足够宽的气候生态位，即使在气候变化背景下仍能维持扩散潜力，且气温升高将为温带地区提供新的入侵机会。这些结果强调，对于这一具有全球意义的入侵物种而言，防止人为传播比管理气候驱动的分布范围变化更为关键。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7559&amp;v=1&amp;s=bcf78ef25c5c5dfe" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7559&amp;v=2&amp;s=b17cc52d6503aa98" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7559&amp;v=3&amp;s=591a98aff97d659c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7559&amp;v=4&amp;s=46e5bc155a80e24b" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7559&amp;v=5&amp;s=475ec58ecaf7e75f" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://doi.org/10.1126/science.aea2249">The complete telomere-to-telomere sequence of a mouse Y chromosome</a></div>
+      <div class="card-title-zh">小鼠Y染色体从端粒到端粒的完整序列</div>
+      <div class="news">为解决小鼠Y染色体参考基因组缺口与结构错误，作者利用亲本辅助端粒到端粒组装，获得95.21 Mb完整Y序列并揭示Y染色体剂量补偿机制。</div>
+      <div class="meta">Science · 2026-09-10</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Li Qilin, Liu Junli, Chen Si, Hu Yixuan, Li Dengfeng, Su Zhuojie, Zhang Yanxiao, Yu Xiaochun</div>
+<div class="meta">DOI: 10.1126/science.aea2249</div>
+<div class="meta"><a href="https://doi.org/10.1126/science.aea2249">https://doi.org/10.1126/science.aea2249</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>端粒到端粒组装与新基因注释有参考价值，但与社会性昆虫和激素调控关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>小鼠Y染色体对雄性生殖至关重要，但GRCm39参考基因组中的Y染色体仍存在25个缺口，尤其集中在重复性和复杂区域。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者整合亲本基因组信息，构建了来源于C57BL/6小鼠、长度为95.21 Mb的从端粒到端粒Y染色体组装（mT2T Y）。随后基于该组装开展基因注释、Y特异性卫星阵列鉴定、拟常染色体区（pseudoautosomal region, PAR）同源重组位点定位，以及X-Y同源基因表达分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该组装填补了GRCm39参考中的全部Y染色体缺口，纠正了结构错误，并向参考基因组新增了超过8.70 Mb此前未组装的序列。研究注释到142个此前未识别的基因，鉴定了Y特异性卫星阵列，并定位了PAR中的同源重组位点。对X-Y同源基因表达的分析揭示了Y染色体剂量补偿机制；进一步将mT2T Y与T2T mhaESC结合，完成了全部C57BL/6染色体的T2T组装，命名为T2T mhaESC+Y。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提供了完整的C57BL/6参考基因组，为小鼠Y染色体的结构、基因内容及功能研究奠定了基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=6891&amp;v=1&amp;s=beeb796cd46520c4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=6891&amp;v=2&amp;s=52a7eb41add8edbf" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=6891&amp;v=3&amp;s=c1ea0b282ac42380" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=6891&amp;v=4&amp;s=1e90859c5786d45d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=6891&amp;v=5&amp;s=2b5a10eac913d45b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 44 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42742041/">Pumping Venom: Valvilli Architecture in Diacamma (Hymenoptera: Formicidae) and Implications for Stinger Functionality.</a></div>
+      <div class="card-title-zh">泵送毒液：Diacamma（膜翅目：蚁科）中瓣小叶（valvilli）的结构及其对螫针功能的意义</div>
+      <div class="news">为解决蚂蚁螫针valvilli在毒液输送与运动机制认知不足，作者结合micro-CT等多模态成像，发现其结构材料分化且部署时或呈非反相运动。</div>
+      <div class="meta">Journal of morphology · 2026-09-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Casadei-Ferreira Alexandre, Billen Johan, Büsse Sebastian, Katzke Julian, Mizuno Riou, Richter Adrian, Economo Evan</div>
+<div class="meta">DOI: 10.1002/jmor.70174</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42742041/">https://pubmed.ncbi.nlm.nih.gov/42742041/</a></div>
+<div class="meta">Keywords: ants、cuticle biomechanics、material composition、sting actuation、venom pump</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦蚂蚁形态演化，但偏毒针结构而非社会性或激素调控。</div>
+<div class="abstract"><span class="abs-label">背景</span>昆虫螫针是动物界最知名的毒液输送结构之一，但尽管其内部结构对毒液输送至关重要，其中一些关键组成部分仍知之甚少。瓣小叶（valvilli）是位于瓣室（valve chamber）内的一对关节式结构，起“瓣膜”样作用，但常被忽视或仅被粗略描述。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究以 Diacamma nr. indicum 为模型系统，结合高分辨率显微计算机断层扫描（micro-CT）、组织学切片、连续块面扫描电子显微镜（SBF-SEM）和共聚焦激光扫描显微镜（CLSM），表征蚂蚁瓣小叶的精细形态及角质层材料组成。作者还比较了固定于不同驱动状态下的螫针 micro-CT 扫描，以分析瓣小叶在螫针展开过程中的运动模式。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现瓣小叶内部存在结构分化，包括可能对应不同功能的不同角质层区域。CLSM 显示其硬化程度、弹性蛋白（resilin）分布和超微结构存在差异，说明瓣小叶并非均一柔性的结构，而是复杂且仅部分可变形的结构；SBF-SEM 进一步在超微结构水平支持这种材料分化，揭示远端叶缘存在横向连续、规则间隔、电子密度较低的圆形亚层域，提示前角质层（procuticle）水平的周期性组成或结构过渡。此外，不同驱动状态下的 comparative micro-CT 表明，螫针展开时瓣小叶运动可能采用非反相（non-antiphasic）模式，这挑战了基于欧洲蜜蜂推断出的、依赖节律性交替运动的瓣小叶辅助泵送模型。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现为蚂蚁螫针结构提供了新的解剖学认识，并为今后研究膜翅目昆虫的毒液输送建立了更精细的形态学基础。阐明这类输送系统如何在一个高度多样化昆虫类群的演化过程中被精细调适，也可能为仿生微尺度注射与泵送系统的设计提供启发。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7540&amp;v=1&amp;s=222c4f921fd57c30" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7540&amp;v=2&amp;s=5d6cbba1bbab46f9" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7540&amp;v=3&amp;s=caf698f8587ec1be" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7540&amp;v=4&amp;s=3fe5a4115d41a1c9" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7540&amp;v=5&amp;s=91d238ec91d8dccf" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://doi.org/10.1016/j.cell.2026.08.023">Mitochondrial ATP promotes T cell differentiation through chromatin accessibility</a></div>
+      <div class="card-title-zh">线粒体ATP通过染色质可及性促进T细胞分化</div>
+      <div class="news">为解决CD8+T细胞能量状态如何耦联染色质开放与效应分化问题，作者利用DAHB重编程线粒体ATP生成，发现其经BAF复合体开放效应位点并增强抗肿瘤活性。</div>
+      <div class="meta">Cell · 2026-09-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ng Charles, Fung Tak Shun, Li Dayi, Kropp Korbinian N., Somarribas Patterson Luis F., Markovitz Alexandria, Weinberg Daniel N., Jones Olivia, Kim Ji-Young, Zhang Guoan, Koche Richard, Monetti Mara, Tang Huayuan, He Yun, Xu Zhengshuang, Cai Xin, Yu Ziqi, Bhagavatula Geetha, Colgan Sean P., Lin Ya-Hui, Li Zhuoning, Steinert Elizabeth M., Klebanoff Christopher A., Vardhana Santosha A., Chandel Navdeep S., Wu Lin, Thompson Craig B.</div>
+<div class="meta">DOI: 10.1016/j.cell.2026.08.023</div>
+<div class="meta"><a href="https://doi.org/10.1016/j.cell.2026.08.023">https://doi.org/10.1016/j.cell.2026.08.023</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及细胞分化与染色质调控，但对象为T细胞，偏离昆虫内分泌主题。</div>
+<div class="abstract"><span class="abs-label">背景</span>清除慢性感染或癌症依赖于能够获得并维持效应表型的细胞毒性CD8+ T细胞。细胞毒性T细胞功能是一个高生物能需求的过程，但其能量代谢如何与效应分化相耦联仍需阐明。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究考察了D-α-羟基丁酸（D-α-hydroxybutyrate, DAHB）作为信号分子对T细胞代谢与分化的影响。作者分析了DAHB对ATP生成方式、磷酸肌酸（phosphocreatine, PCr）水平、CD8效应基因转录、染色质重塑以及CD8+ T细胞体内外抗肿瘤活性的作用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>DAHB可作为信号分子提高线粒体ATP生成，并推动增殖中的T细胞向细胞毒性效应细胞转化；其作用伴随ATP生成由糖酵解转向由脂肪酸氧化支持的氧化磷酸化。该转变提高了磷酸肌酸（PCr）水平，且PCr生物能储备和氧化磷酸化均是T细胞效应分化所必需的。DAHB诱导的CD8效应基因转录依赖BAF复合体介导的效应位点染色质重塑，并增强了CD8+ T细胞在体外和体内的抗肿瘤活性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现将细胞生物能学与支持效应功能所需的染色质可及性和基因表达调控联系起来。研究提示，提升线粒体ATP生成并重塑代谢状态，可能是促进CD8+ T细胞效应分化和抗肿瘤功能的重要机制。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7253&amp;v=1&amp;s=abb05ec2b1a8eaa3" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7253&amp;v=2&amp;s=7b1218454d05fa64" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7253&amp;v=3&amp;s=a5f4d7a8303abe5b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7253&amp;v=4&amp;s=2baf98bcc9801576" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7253&amp;v=5&amp;s=a58c84bfede57b08" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 39 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42742235/">Country specific hybridization of honey bees from lineage M.</a></div>
+      <div class="card-title-zh">M谱系蜜蜂的国家特异性杂交</div>
+      <div class="news">为评估商业蜂王引入致M谱系蜜蜂遗传侵蚀风险，作者利用蜂翼几何形态测量，发现其在欧洲各国持续性显著分化，为区域化保护提供依据。</div>
+      <div class="meta">GigaScience · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Machlowska Julita, Gerula Dariusz, Oleksa Andrzej, Kok Henk, McCormack Grace P, Valentine Alexandra, Kirkerud Lars, Kryger Per, Blažytė-Čereškienė Laima, Hasselmann Martin, Hailu Teweldemedhn Gebretinsae, Rutschmann Benjamin, Tofilski Adam</div>
+<div class="meta">DOI: 10.1093/gigascience/giag093</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42742235/">https://pubmed.ncbi.nlm.nih.gov/42742235/</a></div>
+<div class="meta">Keywords: Apis mellifera、M-lineage bees、geometric morphometrics、northwestern Europe、wing</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦蜜蜂谱系杂交与保种，契合你对Apis进化与群体遗传的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>蜜蜂是支撑农业生产和野生植物多样性的关键传粉者。在进化谱系M（lineage M）中，一些种群因商业化培育蜂王的广泛引入而面临遗传侵蚀风险。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究利用已有和新获得的数据集中的翅图像，将样本归类到4个进化谱系：A、C、M和O。新数据集包含来自10个国家的29,043张翅图像，代表1,342个蜂群样本。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>总体上，63.7%的蜂群属于M谱系，27.5%归为A谱系，7.9%归为C谱系，0.8%归为O谱系。M谱系在葡萄牙、西班牙和爱尔兰的未保护种群中以及其他地区的受保护种群中仍占优势；相比之下，波兰东北部未保护种群中观察到M谱系显著下降。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究结果揭示了M谱系持续存在情况具有显著的区域差异，并强调欧洲范围内开展协调保护工作的必要性。本研究提供的数据有助于更准确地区分本地表型与引入表型。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7546&amp;v=1&amp;s=846465bc7b6f2aed" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7546&amp;v=2&amp;s=3fd0200f14e6774b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7546&amp;v=3&amp;s=f0063bde60075261" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7546&amp;v=4&amp;s=5ac1f3abb28c4983" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7546&amp;v=5&amp;s=93d66cf7e38280f1" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日文献主要聚焦三类方向：单细胞/空间组学与计算分析（RNA velocity、空间转录组流程、空间配准、植物与牛肝空间图谱）、AI与机器学习驱动的分子预测和识别（NMR缺失信号学习蛋白毫秒动力学、纳米孔结合机器学习识别多类生物分子），以及高质量基因组与功能机制研究（小鼠Y染色体T2T组装、T细胞分化、神经环路与防御行为）。共同趋势是多模态数据整合、AI辅助建模增多，以及面向复杂生物过程的高分辨率图谱构建。对研究者而言，这批论文既提供可直接借鉴的分析框架与资源，也有助于把握空间组学、单细胞计算和智能化分子解析的近期方法走向。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=xuanyabing%40genomics.cn&amp;d=2026-09-16&amp;s=b5ae0fced9a6ee63">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=xuanyabing%40genomics.cn&amp;d=2026-09-16&amp;s=b5ae0fced9a6ee63">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

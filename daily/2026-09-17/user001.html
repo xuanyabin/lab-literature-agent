@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-09-17</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-09-17</h1>
+    <p class="hello">轩亚冰，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">昨日全库新增 704 篇 · 命中您的关键词 174 篇 · 本次推送 15 篇（必读 0 · 重要 1 · 参考 14）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42748219/">The molecular landscape of hypertrophic cardiomyopathy across disease stages and genotypes.</a></div>
+      <div class="card-title-zh">不同疾病阶段和基因型下肥厚型心肌病的分子图谱</div>
+      <div class="news">为解析肥厚型心肌病分期与基因型重塑，作者结合单核转录组、原位杂交和机器学习，发现早期变异阳性样本促心律失常心肌细胞扩增并伴纤维化和微血管异常。</div>
+      <div class="meta">Science translational medicine · 2026-09-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Adami Eleonora, Kim Yuri, Zheng Sean L, Shvetsov Nikolay, Losert Corinna, Maatz Henrike, Barish Syndi, Venturini Gabriela, Anguita Natalia López, Shi Qi, Neyazi Meraj, Beyer Martin, Wei Eric Q, Adam Amanda, Suresh Abhilash, Reichart Daniel, Lindberg Eric, Brown Kemar J, Strohmenger Viktoria, Saul David, Gärtner Anna, Lee Michael, Mach Lukas, Robertus Jan Lukas, Gorham Joshua M, Haas Jan, Liebig Laura A, Lippert Christoph, Meder Benjamin, Myronova Anna, Patone Giannino, Barnett Sam N, Ware James S, de Robertis Fabio, Pantazis Antonis, Gummert Jan, Viveiros Anissa, Chen Huachen, Ruiz-Orera Jorge, Frey Norbert, McDonough Barbara A, Mitchell Richard N, Padera Robert F, Day Sharlene M, Ho Carolyn Y, Lakdawala Neal K, Milting Hendrik, Heinig Matthias, Oudit Gavin Y, Noseda Michela, Seidman Jonathan G, Hübner Norbert, Seidman Christine E</div>
+<div class="meta">DOI: 10.1126/scitranslmed.aea2747</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42748219/">https://pubmed.ncbi.nlm.nih.gov/42748219/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>含snRNA-seq与机器学习框架，可借鉴单细胞疾病图谱分析。</div>
+<div class="abstract"><span class="abs-label">背景</span>肥厚型心肌病（hypertrophic cardiomyopathy, HCM）以心脏室壁不对称增厚、高收缩性、舒张功能障碍和纤维化为特征。致病性肌小节基因变异可导致HCM，但在病因不明的患者中也可见类似异常，只是其不良事件较少。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>为研究疾病分期和基因型特异性的机制，研究者对47例HCM患者的心脏组织进行了单核RNA测序（single-nucleus RNA sequencing）。样本涵盖收缩功能保留的梗阻性HCM和终末期HCM，并与非衰竭供体心脏及扩张型心肌病（dilated cardiomyopathy）心脏进行比较；同时结合无监督和有监督机器学习分析细胞类型分辨的转录谱。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定出与心肌细胞肥大、纤维化和血管重塑相关的转录程序；在携带致病变异的早期HCM中，心肌细胞丰度降低，并出现促心律失常的心肌细胞状态扩增。研究还鉴定出富脯氨酸蛋白16（proline-rich 16, PRR16）为与HCM中心肌细胞生长相关的基因，并通过RNA原位杂交和人诱导多能干细胞来源心肌细胞HCM模型验证其表达升高。HCM样本中还观察到成纤维细胞组成改变及促纤维化激活、不利的细胞外基质重塑、胶原IV（COL4A1/COL4A2）表达降低和基底膜超微结构异常，以及广泛的血管改变，包括内皮细胞亚群转变、提示微血管功能障碍的周细胞减少和淋巴管生成性血管内皮生长因子C信号增强。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>无监督和有监督机器学习能够区分HCM与扩张型心肌病，并基于细胞类型分辨的转录谱准确预测早期HCM的基因型状态，提示存在广泛的基因型驱动重塑。总体而言，该研究揭示了HCM中多细胞、与基因型相关的重塑程序，为理解心律失常、纤维化、微血管功能障碍和心力衰竭进展的机制提供了线索。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7804&amp;v=1&amp;s=77ac3aa27171326e" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7804&amp;v=2&amp;s=c730869b36b8e4ed" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7804&amp;v=3&amp;s=11a7540052c2f097" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7804&amp;v=4&amp;s=1c8d7371d427a9ca" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7804&amp;v=5&amp;s=5791d77d76c9aeb6" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42745000/">Type 1 interferon perturbates clonal competition by reshaping human blood development.</a></div>
+      <div class="card-title-zh">I型干扰素通过重塑人类造血过程扰动克隆竞争</div>
+      <div class="news">为解决I型干扰素如何改写MPN中HSC克隆竞争，作者用患者单细胞多组学追踪治疗前后细胞状态，发现IFNα重塑血液发育且突变HSC因抗拒炎性髓系分化获适应性。</div>
+      <div class="meta">Nature genetics · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Lama Chhiring, Isakov Danielle, Rosenberg Shira, Quijada-Álamo Miguel, Saurty-Seerunghen Mirca S, Moein Sara, Nozais Mathis, Abera Tsega-Ab, Sakaguchi Olivia, Totwani Mansi, Freed Grace, Zaydon Leila, Poon Chi-Lam, Parghi Neelang, Kubas-Meyer Andrea, Xie Amy X, Omar Mohamed, Choi Daniel, Castillo-Tokumori Franco, Abu-Zeinah Ghaith, Dillard Alicia, Ganesan Saravanan, Omans Nathaniel D, Dusaj Neville, Chamely Paulina, Mimitou Eleni, Smibert Peter, Kosiorek Heidi E, Dueck Amylou C, Weinberg Rona, Chaligne Ronan, Marcellino Bridget, Marchionni Luigi, Patel Sanjay, Simonson Paul, Landau Dan A, Wagenblast Elvin, Hoffman Ronald, Nam Anna S</div>
+<div class="meta">DOI: 10.1038/s41588-026-02751-3</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42745000/">https://pubmed.ncbi.nlm.nih.gov/42745000/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>单细胞多组学解析细胞命运与克隆竞争，可借鉴于细胞状态演化研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>炎症会加速造血干细胞（hematopoietic stem cells, HSCs）在克隆性造血和髓系肿瘤中的进化动态。研究者考察了骨髓增殖性肿瘤患者在基线及接受干扰素-α（interferon-α, IFNα）治疗后的HSC、祖细胞和免疫细胞；IFNα是目前唯一可耗竭突变干细胞的治疗方法。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用单细胞多组学方法，区分IFNα对突变干细胞与混杂其中的野生型HSC的作用差异。分析内容包括细胞分化、转录组、免疫表型和染色质可及性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>IFNα可同时将HSC激活为两种极化状态：一种是与抗炎状态相关的淋巴系祖细胞扩增，另一种是来源于HSC的炎症性髓系祖细胞状态。增强的淋巴系分化可抵消骨髓增殖性肿瘤典型的髓系偏倚，并与血细胞计数恢复正常相关。体细胞突变会改变IFNα对HSC分化和细胞周期进入速率的影响；在IFNα暴露下，CALR或JAK2突变干细胞因抵抗分化为炎症性髓系祖细胞而获得克隆适应性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，I型干扰素可通过重塑人类造血发育过程来改变突变与野生型造血干细胞之间的克隆竞争。结果揭示了IFNα清除突变干细胞及影响骨髓增殖性肿瘤血液表型的细胞学基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7812&amp;v=1&amp;s=61614a228e9bf84f" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7812&amp;v=2&amp;s=6eb6d0c759ad251c" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7812&amp;v=3&amp;s=6ac57cc5e617c87b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7812&amp;v=4&amp;s=694a0f104a211289" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7812&amp;v=5&amp;s=af1f75dd2b7cdfb7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 44 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42747963/">Toward a more precise immunophenotypic and molecular definition of human cMoPs.</a></div>
+      <div class="card-title-zh">迈向对人类共同单核细胞祖细胞（cMoPs）更精确的免疫表型与分子定义</div>
+      <div class="news">为解决人cMoPs定义不清问题，作者结合流式、单细胞转录组与ATAC-seq，发现CD115门控较CLEC12A更准确界定cMoPs并揭示其分化与转录异质性。</div>
+      <div class="meta">Cell reports · 2026-09-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Calzetti Federica, Signoretto Ilaria, Finotti Giulia, Bianchetto-Aguilera Francisco, Angelini Gabriele, Lattanzi Chiara, Gasperini Sara, Gardiman Elisa, Tecchio Cristina, Kawamura Shunsuke, Ziegler-Heitbrock Loems, Tamassia Nicola, Ohteki Toshiaki, Cassatella Marco A</div>
+<div class="meta">DOI: 10.1016/j.celrep.2026.117970</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42747963/">https://pubmed.ncbi.nlm.nih.gov/42747963/</a></div>
+<div class="meta">Keywords: ATAC-seq、CP: immunology、cMoPs、common monocyte progenitors、monocytes、monocytopoiesis、scRNA-seq、transcription factors</div>
+<div class="reason"><span class="abs-label">推荐理由</span>scRNA-seq联合ATAC-seq定义祖细胞，对细胞类型演化研究有方法参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>单核细胞来源于骨髓中的造血祖细胞，在稳态维持和炎症反应中发挥关键作用。人类共同单核细胞祖细胞（common monocyte progenitors, cMoPs）最初被定义为 CLEC12A+CD64hi 细胞，但近期又被重新定义为 CD115+CD64hi/int 细胞，因此有必要评估这两种定义是否对应同一类细胞。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用流式细胞术、单细胞RNA测序（scRNA-seq）、形态学分析和功能分析，比较 CLEC12A+CD64hi cMoPs 与 CD115+CD64hi/int cMoPs。并通过分化实验评估不同 cMoPs 群体的转变关系及其生成单核细胞后代的能力，同时结合 ATAC-seq 分析其潜在调控转录因子。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>结果表明，在门控策略中纳入 CD115 而非 CLEC12A，可更准确地定义 cMoPs。分化实验显示，CD115+CD64int cMoPs 可转变为 CD115+CD64hi cMoPs，且这两类 cMoPs 生成单核细胞后代的能力相当。对 CD115+CD64hi/int cMoPs 的 scRNA-seq 聚类鉴定出五种不同的转录特征，包括与成熟相关的程序、IFN 反应和应激相关基因；ATAC-seq 则提示 IRF8、PU.1 以及 C/EBPδ 可能参与单核细胞发育。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>基于更准确的定义与分析，该研究揭示了人类 cMoPs 的分子复杂性。研究结果支持以 CD115+CD64hi/int 作为人类 cMoPs 更精确的免疫表型定义。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7778&amp;v=1&amp;s=57da995a1057c5dc" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7778&amp;v=2&amp;s=995ec8c05f45e7d5" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7778&amp;v=3&amp;s=0ffb15656a9d6305" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7778&amp;v=4&amp;s=94b98527277af8f3" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7778&amp;v=5&amp;s=19e0907ce8578af3" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42748249/">Maternal-fetal immune conflict contributes to male-specific impairments in a mouse model of neurodevelopmental disorders.</a></div>
+      <div class="card-title-zh">母胎免疫冲突导致神经发育障碍小鼠模型中雄性特异性的损伤</div>
+      <div class="news">为解释母体免疫激活何以选择性损伤雄性胚胎，作者结合poly(I:C)小鼠模型与单核转录组分析，发现IL-6驱动母胎界面促炎转变并致雄性胎盘受损。</div>
+      <div class="meta">Science advances · 2026-09-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Sanchez-Martin Irene, Kukreja Bharti, Henderson Paige, Lin Qianyu, DiMartino Daniel, Bagan Valerie, Park Justin, Kalish Brian T, Cheadle Lucas</div>
+<div class="meta">DOI: 10.1126/sciadv.aeg0779</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42748249/">https://pubmed.ncbi.nlm.nih.gov/42748249/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>采用snRNA-seq研究母胎界面细胞状态转变，对你的单细胞方法有参考价值。</div>
+<div class="abstract"><span class="abs-label">背景</span>自闭症谱系障碍（autism spectrum disorder, ASD）由遗传和环境风险因素共同导致，其中母体免疫激活（maternal immune activation, MIA）这一孕期感染相关因素会增加子代 ASD 风险，且对雄性影响尤为显著。尽管如此，这种雄性特异性易感性的基础，以及炎症信号如何跨越母胎界面影响雄性胚胎的机制，仍大多未知。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究使用 poly(I:C) 小鼠神经发育障碍模型，分析了 MIA 后 24 小时内胎儿、胎盘和羊水的变化。并采用单核转录组学（single-nucleus transcriptomics）解析受影响雄性胎盘中不同细胞类型的基因表达改变，同时评估细胞因子白细胞介素-6（interleukin-6, IL-6）在发育异常中的作用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，30% 的胚胎出现大范围致畸异常，包括胎重下降和感觉器官发育改变，而 70% 发育正常；这些异常仅见于部分雄性胚胎，雌性中未见。单核转录组结果显示，受影响雄性胎盘中多种细胞类型均显著诱导促炎基因程序，其中以部分构成母胎边界、来源于胎儿的海绵滋养层细胞（spongiotrophoblasts）最为明显；这些细胞同时下调细胞外基质和激素生物合成通路，并伴随胎盘结构完整性破坏以及羊水中免疫细胞和细胞因子积聚。细胞因子 IL-6 是 MIA 诱发发育异常所必需的。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>结果表明，MIA 可在一部分易感雄性胚胎中迅速推动母胎界面由免疫抑制状态转向促炎状态，从而造成急性、性别受限的发育缺陷。作者据此提出，雄性胚胎可能表达可触发该炎症反应的特异蛋白，而这与 MIA 诱导的母体免疫抑制丧失共同作用，选择性扰乱雄性胚胎发育。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7796&amp;v=1&amp;s=2a69b1756cb625fa" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7796&amp;v=2&amp;s=3bd4d490848f44b2" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7796&amp;v=3&amp;s=080d7f4342d56cb4" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7796&amp;v=4&amp;s=1b80b00ffab17c0d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7796&amp;v=5&amp;s=4ee6227b772b8034" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42748126/">Spatially resolved gene expression analysis illuminates location-specific functions in the reef-building coral Pocillopora acuta.</a></div>
+      <div class="card-title-zh">空间分辨基因表达分析揭示造礁珊瑚 Pocillopora acuta 的位置特异性功能</div>
+      <div class="news">为解决珊瑚组织空间表达特征不清的问题，作者结合激光显微切割与RNA测序，发现口侧偏环境感知/免疫、反口侧偏骨骼形成，且功能标志物依赖多基因模式。</div>
+      <div class="meta">PloS one · 2026-09-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Dellaert Zoe, Putnam Hollie M</div>
+<div class="meta">DOI: 10.1371/journal.pone.0358454</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42748126/">https://pubmed.ncbi.nlm.nih.gov/42748126/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及空间转录组与细胞功能定位，可借鉴你的空间组学分析思路。</div>
+<div class="abstract"><span class="abs-label">背景</span>造礁珊瑚虫体含有多种具有不同功能的特化组织类型，涉及摄食、防御、共生和骨骼形成等过程。尽管这些细胞类型已通过显微观察以及近年的单细胞 RNA 测序得到表征，但珊瑚中具有空间分辨率的高通量基因表达谱研究仍然有限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究结合激光捕获显微切割（Laser Capture Microdissection）与 RNA 测序（RNA sequencing），对造礁珊瑚 Pocillopora acuta 的组织特异性基因表达进行表征。研究比较了与海水相邻的口侧组织（oral tissues）和负责构建珊瑚骨骼的反口侧组织（aboral tissues）的基因表达差异。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>口侧组织中有 1,253 个上调基因，富集于氨基酸合成、跨膜转运、信号传导、环境感知和分泌等过程，并高表达黏蛋白（mucins）、凝集素（lectins）、Toll 样受体（TLRs）及连接 TLRs 与 NF-κB 通路的 MyD88 等免疫和微生物识别相关基因。反口侧组织中有 552 个上调基因，富集于发育过程、细胞黏附和刺激响应，并发现与生物矿化（biomineralization）相关基因显著差异表达，包括几丁质合酶（Chitin Synthase）和 Wnt 通路成员，提示其在骨骼形成中具有此前描述不足的作用。与此同时，许多与特化功能相关的基因在多种组织中均有表达，说明其位置特异性有限。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究表明，珊瑚功能性生物标志物可能更依赖多基因表达模式，而非单个基因。作者据此强调，需要更高空间分辨率的方法，如单细胞/单核技术和空间转录组学（spatial transcriptomics），以在天然组织复杂性背景下充分解析珊瑚响应。随着人为气候变化对珊瑚礁威胁加剧，具空间分辨率的分子层面认知对于解释胁迫响应机制、预测其极限并指导人为干预至关重要。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7783&amp;v=1&amp;s=1deb6e11b28123bc" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7783&amp;v=2&amp;s=2b654a6256b08eb7" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7783&amp;v=3&amp;s=e0572f46769d28a9" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7783&amp;v=4&amp;s=5a97eabfe5fd7547" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7783&amp;v=5&amp;s=1f96f07cc466b9f1" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42745838/">Network-informed deconvolution of bulk immune gene co-expression reveals single-cell programs and spatial organization.</a></div>
+      <div class="card-title-zh">网络引导的体量免疫基因共表达去卷积揭示单细胞程序与空间组织</div>
+      <div class="news">为解决单细胞免疫状态缺乏机制解释及多尺度整合困难，作者利用bulk RNA-seq构建贝叶斯网络去卷积，发现网络定义免疫亚群兼具功能异质性与空间邻近性。</div>
+      <div class="meta">Frontiers in immunology · 2026-09-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Li Yiming, You Yujie, Chen Ruixian, Wang Peiqing, Zhang Yiming, Zhang Le, Deng Senyi</div>
+<div class="meta">DOI: 10.3389/fimmu.2026.1843602</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42745838/">https://pubmed.ncbi.nlm.nih.gov/42745838/</a></div>
+<div class="meta">Keywords: Bayesian network inference、LUAD (lung adenocarcinoma)、PBMC (peripheral blood mononuclear cells)、bulk RNA sequencing、network biomarkers、single cell transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>整合bulk、单细胞与空间转录组的网络框架，契合你关注的单细胞与计算方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>单细胞RNA测序（scRNA-seq）为探索免疫系统复杂性提供了前所未有的可能性。然而，现有方法主要依赖基于表达的聚类分析，缺乏对免疫细胞状态的机制性解释，并且在整合多尺度数据方面面临挑战。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究构建了一种网络引导的去卷积框架，利用情境匹配（context-matched）的体量RNA测序（bulk RNA-seq）数据集中免疫相关基因建立源自贝叶斯网络（Bayesian network）的调控结构。随后从这些结构中提取网络标记，并将其投射到外周血单个核细胞（PBMC）和肺腺癌（LUAD）的scRNA-seq数据集中，以识别网络生物标志物并定义免疫细胞状态；进一步结合空间转录组分析评估网络定义细胞状态的空间一致性。本文分析所用的scRNA-seq和空间转录组数据均来自作者团队前瞻性收集的样本，而情境匹配的bulk RNA-seq队列用于推导群体水平的免疫基因网络结构。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该框架在PBMC和LUAD数据集中均识别出由网络结构定义的免疫亚群，并揭示了多个免疫谱系中的功能异质性。空间转录组分析进一步显示，与网络相关的免疫细胞簇相比非相关簇具有更近的空间邻近性，从而支持了网络定义细胞状态的空间一致性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该框架为免疫细胞亚群识别和功能表征提供了一种网络引导的表征方式。通过连接体量免疫基因共表达、单细胞程序和空间组织，这一方法为理解正常和病理状态下的免疫动态提供了额外视角，并可能为更精准的免疫治疗相关研究提供分析基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7772&amp;v=1&amp;s=57d053e6ff80d02e" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7772&amp;v=2&amp;s=f16cdb34018e729c" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7772&amp;v=3&amp;s=9a48b890031298c6" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7772&amp;v=4&amp;s=4f2a2d8b8e3aff85" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7772&amp;v=5&amp;s=3985feacd647a899" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 45 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42744896/">On-premise medical AI agents for reliable clinical decision-making.</a></div>
+      <div class="card-title-zh">面向可靠临床决策的本地部署医疗人工智能智能体</div>
+      <div class="news">为解决临床自主AI代理院内部署治理与决策不确定性不足问题，作者构建本地化临床代理及多视角可靠性框架，发现诊断行为一致性最能识别高准确低风险自主病例。</div>
+      <div class="meta">Nature medicine · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhang Li, Wölflein Georg, Ferber Dyke, Liang Junhao, Carrero Zunamys I, Wu Xuewei, Vibert Julien, Clusmann Jan, Möhrmann Lino, Möhrmann Elena E, Wichmann Catharina, Wolf Fabian, Lenz Tim, Kather Jakob Nikolas</div>
+<div class="meta">DOI: 10.1038/s41591-026-04609-x</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42744896/">https://pubmed.ncbi.nlm.nih.gov/42744896/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及LLM代理与可靠性评估，可参考AI在生物医学决策中的实现。</div>
+<div class="abstract"><span class="abs-label">背景</span>由大语言模型（large language models, LLMs）驱动的自主临床人工智能（AI）智能体，是指无需持续人工输入即可完成诊断工作流程的系统，正日益具备支持复杂推理与决策的能力。然而，其临床转化仍受限于两个尚未满足的要求：受机构治理的部署方式，以及在决策时点对不确定性进行可靠估计的能力。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究开发并评估了一个完全本地部署（on-premise）的临床智能体，将本地运行控制与多视角可靠性框架相结合，以支持选择性自主（selective autonomy）。作者在两个源自重症监护医学信息集市 IV（Medical Information Mart for Intensive Care IV, MIMIC-IV）的基准任务上进行测试，并量化了用于诊断与推理的内部似然、基于语言的指标以及行为稳定性等决策时可靠性度量。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在两个 MIMIC-IV 衍生基准上，该智能体在七疾病任务中达到 90.04% 准确率，在四疾病任务中达到 83.8% 准确率，并在主要基准上接近云端基线表现。就决策时可靠性而言，诊断行为一致性对正确性的区分能力最强（曲线下面积 AUC = 0.860），且在压力测试下仍具有信息价值（AUC = 0.875）。当一致性阈值设为 0.90 时，可保留 49.4% 的病例，并达到 98.9% 的诊断准确率。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果支持了一种面向机构治理的临床智能体实用框架：利用决策时可靠性信号识别风险较低、可由系统自主处理的病例子集，并将其余病例转交人工复核。该框架有助于推动临床 AI 智能体在可靠性与部署治理要求下的实际应用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7806&amp;v=1&amp;s=fe4f266b60d846ad" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7806&amp;v=2&amp;s=8c97bbd8383b8423" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7806&amp;v=3&amp;s=d1d9d459ead63ac1" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7806&amp;v=4&amp;s=717ebd5cbd8fb7ec" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7806&amp;v=5&amp;s=22641837f7258d6a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 43 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42742183/">Prediction of maternal and infant outcomes from longitudinal electronic health records with a Mother-Child AI agent.</a></div>
+      <div class="card-title-zh">利用纵向电子健康记录和母婴人工智能体预测母亲与婴儿结局</div>
+      <div class="news">为解决低成本广泛预测母婴结局问题，作者构建整合纵向电子病历与常规检验的MoChiAgent，发现其可准确预测早产等风险并揭示母婴跨代风险关联。</div>
+      <div class="meta">Nature medicine · 2026-09-04</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Liu Sian, Zheng Wenxin, Kang Jin, Xu Tianyi, Chen Siming, Li Gen, Li Junlong, Wong Hang, Wang Meihao, Bai Xiaokai, Hu Changxi, Tang Cheng, Jin Shengwei, Zou Zixing, Chong Ieng, Lu Yuxing, Wong Io Nam, Xu Hui, Zhang Charlotte L, Shi Jingman, Feng Erhu, Gu Jinyu, Sun Zhuo, Chen Haibo, Yang Li, Zhang Yuan, Zhu Xian, Huang Huanhuan, Xu Xiuyuan, Li Xue, Zhenhui Zhao, Qi Hongbo, Lu Xinyu, Cheng Ngaman, Pan Sicheng, Sun Ning, Yin Yun, Williams Michelle, Oermann Eric, Rasko John E J, Li Jin, Wang Kai, Zhang Kang, Wu Hao, Xia Yubin, Zeng Fanxin, International Consortium of Digital Twins in Healthcare and Medicine</div>
+<div class="meta">DOI: 10.1038/s41591-026-04694-y</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42742183/">https://pubmed.ncbi.nlm.nih.gov/42742183/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>展示LLM整合纵向EHR建模，方法上可类比多模态生物数据预测。</div>
+<div class="abstract"><span class="abs-label">背景</span>当前针对妊娠及婴儿结局的预测模型通常只关注有限的终点，并且依赖成本较高的检测或影像学检查。为此，研究开发了母婴人工智能体（Mother-Child AI Agent，MoChiAgent），以整合序贯电子健康记录（electronic health record，EHR）数据（包括常规实验室检查）来预测母体和婴儿疾病。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>MoChiAgent 是一种基于大语言模型（LLM）的临床助手，可协调多种工具处理纵向 EHR 数据；其核心预测引擎 MoChiFormer 基于 4,401,599 次纵向临床就诊数据进行开发和内部评估，并在独立的母亲和婴儿队列中分别用 263,452 次和 23,192 次就诊数据进行外部验证。MoChiFormer 可重建缺失的实验室指标、降低批次效应，并学习 EHR 表征以支持孕周、胎龄和婴儿年龄估计、健康轨迹建模以及当前和未来疾病风险分层；随后，知识检索工具（Knowledge Search Tool）基于这些预测结果，从精选医学文献和权威指南中检索循证干预与治疗建议。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在母体健康方面，MoChiFormer 能较准确识别关键妊娠期疾病，对胎盘早剥、胎膜早破和早产临产的受试者工作特征曲线下面积（AUROC）分别达到 0.89、0.89 和 0.91。母婴配对数据分析进一步揭示了跨代风险关联：特定聚类中的母亲所生婴儿发生新生儿黄疸和血液系统疾病的风险显著升高，风险比（HR）分别为 2.81（95% CI 2.60-3.03）和 2.83（95% CI 2.62-3.05）。将母亲妊娠期 EHR 与婴儿记录整合后，还提高了对婴儿疾病的预测能力，包括染色体异常和呼吸系统疾病。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，MoChiAgent 能提供具有临床相关性且可操作的决策支持信息，从而促进针对母亲和婴儿的风险分层照护。该系统展示了利用纵向 EHR 同时支持母体与婴儿结局预测及干预建议检索的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7576&amp;v=1&amp;s=f75a184e700d0d92" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7576&amp;v=2&amp;s=e2226bc375fe2f66" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7576&amp;v=3&amp;s=1e648f1c2d23f9c5" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7576&amp;v=4&amp;s=f57bc58e0d1f7a34" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7576&amp;v=5&amp;s=94306a31d64ea012" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42743975/">Phage bioinformatics tools: a review of computational approaches for bacteriophage research.</a></div>
+      <div class="card-title-zh">噬菌体生物信息学工具：细菌噬菌体研究计算方法综述</div>
+      <div class="news">为解决噬菌体工具激增却评估不足、注释与宿主预测受限问题，作者综述同源性、机器学习和基础模型方法，发现基础模型识别MCC超0.95但半数基因仍难注释且缺标准基准。</div>
+      <div class="meta">Briefings in bioinformatics · 2026-09-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Pang Sean Jia Le, Wee Soon Keong, Yap Eric Peng Huat</div>
+<div class="meta">DOI: 10.1093/bib/bbag494</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42743975/">https://pubmed.ncbi.nlm.nih.gov/42743975/</a></div>
+<div class="meta">Keywords: bacteriophage、bioinformatics、foundation models、host prediction、protein structure、viral metagenomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>综述基础模型与蛋白语言模型，贴近你对AI基因组学方法的关注。</div>
+<div class="abstract"><span class="abs-label">背景</span>随着噬菌体治疗（phage therapy）在临床上的关注度上升，以及宏基因组测序目录呈指数级增长，细菌噬菌体生物信息学迅速扩展。当前已有80多种专用工具，且大多发表于2020年以后，覆盖噬菌体识别、组装、注释、分类、生活方式预测、防御系统检测和宿主预测等任务。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>该综述面向有经验的研究者和开发者，从三个连续的计算范式对领域进行综合：序列同源性（sequence homology）、机器学习（machine learning）和基础模型（foundation models）。同时，作者梳理了支撑多数下游流程的上游组件，包括基因预测器（gene callers）、同源性搜索引擎（homology engines）、蛋白质语言模型（protein language models）和结构搜索工具（structural search tools），并据此提出按用户经验和样本类型校准的网页版与命令行参考工作流程。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>综述指出，序列同源性方法受数据库完整性限制，机器学习方法受限于带标签训练数据，而基础模型在识别任务中的Matthews相关系数（Matthews correlation coefficient, MCC）已超过0.95，并通过结构信息辅助预测将噬菌体基因的功能注释比例提高到一半以上。作者还发现，不同工具共享大量基础设施，因此当依赖关系变化时，整个生态系统会表现出脆弱性；此外，不同方法真实阳性率在0%至97%之间波动，反映出缺乏标准化社区基准评测。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该综述为下一波工具开发提出了议程：尽管结构方法已有进展，仍约有一半噬菌体基因无法进行功能注释；面向噬菌体治疗的、可广泛泛化到菌株水平的宿主预测器仍不存在。随着生成式基因组模型开始设计合成噬菌体，未来进展将更依赖严格评估、可互操作的基础设施以及具有临床意义的预测目标，而不仅是开发孤立的单一工具。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7780&amp;v=1&amp;s=363a842748389e01" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7780&amp;v=2&amp;s=408087162b7c3ab8" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7780&amp;v=3&amp;s=53e0001c413dbbc1" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7780&amp;v=4&amp;s=2192982534829099" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7780&amp;v=5&amp;s=7d71c9c50ec50e06" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 60 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42744871/">Advancing the adoption of RNA interference-based biopesticides.</a></div>
+      <div class="card-title-zh">推动基于 RNA 干扰（RNA interference, RNAi）的生物农药应用</div>
+      <div class="news">为解决RNA干扰生物农药应用受效用、监管与社会接受度制约问题，作者综述农业效用、监管现实和社会许可三维驱动，发现其虽已具实用潜力，但国际监管不协调与公众安全认知仍限制广泛采用。</div>
+      <div class="meta">Nature plants · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Fletcher Stephen, Gunasekara Sandya, Narva Ken, De Neef Emma, Ashworth Peta, Jin Hailing, Mitter Neena</div>
+<div class="meta">DOI: 10.1038/s41477-026-02409-2</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42744871/">https://pubmed.ncbi.nlm.nih.gov/42744871/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦RNAi生物农药与瓦螨防控，贴近你关注的昆虫干预方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>基于 RNA 干扰（RNAi）的生物农药利用天然细胞机制，特异性沉默对害虫或病原体适合度至关重要的基因，因此有望成为比传统化学喷雾更具靶向性且潜在更安全的替代方案。首批针对科罗拉多马铃薯甲虫和瓦螨的产品获得登记，标志着该技术已从概念验证阶段迈向实际应用阶段。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文基于技术可行性已确立这一前提，围绕 RNAi 生物农药纳入病虫害管理策略的决定因素进行分析。摘要显示，其采用决策框架评估农民对该技术的采用潜力，重点考察农业效用、监管现实和社会许可如何共同影响其相对于传统方案的成本—收益比。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>环境关切、广泛存在的农药抗性以及对传统合成化学农药日益严格的监管限制，正在推动 RNAi 生物农药的采用考量。生物信息学驱动的双链 RNA（double-stranded RNA, dsRNA）设计、风险评估和递送系统的进展，使其有望填补传统化学农药退出后形成的市场空缺。与此同时，其广泛应用仍需应对国际监管协调碎片化，以及公众对安全性、残留和新型生物技术工具使用的认知与接受挑战。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究指出，RNAi 生物农药已具备从技术可行走向实际推广的基础，其未来应用前景不仅取决于防治效果，也取决于监管可及性与公众接受度。上述分析为理解和推进 RNAi 生物农药在现代病虫害管理中的采用提供了关键视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7805&amp;v=1&amp;s=6d3ff5717565d92d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7805&amp;v=2&amp;s=ea1de72f5ca36540" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7805&amp;v=3&amp;s=192d7db2f127a010" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7805&amp;v=4&amp;s=49b090db272575f9" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7805&amp;v=5&amp;s=28f892e64bf66c51" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-reference">Reference</span> · 55 分</div>
+      <div class="card-title"><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42748177/">An engineered bacterial symbiont maps micron-scale sugar gradients in the honeybee gut.</a></div>
+      <div class="card-title-zh">工程化细菌共生体绘制蜜蜂肠道中微米尺度的糖梯度</div>
+      <div class="news">为解决蜜蜂肠道微米尺度营养分布难解析问题，作者将共生菌工程化为阿拉伯糖荧光传感器，发现生物膜中糖梯度及Gilliamella种间差异性消耗与花粉糖径向异质性。</div>
+      <div class="meta">PLoS biology · 2026-09-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chhun Audam, Quinn Andrew, Pérez-Lorente Alicia I, Steiner Théodora, Zoppi Florian, Nguyen Thi Huong Giang, Engel Philipp, Schaerli Yolanda</div>
+<div class="meta">DOI: 10.1371/journal.pbio.3003997</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42748177/">https://pubmed.ncbi.nlm.nih.gov/42748177/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦蜜蜂与肠道微环境，工程共生菌原位绘制微米级糖梯度。</div>
+<div class="abstract"><span class="abs-label">背景</span>蜜蜂肠道微生物群在塑造宿主健康及其疾病易感性方面发挥关键作用，但其在肠道内所处的营养环境仍缺乏充分表征。尤其是，由于在体内解析这类精细梯度在技术上具有挑战性，人们对微生物群落间营养物质的空间分布知之甚少。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究将蜜蜂天然共生菌 Snodgrassella alvi 工程化为活体生物传感器，用于定量检测肠道内膳食糖阿拉伯糖（arabinose）的生物可利用性。通过将高负担基因整合入染色体并引入一组低强度启动子，作者扩展了 S. alvi 的遗传工具箱，实现了稳定的多基因表达且不影响其宿主定殖。随后利用该生物传感器在活体宿主中产生对阿拉伯糖特异且剂量依赖的荧光响应，以微米尺度分辨率可视化肠道相关细菌生物被膜中的糖梯度。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>所得生物传感器能够在活体宿主内对阿拉伯糖产生特异性、剂量依赖性的荧光响应，并揭示肠道相关细菌生物被膜中的微米尺度糖梯度。与阿拉伯糖代谢能力不同的 Gilliamella 物种共同定殖时，该传感器报告了体内阿拉伯糖消耗的差异，直接验证了宿主体内物种特异性的代谢分工。给蜜蜂饲喂花粉后，研究进一步发现花粉来源阿拉伯糖在空间分布上存在显著的径向异质性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，饮食组成与微生物代谢专化共同塑造了肠道内精细尺度的微环境。更广泛地说，该研究将 S. alvi 建立为一种可进行遗传操作的原位生物传感平台，为解析活体宿主内的代谢互作和营养分布开辟了新途径。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7769&amp;v=1&amp;s=63a7d8273fefd861" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7769&amp;v=2&amp;s=7af3131b4337b11e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7769&amp;v=3&amp;s=0418fe9dd2bd9598" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7769&amp;v=4&amp;s=73bc7537db5c0f94" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7769&amp;v=5&amp;s=1e4fc7eb8013da0b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42747551/">CRISPR-Enabled functional genomics in hPSCs-derived neural models for autism spectrum disorder.</a></div>
+      <div class="card-title-zh">CRISPR赋能的人多能干细胞（hPSCs）来源神经模型在自闭症谱系障碍中的功能基因组学研究</div>
+      <div class="news">为解决ASD遗传异质性机制难以规模化解析的问题，作者综述CRISPR结合hPSC神经模型与单细胞多组学策略，揭示祖细胞命运偏移、突触修剪及mTOR代谢异常等收敛机制。</div>
+      <div class="meta">Metabolic brain disease · 2026-09-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Gopukumar S T, Saha Madhumita, Soni Tanveen Kaur, Alatwi Eid Semer, Khan Gazala Afreen, Asad Mohammad Rehan, Shamshad Samer, Tadakod Sunil, Sharma Alok, Das Uddalak</div>
+<div class="meta">DOI: 10.1007/s11011-026-01968-9</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42747551/">https://pubmed.ncbi.nlm.nih.gov/42747551/</a></div>
+<div class="meta">Keywords: ASD、CRISPR-Perturbomics、Functional Genomics、HPSCs-Derived Neural Models、Mental Health、Precision Medicine、Public Health、Single-Cell Multiomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>结合CRISPR与单细胞、空间组学，方法上接近你的单细胞研究路线。</div>
+<div class="abstract"><span class="abs-label">背景</span>自闭症谱系障碍（ASD）是一种遗传异质性很强的神经发育性疾病，数百种各自罕见的风险变异会汇聚到少数共同的生物学通路上，包括突触支架、染色质重塑、兴奋-抑制平衡和细胞能量代谢。要将这种遗传异质性转化为机制性认识，需要能够在人类相关神经背景下大规模解析单个基因功能的实验系统。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>该综述聚焦于基于CRISPR的功能基因组学平台，利用人多能干细胞（hPSC）来源的神经模型，包括神经祖细胞、皮层神经元、抑制性神经元、星形胶质细胞、小胶质细胞和脑类器官。通过将混合扰动筛选（pooled perturbation screens）与多模态读出相结合，如单细胞与空间转录组学、染色质可及性分析、邻近标记蛋白质组学、多电极阵列电生理和代谢通量分析，实现对ASD基因功能的系统性因果映射。文中还提到利用MIMOSCA和SCEPTRE等计算框架进行因果网络重建和拟时序推断。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>早期应用已揭示出若干趋同机制：BAF复合体（BAF complex）受扰会扩增腹侧祖细胞池，并使其命运偏向少突胶质细胞和中间神经元谱系；ADNP缺失会通过改变内吞转运损害小胶质细胞的突触修剪；在PTEN和TSC2扰动模型中，mTOR通路失调将遗传风险直接联系到代谢和线粒体功能障碍。转化层面上，同基因背景（isogenic）iPSC面板以及针对变异水平的碱基编辑和引导编辑（prime editing）可按功能影响对ASD变异进行分层，并为CHD8和SCN2A等单倍剂量不足靶点的AAV或反义寡核苷酸治疗设计提供依据。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该综述认为，CRISPR驱动的人干细胞神经模型功能基因组学为将ASD遗传关联转化为机制理解提供了连贯的实验框架，并推动研究从基因清单走向通路层面的疾病生物学模型。针对模型发育不成熟、批次变异和多基因风险建模困难等挑战，文中提出结合空间扰动组学、人工智能驱动的因果推断和群体尺度标准化生物样本库的发展路线，以拓展其治疗转化潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7782&amp;v=1&amp;s=87beaf0ef3740be6" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7782&amp;v=2&amp;s=bf6cb51e8d7f0fef" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7782&amp;v=3&amp;s=90220a72aec709c5" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7782&amp;v=4&amp;s=320922912e9524d7" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7782&amp;v=5&amp;s=1e96d44d051c8ddd" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 47 分</div>
+      <div class="card-title"><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42746353/">SOPAR: Bee Localization and Tracking Using RF Sub-harmonic Oscillating Parametric Resonator in Hive Environments.</a></div>
+      <div class="card-title-zh">SOPAR：在蜂箱环境中利用射频（RF）次谐波振荡参数谐振器进行蜜蜂定位与跟踪</div>
+      <div class="news">为解决完整蜂箱内蜂王非侵入定位难题，作者利用亚谐波振荡参数谐振RF背散射标签结合贝叶斯读出，实现3.7厘米中位误差稳健跟踪。</div>
+      <div class="meta">Proceedings of the ACM on interactive, mobile, wearable and ubiquitous technologies · 2026-06-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wang Qijun, Yan Peihao, Zhou Geo Jie, Liu Xiang, Stanley Dan, Huang Zach, Qian Chunqi, Zeng Huacheng</div>
+<div class="meta">DOI: 10.1145/3810192</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42746353/">https://pubmed.ncbi.nlm.nih.gov/42746353/</a></div>
+<div class="meta">Keywords: Bee、RF sensing、backscatter tag、localization、parametric resonator、sub-harmonic oscillator、tracking</div>
+<div class="reason"><span class="abs-label">推荐理由</span>面向蜂王在蜂箱中的定位追踪，契合你对蜜蜂社会行为研究的需求。</div>
+<div class="abstract"><span class="abs-label">背景</span>蜜蜂在全球农业中发挥着至关重要的作用。理解蜂王在蜂箱内的运动，对于推动生物学研究和实际养蜂应用都十分关键。为此，论文提出了一种用于完整尺寸蜂箱内蜂王无创定位与跟踪的新型系统 SOPAR。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>SOPAR 的核心是一个可附着于蜜蜂胸部、且不影响其正常行为的轻量化射频反向散射标签（RF backscatter tag）。该标签由两个无源谐振器组成：一个由变容二极管桥接的内层螺旋电感，以及一个由芯片电容桥接开口的外层圆形电感；外层电感从外部激励信号中采能，驱动内层谐振器振荡并产生频率为激励频率一半的次谐波反向散射信号。基于该双谐振器标签，研究进一步设计了结合贝叶斯估计算法的射频读出器（RF reader），利用次谐波反向散射信号的时空特征对带标签蜜蜂进行定位。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>激励信号与反向散射信号之间的频率分离消除了射频读出器处的自干扰，显著提高了信噪比（SNR）和检测距离。研究构建的 SOPAR 原型中，标签直径仅为 3.7 mm、重量小于 10 mg。大量实验表明，在完整尺寸蜂箱中跟踪蜂王时，SOPAR 的定位中位误差为 3.7 cm，并且在多种环境条件下保持稳健。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提供了一种适用于完整尺寸蜂箱内部的非侵入式蜂王定位与跟踪方案。其小型轻量标签设计结合次谐波反向散射机制，有助于在不干扰蜜蜂正常行为的前提下提升检测性能。该系统可为蜂群行为研究及实际养蜂管理提供技术支持。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7781&amp;v=1&amp;s=8c3260b6a6e568dc" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7781&amp;v=2&amp;s=3f0b376190897878" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7781&amp;v=3&amp;s=8a6992c521221b8b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7781&amp;v=4&amp;s=b742110fd9ce1c23" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7781&amp;v=5&amp;s=561c5366812bae7a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 42 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42745032/">ATP synthase subunits e and g are essential for Ca2+ homeostasis and development in Drosophila melanogaster independent of oxidative phosphorylation.</a></div>
+      <div class="card-title-zh">ATP 合酶 e 和 g 亚基在 Drosophila melanogaster 中对 Ca2+ 稳态和发育至关重要，且该作用独立于氧化磷酸化</div>
+      <div class="news">为解决ATP合酶e/g亚基是否独立于氧化磷酸化调控发育问题，作者在果蝇中整体或组织特异下调两亚基，发现其经CICR维持线粒体Ca2+稳态、蜕皮激素生成及神经肌肉发育。</div>
+      <div class="meta">Cell death and differentiation · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Frigo Elena, Santalla Manuela, Brischigliaro Michele, Boscolo Nata Federica, Tommasin Ludovica, Rossini Michela, Komarov Denis, Ferro Stefania, Pendin Diana, Marin Oriano, Costa Rodolfo, Carraro Michela, Bernardi Paolo</div>
+<div class="meta">DOI: 10.1038/s41418-026-01869-5</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42745032/">https://pubmed.ncbi.nlm.nih.gov/42745032/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦果蝇蜕皮激素与内分泌调控，契合你对昆虫激素信号的兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>线粒体 ATP 合酶除参与 ATP 生成和嵴（cristae）结构塑造外，还被认为参与形成通透性转换孔（permeability transition pore, PTP）；在哺乳动物细胞中，这是一种由 Ca2+ 激活的高电导通道，可导致基质肿胀和细胞死亡。在 Drosophila melanogaster 中，PTP 的同源结构更像是一种选择性的 Ca2+ 诱导 Ca2+ 释放（Ca2+-induced Ca2+-release, CICR）通道，但其在整体生物水平上的生理意义仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究下调了 Drosophila 的 ATP 合酶 e 和 g 亚基，这两个亚基在酵母和哺乳动物细胞中对 PTP 形成至关重要。作者采用全身性或组织特异性（肌肉或神经元）抑制策略，并评估幼虫发育、运动能力、ATP 合酶二聚化、线粒体超微结构、呼吸能力、线粒体 Ca2+ 负荷、蜕皮激素水平以及神经肌肉接头的突触组织。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>全身性下调任一亚基均导致幼虫发育停滞，而在肌肉或神经元中特异性抑制则引起严重运动障碍；同时 ATP 合酶二聚化显著减少，线粒体超微结构发生改变，但呼吸能力大体保留。两种敲低动物的线粒体均可积累更多 Ca2+，与 CICR 受损一致，并伴随几乎完全丧失依赖 Ca2+ 的变态发育主激素蜕皮激素（ecdysone）。此外，神经元特异性敲低果蝇表现出线粒体 Ca2+ 外排缺陷以及神经肌肉接头突触组织异常。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果表明，ATP 合酶在 Drosophila melanogaster 中可作为一种 CICR 通道发挥作用，从而调控 Ca2+ 稳态、内分泌信号和个体发育。该研究进一步指出，ATP 合酶 e 和 g 亚基的重要功能并不依赖于氧化磷酸化。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7779&amp;v=1&amp;s=b9359e3019856e72" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7779&amp;v=2&amp;s=97f3e70b532916b6" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7779&amp;v=3&amp;s=c66de7b01e746663" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7779&amp;v=4&amp;s=fbe1d27c829e12a0" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7779&amp;v=5&amp;s=8a25ad58059fabfb" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42743927/">Single-cell-resolved genome atlas of prokaryoplankton inhabiting the ocean&#x27;s interior.</a></div>
+      <div class="card-title-zh">海洋内部原核浮游生物的单细胞分辨率基因组图谱</div>
+      <div class="news">为解析海洋内部原核浮游生物的基因组组成与多样性，作者构建单细胞分辨率基因组图谱，获得该类群的系统性基因组资源，推动海洋微生物生态研究。</div>
+      <div class="meta">Cell · 2026-09-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chang Tianyi, Pachiadaki Maria G, Gavelis Gregory S, Poulton Nicole J, Thompson Brian, Mascena Corianna, Macartney Keir, Brown Julia M, La Clair James J, Weinheimer Alaina R, Yokokawa Taichi, Ruiz-Fernández Paula, Anstett Julia, Berube Paul M, Biller Steven J, Orcutt Beth N, Baltar Federico, Burkart Michael D, Hallam Steven J, Jürgens Klaus, Ulloa Osvaldo, Nunoura Takuro, Sintes Eva, Herndl Gerhard J, Stepanauskas Ramunas</div>
+<div class="meta">DOI: 10.1016/j.cell.2026.08.036</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42743927/">https://pubmed.ncbi.nlm.nih.gov/42743927/</a></div>
+<div class="meta">Keywords: biogeochemistry、biogeography、bioprospecting、biosynthetic gene cluster、chemolithoautotrophy、darobactin、ocean microbiome、prokaryoplankton diversity、proteorhodopsin、single-cell genomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>采用单细胞分辨基因组图谱思路，方法上可类比你关注的细胞图谱研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>海洋无光带内部栖息着四分之三的浮游细菌和古菌（统称原核浮游生物，prokaryoplankton），但其组成、生态及生物技术潜力仍缺乏清晰认识。为弥补这一知识空白，研究开展了针对海洋透光层以下原核浮游生物的全球尺度基因组调查。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究构建了 Global Oceans Reference Genomes（GORG）-Dark 数据集，包含 9,698 个来自单个原核浮游生物细胞的基因组。样本在海洋透光层以下、跨越广泛水深、地理位置和环境条件进行无选择性采集，并据此开展生物地理学分析与编码潜力评估。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>生物地理学分析显示，原核浮游生物的垂直分层可延伸至深渊水深，并发现了附着颗粒生活的 Pelagibacterales 谱系，以及此前被忽视的 Patescibacteria 和 Nanoarchaeota 在波罗的海和黑海中的丰富存在。研究还鉴定出在无光海洋中广泛分布的原核浮游生物谱系具有化能无机自养（chemolithoautotrophy）、与药理学相关的次级代谢，以及一种独特类型的 proteorhodopsins 的编码潜力。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究对栖息于广阔海洋内部的微生物组成及其编码潜力进行了定量的全球评估。与此同时，研究为微生物海洋学的网络基础设施（cyberinfrastructure）贡献了一个大规模、单细胞分辨率的数据集。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7721&amp;v=1&amp;s=55b0ee5737675d69" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7721&amp;v=2&amp;s=566655607b6671e3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7721&amp;v=3&amp;s=dc5abfd14f482664" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7721&amp;v=4&amp;s=936a2e01576851eb" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=7721&amp;v=5&amp;s=614d6ea44b63c0a0" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日文献主要聚焦四类方向：单细胞/单核与空间组学解析复杂组织和发育过程，AI与临床智能体用于诊断和母婴风险预测，微生物与生态系统研究（蜂肠道、海洋原核生物、噬菌体、珊瑚），以及RNAi生物农药、ATP合酶功能等机制与转化研究。共同趋势是多组学整合增强，常将sc/snRNA-seq、ATAC-seq、空间转录组、原位验证、机器学习或LLM代理结合；同时工程化生物传感器与计算工具平台增多。对研究者的价值在于：可借鉴跨尺度数据整合与网络/AI分析框架，关注空间分辨和细胞状态定义，并从农业、医学到生态的应用案例中寻找可迁移的方法与合作切入点。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=xuanyabing%40genomics.cn&amp;d=2026-09-17&amp;s=59aa17ea38530e21">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=xuanyabing%40genomics.cn&amp;d=2026-09-17&amp;s=59aa17ea38530e21">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

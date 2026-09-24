@@ -3,6 +3,7 @@ import yaml
 from main import (
     _artifact_union,
     _candidate_limit,
+    _filter_stale_papers,
     _personal_title_fallback,
     apply_lab_profile,
     load_users,
@@ -166,3 +167,39 @@ def test_artifact_union_dedupes_same_paper_across_users():
         "user002": [(4, same_b)],
     })
     assert [p.doi for p in union] == ["10.1/a", "10.1/b"]
+
+
+def _p(date_str):
+    return Paper(title="t", abstract="", authors="", journal="j",
+                 date=date_str, doi="", url="")
+
+
+def test_filter_stale_papers_drops_backlog_and_future():
+    pool = [
+        _p("2026-09-23"),   # 当天
+        _p("2026-08-23"),   # days=1 边界：恰好 days+30 天前，保留
+        _p("2026-08-22"),   # 超龄 1 天，剔除
+        _p("2026-01-01"),   # 跨年积压旧期今天入索引，剔除
+        _p("2026-09-25"),   # today+2 容错内，保留
+        _p("2026-09-26"),   # 超前登记，剔除
+        _p("2027-01-01"),   # 明年书章超前登记，剔除
+        _p(""),             # 无日期：无法判龄，保留
+        _p("2026 Sep"),     # 损坏格式：无法判龄，保留
+    ]
+    kept, dropped = _filter_stale_papers(pool, days=1, today="2026-09-23")
+    assert dropped == 4
+    assert [p.date for p in kept] == ["2026-09-23", "2026-08-23", "2026-09-25", "", "2026 Sep"]
+
+
+def test_filter_stale_papers_days_scales_backlog_window():
+    # days=30 时超龄界为 60 天前：07-25 恰好边界保留，更早剔除
+    pool = [_p("2026-07-25"), _p("2026-07-24"), _p("2026-06-01")]
+    kept, dropped = _filter_stale_papers(pool, days=30, today="2026-09-23")
+    assert dropped == 2
+    assert [p.date for p in kept] == ["2026-07-25"]
+
+
+def test_filter_stale_papers_bad_reference_date_returns_pool_untouched():
+    pool = [_p("2026-01-01")]
+    kept, dropped = _filter_stale_papers(pool, days=1, today="not-a-date")
+    assert kept == pool and dropped == 0

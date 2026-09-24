@@ -9,7 +9,9 @@
       全局过滤，可选并入顶刊直采通道
       sources/top_journals.py——按 journals.yaml 刊名直抓 PubMed（edat）+
       按 issn 段 Crossref 直采补索引延迟，绕过关键词召回，
-      拼成当日全局池）→ 每用户本地规则
+      拼成当日全局池）→ 按发表日期剔除超龄/超前条目
+      （edat 召回会带入"今天才入索引的积压旧期"，Crossref 会带入
+      超前登记，如 pdat 跨年书章；见 _filter_stale_papers）→ 每用户本地规则
       粗筛等权打分选出候选（实验室公共方向词叠加个人词表；期刊因素只在精排
       journal 维度体现，粗筛不再按期刊加分；顶刊通道论文按刊名补入候选，
       每用户每日上限见 scoring.yaml 的 journal_channel）→ 按用户跨天去重 →
@@ -42,7 +44,7 @@ import argparse
 import logging
 import os
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 import yaml
@@ -168,6 +170,40 @@ def _candidate_limit(scoring_cfg: dict, final_limit: int) -> int:
         return max(1, int(scoring_cfg.get("candidate_limit_per_user", final_limit)))
     except (TypeError, ValueError):
         return max(1, final_limit)
+
+
+# 发表日期过滤冗余：edat/月初对齐两个召回通道按"入库日"而非"发表日"开窗，
+# 会把发表日远早于检索窗的条目带进池（期刊积压旧期今天入索引、年-月精度只落
+# YYYY-MM-01 补日、Springer 明年书章超前登记）。
+_FUTURE_TOLERANCE_DAYS = 2   # 提前在线/时区冗余；发表日 > today+2 视为超前补录
+_BACKLOG_GRACE_DAYS = 30     # days 窗之外的索引延迟冗余；age > days+30 视为超龄
+
+
+def _filter_stale_papers(pool: list, days: int, today: str | None = None) -> tuple[list, int]:
+    """按发表日期剔除超龄/超前条目；日期缺失或格式损坏的保留（无法判龄）。
+
+    返回 (保留列表, 剔除数)。days 与检索窗一致：days=1 时允许 31 天内的
+    edat 补录与 Crossref 月初对齐条目存活，只杀跨年积压与明显超前日期。
+    """
+    ref = today or date.today().isoformat()
+    try:
+        ref_d = date.fromisoformat(ref)
+    except ValueError:
+        return pool, 0
+    oldest = ref_d - timedelta(days=days + _BACKLOG_GRACE_DAYS)
+    newest = ref_d + timedelta(days=_FUTURE_TOLERANCE_DAYS)
+    kept, dropped = [], 0
+    for p in pool:
+        try:
+            d = date.fromisoformat((p.date or "")[:10])
+        except ValueError:
+            kept.append(p)  # 无法解析的日期按无法判龄处理，不误杀
+            continue
+        if d < oldest or d > newest:
+            dropped += 1
+            continue
+        kept.append(p)
+    return kept, dropped
 
 
 def _artifact_union(shortlists: dict[str, list]) -> list:
@@ -365,6 +401,10 @@ def main() -> int:
                          "retmax_per_journal": channel_cfg.get("retmax_per_journal", 20),
                          "issn": channel_issns,
                          "crossref_rows": channel_cfg.get("crossref_rows", 20)})
+    pool, n_stale = _filter_stale_papers(pool, args.days)
+    if n_stale:
+        log.info("发表日期过滤：剔除 %d 篇超龄（>today-%d 天）或超前（>today+%d 天）条目",
+                 n_stale, args.days + _BACKLOG_GRACE_DAYS, _FUTURE_TOLERANCE_DAYS)
     log.info("全局池：%d 篇（去重后）", len(pool))
     if not pool:
         log.info("全局池为空，今日无新文献")

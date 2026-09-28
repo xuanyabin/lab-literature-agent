@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-09-28</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-09-28</h1>
+    <p class="hello">轩亚冰，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">过去 4 天全库新增 934 篇 · 命中您的关键词 265 篇 · 本次推送 15 篇（必读 0 · 重要 4 · 参考 11）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 65 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42786290/">ResolVI: addressing noise and bias in spatial transcriptomics.</a></div>
+      <div class="card-title-zh">ResolVI：解决空间转录组学中的噪声与偏差</div>
+      <div class="news">针对亚细胞分辨率空间转录组中分子误分配限制细胞状态识别的问题，研究者开发resolVI模型生成概率表示以校正分子误分配、批次效应等干扰，显著提升了区分细胞状态、识别空间细微表达变化及跨数据集整合分析的能力。</div>
+      <div class="meta">Nature methods · 2026-09-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ergen Can, Yosef Nir</div>
+<div class="meta">DOI: 10.1038/s41592-026-03212-9</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42786290/">https://pubmed.ncbi.nlm.nih.gov/42786290/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>resolVI校正空间转录组分子误分配问题，可提升用户关注的细胞状态识别与跨数据集整合分析能力。</div>
+<div class="abstract"><span class="abs-label">背景</span>空间转录组学（spatial transcriptomics）技术能够在完整组织切片中以高空间分辨率和高通量估计RNA表达，为理解细胞通讯和组织功能提供了新视角。然而，亚细胞分辨率空间转录组学数据分析中的一个基本步骤——定量分析，即把平面分割成近似单个细胞的区域并汇总区域内分子以估计细胞表达谱——长期存在分子错误分配的问题。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究开发了resolVI模型，该模型可在任何分割算法下游运行，生成概率表示，以校正分子错误分配、批次效应（batch effects）及其他干扰因素。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究表明，resolVI能够提升区分细胞状态的能力，识别空间中细微的表达变化，并实现跨数据集的整合分析。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>resolVI作为开源软件已在scvi-tools中发布，为空间转录组学数据的下游分析提供了重要工具，有助于克服当前应用受限于先验定义细胞亚群的瓶颈，并促进新细胞状态的发现。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8832&amp;v=1&amp;s=581e3a49dd4fc1f5" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8832&amp;v=2&amp;s=c98d5df4af9ce58d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8832&amp;v=3&amp;s=8dffbe3c1ed21322" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8832&amp;v=4&amp;s=6230688f4c6e286d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8832&amp;v=5&amp;s=c0cdc3d1d3be923b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 64 分</div>
+      <div class="card-title"><span class="badge cat-module">脑图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://doi.org/10.1038/s41586-026-10836-6">Single-nucleus transcriptome-wide association study of human brain disorders</a></div>
+      <div class="card-title-zh">人类脑疾病的单核转录组全转录组关联研究</div>
+      <div class="news">为解决传统脑组织批量分析掩盖细胞异质性且缺乏祖先多样性的问题，作者基于PsychAD队列单核转录组构建跨细胞类型遗传调控表达模型，发现数千种细胞特异性基因-疾病关联并在跨祖先队列中验证，为复杂脑疾病的精准定位和治疗靶点筛选提供新工具。</div>
+      <div class="meta">Nature · 2026-09-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Venkatesh Sanan, Kosoy Roman, Wu Zhenyi, Anyfantakis Marios, Dillard Christian, N. M. Prashant, Burstein David, Mathur Deepika, Chatzinakos Chris, Ajanaku Bukola, Tsetsos Fotis, Zeng Biao, Gupta Sonali, Bercovitch Rachel, Hong Aram, Casey Clara, Alvia Marcela, Shao Zhiping, Argyriou Stathis, Therrien Karen, Li Athan Z., He Chenfeng, Gupta Chirag, Porras Christian, McClung Colleen A., Spencer Collin, Wang Daifeng, Bennett David A., Tsetsos Fotios, Ryan Gennadi, Yang Hui, Bendl Jaroslav, Fortes Jennifer Monteiro, Choi Jerome J., Arachchilage Kalpana H., Jensen Lars J., Barnes Lisa L., Dumitrescu Logan C., Sheu Lyra, Scott Madeline R., Anyfantakis Marios, Signaevsky Maxim, Koutrouli Mikaela, Pjanic Milos, Ahirwar Monika, Masse Nicolas Y., Kalafut Noah Cohen, Auluck Pavan K., Katsel Pavel, Dong Pengfei, Chandrashekar Pramod B., Venkatesh Sanan, Khullar Saniya, Murphy Sarah R., Alatkar Sayali A., Kinrot Seon, Finkbeiner Steven, Kleopoulos Steven P., Clarence Tereza, Hohman Timothy J., Jin Ting, Haroutunian Vahram, Ramaswamy Vivek G., Huang Xiang, Wang Xinyi, Wu Zhenyi, Bigdeli Tim, Auluck Pavan, Bennett David A., Marenco Stefano, Haroutunian Vahram, Girdhar Kiran, Bendl Jaroslav, Lee Donghoon, Fullard John F., Hoffman Gabriel E., Voloudakis Georgios, Roussos Panos</div>
+<div class="meta">DOI: 10.1038/s41586-026-10836-6</div>
+<div class="meta"><a href="https://doi.org/10.1038/s41586-026-10836-6">https://doi.org/10.1038/s41586-026-10836-6</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>单核转录组关联研究方法学先进，其跨祖先队列的TWAS策略可迁移至蜜蜂、蚂蚁等社会性昆虫群体遗传研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>常见脑疾病造成了巨大的健康负担，但将其遗传风险定位到脑特定区域仍具挑战性。全基因组关联研究虽已发现大量与神经精神及神经退行性疾病相关的位点，但其中许多位点位于非编码区，影响特定细胞类型中的基因表达。传统的 bulk 脑转录组分析通常以欧洲裔队列为主，掩盖了细胞多样性，模糊了与遗传风险相关的基因表达变化。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用多族裔 PsychAD 队列背外侧前额叶皮层的单核基因表达图谱，构建了主要脑细胞类型中遗传调控表达的转录组插补模型；并将这些模型应用于神经精神及神经退行性疾病，同时结合百万退伍军人计划（Million Veteran Program）进行跨族裔分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究揭示了数千种在 bulk 组织分析中无法检测的基因-性状关联，并将许多信号解析到特定的神经元、胶质细胞和免疫细胞群体。跨族裔分析证实了这些关联，揭示了细胞类型特异性预测表达的多效性效应，并证明性状相关失调在不同族裔间保守。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提供了细胞类型分辨且考虑族裔因素的人类前额叶皮层遗传调控表达图谱，展示了单核转录组学如何促进复杂脑疾病的基因发现和 therapeutic target（治疗靶点）优先级排序。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8865&amp;v=1&amp;s=f4a6f61695dbbc3f" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8865&amp;v=2&amp;s=2f1ff7bbe840d814" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8865&amp;v=3&amp;s=eed0c46e3884b045" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8865&amp;v=4&amp;s=97064d0e19c58084" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8865&amp;v=5&amp;s=7f06302f09713eeb" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-important">Important</span> · 63 分</div>
+      <div class="card-title"><span class="badge cat-module">三维时空图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42798452/">A four-dimensional spatial atlas of spinal cord injury reveals predominant Spp1-integrin signaling driving microglia-fibroblast crosstalk in fibrotic niches.</a></div>
+      <div class="card-title-zh">脊髓损伤的四维空间图谱揭示纤维化微环境中Spp1-整合素信号驱动小胶质细胞-成纤维细胞交互作用</div>
+      <div class="news">为阐明脊髓损伤后纤维化瘢痕形成的细胞通讯机制，研究者整合空间与单细胞转录组学构建四维时空图谱，发现Spp1-Itgav/Itgb1信号轴主导瘢痕巩固期小胶质细胞-成纤维细胞互作，且NT3-壳聚糖干预可有效抑制该通路并促进长期功能恢复，为靶向纤维化微环境提供了新策略。</div>
+      <div class="meta">Frontiers in immunology · 2026-09-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chen Liwen, Wang Siqiao, Xiao Zhihui, Zhao Shitong, Fan Wenyong</div>
+<div class="meta">DOI: 10.3389/fimmu.2026.1926947</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42798452/">https://pubmed.ncbi.nlm.nih.gov/42798452/</a></div>
+<div class="meta">Keywords: fibrotic scar、microglia-fibroblast crosstalk、single-cell RNA sequencing、spatial transcriptomics、spinal cord injury</div>
+<div class="reason"><span class="abs-label">推荐理由</span>整合空间转录组、单细胞转录组与4D图谱构建，技术路线与用户擅长的spatial transcriptomics和cell atlas高度契合，可借鉴其多组学整合策略。</div>
+<div class="abstract"><span class="abs-label">背景</span>脊髓损伤（SCI）导致纤维化瘢痕形成，阻碍轴突再生，但控制瘢痕形成的分子机制尚不完全清楚。小胶质细胞和成纤维细胞在损伤部位聚集，但它们之间的细胞间通讯、空间组织及治疗可靶向性尚未被系统绘制。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究整合空间转录组学、单细胞转录组学、批量RNA测序和微阵列分析，涵盖小鼠和大鼠SCI模型中多个损伤后时间点。构建跨越三个空间维度和时间的四维空间图谱以绘制小胶质细胞-成纤维细胞相互作用。利用成纤维细胞分化轨迹建立分子亚型和风险预测模型，并在独立队列和人外周血中验证。在完全横断模型中测试NT3-壳聚糖（NT3-chitosan）并开展功能和分子评估。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>四维空间图谱鉴定出Spp1-Itgav/Itgb1是瘢痕巩固高峰期占主导的小胶质细胞-成纤维细胞信号轴，与NF-κB和TGF-β转录程序空间共定位。基于成纤维细胞分化的分类将SCI分为三个与损伤严重程度和免疫重塑相关的亚型。基于外周血成纤维细胞分化相关特征的风险模型预测ASIA A级，在总队列、训练集和测试集中的AUC分别为0.883、0.939和0.807。NT3-壳聚糖治疗与Spp1-Itgav/Itgb1信号降低、纤维化瘢痕减少以及52周内持续运动功能恢复相关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>小胶质细胞-成纤维细胞通过Spp1-Itgav/Itgb1的交互作用在纤维化瘢痕成熟区域富集，伴随NF-κB和TGF-β转录激活。基于成纤维细胞分化的框架可实现风险分层并指导瘢痕靶向干预，为SCI治疗提供了临床可操作的途径。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8841&amp;v=1&amp;s=da05bb5033f24897" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8841&amp;v=2&amp;s=776269d75bcb43c2" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8841&amp;v=3&amp;s=1072c9190bec9ade" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8841&amp;v=4&amp;s=b94d059c09d362a7" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8841&amp;v=5&amp;s=6352aeb6a9cf4ccb" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-important">Important</span> · 60 分</div>
+      <div class="card-title"><span class="badge cat-module">三维时空图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42786296/">Atlas of cell types and regulatory elements underlying human facial diversity.</a></div>
+      <div class="card-title-zh">人类面部多样性背后的细胞类型与调控元件图谱</div>
+      <div class="news">为破解基因组如何塑造面部多样性这一难题，研究团队整合单细胞转录组、染色质可及性与空间转录组学技术，构建胚胎第6-11周多模态面部图谱，发现面部性状关联基因在早期间充质祖细胞中活性最强，外周神经参与微调上颌骨形态，且关键致病基因增强子可能是现代人类面部变异的重要载体。</div>
+      <div class="meta">Nature genetics · 2026-09-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Erickson Alek G, Gershtein Yaakov, Galimullina Rozalina, Waern Felix, Riba Tonyak, Kaiser Markéta, Schnyder Daniela, Li Lei, Vaulin Nikita, Samuelsson Saga, Murtazina Aliia, Isaev Sergey, Bouderlique Thibault, Parobkova Viktoria, Zeberg Hugo, Zikmund Tomáš, Kaiser Jozef, Fried Kaj, Shagimardanova Elena I, Shigapova Leyla, Gazizova Guzel R, Reva Ivan V, Deviatiiarov Ruslan, Vymazalová Kateřina, Goovaerts Seppe, Lor Yuk Kit, Castelo-Branco Gonçalo, Claes Peter, Li Xiaofei, Gusev Oleg, Chagin Andrei S, Sundström Erik, Kharchenko Peter V, Adameyko Igor</div>
+<div class="meta">DOI: 10.1038/s41588-026-02748-y</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42786296/">https://pubmed.ncbi.nlm.nih.gov/42786296/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>多模态单细胞与空间组学方法先进，但应用于人类面部发育，与用户昆虫模型差异较大。</div>
+<div class="abstract"><span class="abs-label">背景</span>人类遗传多样性产生了令人惊叹的面部形态多样性，而颅面异常是最常见的出生缺陷之一。然而，介导基因组影响面部变异的细胞机制仍有待阐明。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究构建了胚胎第6-11周的多模态面部图谱，整合单细胞转录组学、染色质可及性和空间转录组学三种技术，均在单细胞分辨率下进行分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定了56种细胞状态，绘制了间充质亚型及其基因-增强子顺式调控景观的时空图谱。基因表达与面部特征的关联在早期间充质祖细胞中最强，随后逐渐呈现区域限制性。自相关分析揭示了定义间充质空间邻域的模式形成基因；关键致病相关基因的增强子可能是现代人类群体面部变异的载体，其中与PAX1表达相关的一个增强子对小鼠正常骨骼发育具有重要作用。此外，全基因组关联研究推断的面部效应、细胞信号相互作用分析及小鼠验证实验表明，外周神经在胚胎发育过程中精细调节上颌骨形状。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些数据为理解人类表型个体性的机制提供了新见解，并构建了一个可用于研究颅面发育与异常的多模态图谱。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8846&amp;v=1&amp;s=0c2dd9b24b7b9ae4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8846&amp;v=2&amp;s=d6cdf686ab9e098a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8846&amp;v=3&amp;s=b7d9dddbead49e36" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8846&amp;v=4&amp;s=2520f7d966b2b9ef" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8846&amp;v=5&amp;s=10c237ca6d0a757f" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 59 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.21.753192">FlowMap: Geometry Dynamics Consistent Embedding of RNA Velocity for Interpretable Cellular Trajectories</a></div>
+      <div class="card-title-zh">FlowMap：面向可解释细胞轨迹的RNA速率几何动力学一致嵌入</div>
+      <div class="news">针对现有RNA速度分析方法将细胞状态与动力学割裂导致几何一致性缺失的问题，研究者提出FlowMap框架，在统一几何表示中联合建模细胞状态及其动力学，发现其能够恢复连续进展、分支、周期性等多种可解释动态模式，并识别发育中起不同作用的关键基因和基因程序，为单细胞动态分析建立了系统的几何建模框架。</div>
+      <div class="meta">bioRxiv · 2026-09-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Hu J., Singh H., Das J., Pinello L., Ma R.</div>
+<div class="meta">DOI: 10.64898/2026.09.21.753192</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.21.753192">https://www.biorxiv.org/content/10.64898/2026.09.21.753192</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>FlowMap的轨迹推断方法可直接用于蜜蜂、蚂蚁等社会昆虫品系分化与细胞状态转换分析。</div>
+<div class="abstract"><span class="abs-label">背景</span>单细胞RNA测序揭示了细胞在不同状态下的变异，但这些测量仅捕获了动态生物学过程的静态快照。RNA速率通过估计基因表达随时间的变化来解决这一局限，提供有关细胞状态转换的方向信息。然而，现有方法将细胞状态与动力学分开处理，导致表示结果违反基本的几何一致性并模糊了生物学解释。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究提出FlowMap框架，在统一的几何表示中联合建模细胞状态及其动力学。FlowMap同时重建平滑的低维基因表达流形，并约束RNA速率遵循其局部几何，从而产生连贯且去噪的细胞轨迹表示。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在模拟和真实数据集中，FlowMap恢复了可解释的动力学模式，包括连续进程、分支事件、周期性行为和类稳定状态。该方法揭示了发育过程中参与这些动力学的关键基因和基因程序，并可自然扩展至空间转录组学，捕获空间组织的发育过程。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>FlowMap建立了建模细胞动力学的原则性几何框架，在单细胞分析中架起了表示学习与动力学推断的桥梁，为理解细胞动态提供了统一的理论基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8854&amp;v=1&amp;s=b3f9eedd754e8ba4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8854&amp;v=2&amp;s=089ed79e9f5994ff" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8854&amp;v=3&amp;s=428c91e10308112c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8854&amp;v=4&amp;s=c82e62ae9af26544" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8854&amp;v=5&amp;s=3ac9d7509d78a2d9" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 57 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42778763/">AI-based characterization of Alzheimer&#x27;s disease phenotypes from population-scale single-cell data.</a></div>
+      <div class="card-title-zh">基于人工智能的阿尔茨海默病表型群体规模单细胞数据特征分析</div>
+      <div class="news">为揭示阿尔茨海默病不同临床表型的细胞学病因，研究者开发了名为PASCode的图神经网络计算框架，对584例患者的前额叶皮层单细胞数据进行表型关联评分，鉴定出约150万个表型相关细胞，优先发现小胶质细胞亚群、反应性星形胶质细胞亚型及兴奋/抑制失衡等关键细胞群体与分子特征，为AD的精准诊断和治疗提供了重要靶点。</div>
+      <div class="meta">Nature medicine · 2026-09-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">He Chenfeng, Li Athan Z, Hanthanan Arachchilage Kalpana, Gupta Chirag, Huang Xiang, Zhao Xinyu, Sirois Carissa L, PsychAD Consortium, Girdhar Kiran, Voloudakis Georgios, Hoffman Gabriel E, Bendl Jaroslav, Fullard John F, Lee Donghoon, Roussos Panos, Wang Daifeng</div>
+<div class="meta">DOI: 10.1038/s41591-025-04128-1</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42778763/">https://pubmed.ncbi.nlm.nih.gov/42778763/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>展示了图神经网络在单细胞表型关联分析中的应用，其PASCode框架可借鉴用于社会性昆虫细胞图谱的AI分析。</div>
+<div class="abstract"><span class="abs-label">背景</span>阿尔茨海默病（Alzheimer&#x27;s disease, AD）的复杂性表现为多样的临床表型，包括认知障碍和神经精神症状，但这些表型的病因尚不清楚。PsychAD项目为此生成了一个群体水平的单核RNA测序数据集，包含来自1,000多个个体大脑前额叶皮层的超过600万个细胞核，涵盖了多种疾病表型。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用该数据集开发了名为Phenotype Associated Single Cell encoder（PASCode）的计算框架，该框架将多种统计方法集成到图神经网络模型中进行稳健评分，用于对单细胞表型关联进行评分。研究从584名具有AD相关表型的供体中鉴定出约150万个表型关联细胞（phenotype-associated cells, PACs），并在27个脑细胞亚类中比较PACs以确定优先考虑的细胞亚群及其表达基因。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定了与AD病理相关的小胶质细胞亚群；发现具有改变的神经保护和神经毒性基因表达的反应性星形胶质细胞亚型可能赋予认知韧性；并在认知受损的AD供体中发现了增强的兴奋/抑制失衡和线粒体功能障碍。研究还发现了许多针对多种表型的PACs，例如AD与抑郁症之间的星形胶质细胞显示出特定的基因表达模式，包括炎症和内质网应激通路。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些优先考虑的亚群、基因和通路可能为精准诊断和治疗开发提供宝贵见解。研究还在包括AD和重度抑郁症的外部群体规模数据集中验证了发现，编制了AD表型单细胞图谱，并将该框架作为开源工具发布，提供预训练模型和网页应用程序供社区使用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8864&amp;v=1&amp;s=e1f70c9afb5da338" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8864&amp;v=2&amp;s=d1afa087113802d9" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8864&amp;v=3&amp;s=edd7065fe4cfea72" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8864&amp;v=4&amp;s=21306f96e7a7227f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8864&amp;v=5&amp;s=78e938315e7651c7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 54 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42793120/">scFlowReport: A Reproducible Workflow for Comparative Downstream Biological Analysis of Single-Cell RNA-seq Data.</a></div>
+      <div class="card-title-zh">scFlowReport：用于单细胞RNA-seq数据比较下游生物学分析的可复现工作流</div>
+      <div class="news">针对单细胞RNA测序比较分析中工具整合困难、结果难以统一的问题，作者开发了配置驱动工作流scFlowReport，可从已注释的Seurat对象出发将用户定义的比较自动传播至多种下游分析并生成标准化报告，在特应性皮炎数据中的应用表明该工具能够整合互补生物学证据，为比较性单细胞转组数据的系统解读提供了实用且可复现的解决方案。</div>
+      <div class="meta">Biomolecules · 2026-09-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Park Nayoung, Lee Hyewon, Kim Jaebum</div>
+<div class="meta">DOI: 10.3390/biom16091288</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42793120/">https://pubmed.ncbi.nlm.nih.gov/42793120/</a></div>
+<div class="meta">Keywords: Seurat、cell–cell communication、differential expression、gene regulatory network、pipeline、single-cell RNA sequencing (scRNA-seq)、workflow</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提供scRNA-seq下游分析标准化工作流，与用户常用单细胞分析方法学高度相关。</div>
+<div class="abstract"><span class="abs-label">背景</span>单细胞RNA测序（scRNA-seq）研究通常围绕比较展开，如疾病与对照、治疗反应或遗传扰动，但生物学解释仍依赖于整合多种独立的下游分析，包括差异表达、功能富集、调控网络推断和细胞间通讯分析。然而，跨比较一致地应用这些工具通常需要大量自定义脚本，且其异质性输出必须手动协调后才能进行比较或联合报告。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了scFlowReport，一种轻量级、配置驱动的工作流，从已注释的Seurat对象出发，将单一用户定义的比较传播至细胞水平和样本感知的伪批量（pseudobulk）差异表达、过表达和排序功能富集、用于SCENIC的转录因子调控子（regulon）导出，以及分组解析的LIANA细胞间通讯分析。该工作流自动将互补的下游结果编译为标准化的图表、汇总表格和自包含的静态HTML报告。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>将scFlowReport应用于公开可用的特应性皮炎（Atopic Dermatitis）scRNA-seq数据集，证明了其能够通过多种已建立的下游分析获得互补的生物学证据。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>scFlowReport通过在共享比较框架下协调互补的下游分析，为比较单细胞转录组数据的系统解释提供了一种实用且可复现的工作流，生成的静态HTML报告无需持久服务器即可方便地查看和共享。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8849&amp;v=1&amp;s=494becdc6fba3717" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8849&amp;v=2&amp;s=714de4e78f6bb34a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8849&amp;v=3&amp;s=ceb50b0f714467d1" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8849&amp;v=4&amp;s=fedee3fbf7fbbada" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8849&amp;v=5&amp;s=c865b7f41401c3b0" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42801211/">Integrated Transcriptomic and Machine Learning Analyses Identify KCNN3 and TLR10 as Candidate Cell-Type-Associated Molecules in Idiopathic Membranous Nephropathy.</a></div>
+      <div class="card-title-zh">整合转录组学与机器学习分析鉴定KCNN3和TLR10为特发性膜性肾病细胞类型相关候选分子</div>
+      <div class="news">为明确特发性膜性肾病进展的关键驱动分子，作者整合批量RNA测序、机器学习和单细胞测序技术，发现KCNN3和TLR10分别是足细胞和树突状细胞相关的候选分子，可能通过CXCL12-CXCR4轴参与细胞间通讯，为免疫性肾病的精准干预提供了新的分子靶点。</div>
+      <div class="meta">International journal of general medicine · 2026-09-22</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhao Binran, Liu Fugang, Xie Boji, Pang Shuting, Tan Qiuyan, Li Shanshan, Wei Mingxing, Huang Yian, Wei Yuting, Luo Wenqi, Wang Peng, Su Jinxia, Li Bijun, Yang Rirong, Li Wei</div>
+<div class="meta">DOI: 10.2147/IJGM.S633417</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42801211/">https://pubmed.ncbi.nlm.nih.gov/42801211/</a></div>
+<div class="meta">Keywords: CXCL12-CXCR4 axis、dendritic cells、idiopathic membranous nephropathy、machine learning、podocytes、transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>整合scRNA-seq与机器学习，但研究对象为肾脏疾病，与用户关注的昆虫社会性无关。</div>
+<div class="abstract"><span class="abs-label">背景</span>特发性膜性肾病（IMN）是一种常见的免疫介导性肾小球疾病，但驱动其进展的关键分子尚不明确。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究整合批量RNA测序（RNA-seq）、机器学习和单细胞RNA测序（scRNA-seq）技术筛选并初步验证关键分子。研究分析了已发表的尿液批量RNA-seq数据及从GEO数据库获取的IMN肾脏数据集，采用三种机器学习算法筛选关键基因，利用scRNA-seq数据鉴定关键基因表达的细胞类型并进行CellChat分析，通过免疫组织化学和免疫荧光验证关键基因的表达及细胞定位。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究在尿液和肾脏组织中鉴定出94个共同上调基因，富集于跨膜转运通路。机器学习筛选出KCNN3和TLR10两个关键基因。单细胞分析显示KCNN3富集于足细胞，TLR10富集于树突状细胞（DCs），CellChat分析预测这些细胞类型可能通过CXCL12-CXCR4轴存在潜在通讯。免疫组织化学证实其在IMN肾脏中表达升高，免疫荧光显示KCNN3与足细胞、TLR10与DCs存在空间关联。外部验证显示两基因表达趋势在不同数据集中不完全一致，联合模型AUC分别为0.705和0.748，较单基因模型无显著改善。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>KCNN3和TLR10可能作为IMN中细胞类型相关的候选分子，值得进一步研究其功能及潜在机制。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8844&amp;v=1&amp;s=5de0e52adbe9cc1c" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8844&amp;v=2&amp;s=fe67b79b466036e9" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8844&amp;v=3&amp;s=fb1a5dda282e822b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8844&amp;v=4&amp;s=6ecd848d0aea8353" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8844&amp;v=5&amp;s=bb684336d34e433a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">动物适应与生理</h2>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-module">极端环境适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42791793/">Integrated Ultrastructural and Transcriptomic Analysis of the Proboscis in Apis cerana cerana Under Different Foraging Conditions.</a></div>
+      <div class="card-title-zh">不同采集条件下中华蜜蜂（Apis cerana cerana）喙的超微结构与转录组整合分析</div>
+      <div class="news">为揭示东方蜜蜂喙是否具备化学感受功能，研究者整合超微结构观察与转录组分析，发现工蜂喙具有高度有序的表面结构特化，并鉴定出多个候选气味受体基因，提示该器官可能参与化学感知过程，为昆虫感觉生物学研究提供了新视角。</div>
+      <div class="meta">Animals : an open access journal from MDPI · 2026-09-18</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Song Chang, Zhang Yu, Guo Lina, Guo Yuan</div>
+<div class="meta">DOI: 10.3390/ani16182936</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42791793/">https://pubmed.ncbi.nlm.nih.gov/42791793/</a></div>
+<div class="meta">Keywords: Apis cerana cerana、differentially expressed genes、odorant receptor (OR)、proboscis、scanning electron microscopy (SEM)、transcriptome</div>
+<div class="reason"><span class="abs-label">推荐理由</span>以东方蜜蜂为对象，揭示喙部化学感受相关分子特征，契合用户关注的蜜蜂行为进化与感觉信号转导研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>中华蜜蜂的喙主要被视为取食器官，但其在化学感觉过程中潜在的结构与分子特征尚不清楚。本研究旨在探究不同花粉负载条件下喙的形态特征及化学感觉相关分子特征。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究整合超微结构分析与转录组分析，利用扫描电子显微镜观察喙表面形态，并通过转录组测序比较不同花粉负载状态工蜂的差异表达基因，结合实时荧光定量PCR验证候选嗅觉受体基因表达模式，并进行系统发育分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>扫描电镜显示喙舌具有高度有序的结构特征，包括纵向脊-沟结构及密布的毛状结构，呈现区域化表面特化。转录组分析分别鉴定出1549个和1652个差异表达基因（DEGs），而无花粉负载组与两种花粉负载组（梨花粉、油菜花粉）相比，两组间仅检测到89个DEGs。功能富集分析表明DEGs主要涉及细胞过程、信号转导和代谢调控通路。此外，从喙转录组中鉴定出6个候选嗅觉受体（OR）样转录本。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结构与分子发现表明中华蜜蜂的喙可能具有化学感觉相关特征，为今后探究其功能意义提供了研究基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8834&amp;v=1&amp;s=22dcbe113a70706a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8834&amp;v=2&amp;s=f835be96cdc06f05" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8834&amp;v=3&amp;s=26cbe9fb9765bd54" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8834&amp;v=4&amp;s=26dde32d8397e53c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8834&amp;v=5&amp;s=da4322fccee9e667" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 45 分</div>
+      <div class="card-title"><span class="badge cat-module">极端环境适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42797771/">Tissue-Resolved Virome Analysis of Natural Chronic Bee Paralysis Virus Outbreak in Apis mellifera Reveals Segment Stoichiometry Shifts and Divergent Covert Infections.</a></div>
+      <div class="card-title-zh">意大利蜜蜂自然慢性蜜蜂麻痹病毒暴发中的组织分辨率病毒组分析揭示节段化学计量偏移与分歧的隐性感染</div>
+      <div class="news">为揭示慢性蜜蜂麻痹病毒的组织水平感染规律，研究团队对自然感染蜂群进行组织分辨的病毒组分析，发现CBPV的RNA1/RNA2比例存在组织特异性梯度变化，且无症状蜜蜂的隐性病毒组在流行病学关联的蜂群间差异显著，为理解该病毒的感染生物学提供了新视角。</div>
+      <div class="meta">Viruses · 2026-08-27</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Li Nannan, Wang Deya, Yu Huimin, Xu Zhihan, Qin Haoran, Li Wei</div>
+<div class="meta">DOI: 10.3390/v18090938</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42797771/">https://pubmed.ncbi.nlm.nih.gov/42797771/</a></div>
+<div class="meta">Keywords: Apis mellifera、RNA1/RNA2 ratio、chronic bee paralysis virus、covert virome、natural outbreak</div>
+<div class="reason"><span class="abs-label">推荐理由</span>揭示意大利蜜蜂CBPV病毒组织特异性感染动态，为理解用户关注的蜜蜂社会免疫与群体健康提供病毒组学视角。</div>
+<div class="abstract"><span class="abs-label">背景</span>慢性蜜蜂麻痹病毒（Chronic bee paralysis virus, CBPV）是一种双分体正链RNA病毒，可导致蜜蜂蜂群严重损失，但其在组织水平的感染动态仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究对中国山东地区CBPV自然暴发期间两个具有共同蜂后来源和越冬场所、但采样时相距80余公里且呈现不同疾病模式的Apis mellifera蜂场进行组织分辨率病毒组分析。采集表现典型临床症状（包括颤抖、无法飞行、爬行及无毛黑化表皮）的症状型采集蜂与无症状采集蜂，解剖获取头部、胸部和中肠组织进行RNA测序，共获得36个RNA-seq文库。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在症状型蜜蜂中，CBPV占病毒组主导地位，病毒载量以头部最高、中肠最低。RNA1/RNA2拷贝比呈现保守的组织特异性梯度：头部和胸部以RNA2为主，中肠则富集RNA1（每个蜂场p=0.024），该定向失衡经多重验证并在两个遗传可区分的CBPV种群中保守。在无症状蜜蜂中，两个蜂场的隐性病毒组差异显著，一个蜂场以CBPV在头部和胸部占优，另一个蜂场则以莱克桑尼病毒（Lake Sinai virus）近乎独占性主导。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该发现揭示了CBPV节段化学计量在体内受组织依赖性调控，且流行病学关联蜂场之间的病毒遗传组成和隐性病毒组组成可发生显著分歧，为自然条件下CBPV的感染生物学提供了新见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8836&amp;v=1&amp;s=ee397b2e97b60be0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8836&amp;v=2&amp;s=fb6a61f39c0d50f1" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8836&amp;v=3&amp;s=4bc1b8c1139f6934" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8836&amp;v=4&amp;s=45e2ea6291bb8a16" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8836&amp;v=5&amp;s=dbc2aa000ea3cedb" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 45 分</div>
+      <div class="card-title"><span class="badge cat-module">极端环境适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42785622/">Core gut symbionts enhance honeybee (Apis mellifera) resilience to flumethrin stress by upregulating host immunity.</a></div>
+      <div class="card-title-zh">核心肠道共生菌通过上调宿主免疫增强意大利蜜蜂（Apis mellifera）对氟胺氰菊酯胁迫的抵抗力</div>
+      <div class="news">针对氟氯苯菊酯威胁蜜蜂生存的难题，作者通过慢性暴露实验结合核心肠道菌单菌定植与基因表达分析，发现Gilliamella apicola等共生菌通过上调宿主免疫解毒基因表达显著增强蜜蜂抗药性，为理解肠道微生物介导的宿主环境适应机制提供了新视角。</div>
+      <div class="meta">Environmental pollution (Barking, Essex : 1987) · 2026-09-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Liu Jianhui, Chen Jing, Wu Xiaobo</div>
+<div class="meta">DOI: 10.1016/j.envpol.2026.129215</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42785622/">https://pubmed.ncbi.nlm.nih.gov/42785622/</a></div>
+<div class="meta">Keywords: Apis mellifera、Flumethrin、Gut microbes、Immune detoxification gene</div>
+<div class="reason"><span class="abs-label">推荐理由</span>以Apis mellifera为研究对象，涉及宿主-微生物互作，但缺乏激素调控与组学方法，与用户核心方法关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>氟胺氰菊酯（flumethrin）的广泛使用严重威胁蜜蜂的生存，但蜜蜂及其肠道微生物抵抗氟胺氰菊酯的机制尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>将蜜蜂暴露于不同浓度（0.01、0.1和1 mg/L）的氟胺氰菊酯中14天，检测其表型参数（体重、肠道重量和摄食量）及肠道微生物群的多样性和组成；随后评估定植核心肠道菌（Bombilactobacillus mellis、Lactobacillus apis、Snodgrassella alvi、Bartonella apis和Gilliamella apicola）后并暴露于1 mg/L氟胺氰菊酯的蜜蜂表型参数及mRNA表达水平。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>慢性氟胺氰菊酯暴露显著降低蜜蜂存活率和肠道重量，破坏肠道结构，并诱导肠道微生物群失调。B. mellis、S. alvi和G. apicola的肠道定植显著提高了蜜蜂的存活率、体重和肠道重量；其中G. apicola定植使蜜蜂存活率从65.8%显著提升至94.1%。此外，肠道细菌定植显著上调了蜜蜂免疫解毒基因（包括超氧化物歧化酶、过氧化氢酶、Toll、defensin-1和abaecin）的mRNA表达。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>肠道细菌通过增强宿主免疫来抵御氟胺氰菊酯诱导的胁迫，凸显了肠道微生物群在介导蜜蜂对环境污染物抵抗力中的关键作用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8837&amp;v=1&amp;s=ff925c47af843e27" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8837&amp;v=2&amp;s=a884d3b57948f625" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8837&amp;v=3&amp;s=d9599bba3ea57082" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8837&amp;v=4&amp;s=a3e6b440c9137c54" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8837&amp;v=5&amp;s=fa336ff7a6bf65b5" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 44 分</div>
+      <div class="card-title"><span class="badge cat-module">极端环境适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42800340/">Developmental exposure to amitraz impairs reproductive development and metabolic homeostasis in honey bee (Apis mellifera) queens.</a></div>
+      <div class="card-title-zh">发育期暴露于双甲脒（amitraz）损害西方蜜蜂（Apis mellifera）蜂王的生殖发育与代谢稳态</div>
+      <div class="news">为厘清蜂巢杀螨剂对非靶标生殖个体的发育风险，作者通过幼虫期亚致死剂量暴露实验，发现双甲脒在0.01 μg/蜂极低剂量下即可通过氧化应激、免疫紊乱和代谢扰动损害蜂王生殖发育，提示现行杀螨剂安全评估需纳入发育敏感性指标。</div>
+      <div class="meta">Ecotoxicology and environmental safety · 2026-09-25</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhang Xufeng, Du Yinyin, Wu Jiangli, Wang Feng, Kang Weipeng, Wei Qiaohong, Xu Shufa, Han Bin</div>
+<div class="meta">DOI: 10.1016/j.ecoenv.2026.120840</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42800340/">https://pubmed.ncbi.nlm.nih.gov/42800340/</a></div>
+<div class="meta">Keywords: Amitraz、Developmental ecotoxicity、Honey bee、Oxidative stress、Queen reproduction、Untargeted hemolymph metabolomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦意大利蜜蜂蜂王生殖发育与代谢调控，虽涉及激素相关表型，但偏重毒理学而非内分泌调控机制本身。</div>
+<div class="abstract"><span class="abs-label">背景</span>管理型传粉系统中使用的化学物质可对非靶标生物造成发育胁迫，但其对生殖特化个体的影响尚缺乏充分研究。本研究关注蜂群内部杀螨剂双甲脒对蜜蜂蜂王发育的生态毒性效应。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>通过急性毒性试验和亚致死暴露试验，对四龄幼虫期蜂王进行双甲脒暴露处理，从个体水平到代谢水平系统评估其响应。采用非靶向血淋巴代谢组学技术分析代谢变化，并检测氧化应激、免疫相关指标。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>双甲脒72小时LD50为4.428 μg/蜂王；亚致死剂量（0.01–1 μg/蜂王）暴露损害蜂王发育，表现为封盖率和羽化率降低、发育历期延长、体重及腹部重量下降。卵巢质量呈剂量依赖性降低，0.01 μg/蜂王即可见效应。暴露导致过氧化氢酶、超氧化物歧化酶、谷胱甘肽S-转移酶活性升高及丙二醛含量增加，同时改变抗菌肽基因（Abaecin、Defensin1、Defensin2、Hymenoptaecin、Apidaecin）表达。非靶向代谢组学鉴定出502个差异丰度代谢注释，上调特征主要与甘油磷脂和α-亚麻酸代谢相关，下调特征与色氨酸和卟代谢相关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示幼虫期双甲脒暴露通过氧化、免疫和代谢紊乱损害蜂王发育及生殖质量，强调在蜂群杀螨剂环境安全评估中纳入发育敏感性指标的必要性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8829&amp;v=1&amp;s=1f9c68c3f9ad01ea" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8829&amp;v=2&amp;s=7b9c53205f7ade4b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8829&amp;v=3&amp;s=d809905e474a2c62" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8829&amp;v=4&amp;s=b692662025d76c4a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8829&amp;v=5&amp;s=382a557928de5d15" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 44 分</div>
+      <div class="card-title"><span class="badge cat-module">极端环境适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42797911/">Sublethal Acetamiprid Exposure Induces Ovarian Degeneration and HSP70/HSP90 Overexpression in Honey Bee Queens (Apis mellifera).</a></div>
+      <div class="card-title-zh">亚致死剂量啶虫脒暴露诱导意大利蜜蜂（Apis mellifera）蜂后卵巢退化及HSP70/HSP90过表达</div>
+      <div class="news">为明确亚致死剂量新烟碱类农药对蜜蜂蜂后生殖健康的潜在威胁，作者利用组织学与免疫组织化学方法分析7天啶虫脒暴露效应，发现其可诱发蜂后卵巢结构退化及HSP70/HSP90应激过表达，揭示环境残留农药损害蜂群繁殖力的细胞毒性机制。</div>
+      <div class="meta">Veterinary sciences · 2026-08-27</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ait Kara Yasmine, Benfodil Karima, Cherifi Assia, Sadeddine Zennouche Ourdia, Dahmani Chahra, Mouhoub Sayah Chafika, Rosato Giorgia, Leandri Rebecca, Power Karen</div>
+<div class="meta">DOI: 10.3390/vetsci13090876</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42797911/">https://pubmed.ncbi.nlm.nih.gov/42797911/</a></div>
+<div class="meta">Keywords: histopathology、immunohistochemistry、insecticides、ovaries、pollinators、reproductive health</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦Apis mellifera蜂后生殖健康，涉及繁殖相关表型，但未涉及JH/ecdysteroid信号或单细胞组学技术。</div>
+<div class="abstract"><span class="abs-label">背景</span>意大利蜜蜂（Apis mellifera）的健康受到多种生物和非生物胁迫因素的威胁，其中农药暴露仍是主要因素。啶虫脒（acetamiprid）是一种新烟碱类农药，尽管已知其对蜜蜂具有毒性作用，但在欧盟仍被授权使用。目前，啶虫脒对蜂后健康的影响在很大程度上尚未被探索，而蜂群的生存高度依赖于蜂后的繁殖成功。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究采用组织学和免疫组织化学方法，评估了7天亚致死剂量啶虫脒暴露（20 μg/L）对蜂后卵巢结构的影响。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>组织学分析显示，暴露蜂后的卵巢出现结构改变，包括生殖区（germarium）和卵黄区（vitellarium）的紊乱、间质结缔组织的细胞质空泡化、卵母细胞退化以及滋养细胞的核固缩（提示细胞凋亡）。此外，免疫组织化学分析显示HSP70和HSP90表达增加，表明细胞蛋白质稳态受到破坏并出现细胞应激。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现表明，短期亚致死剂量啶虫脒暴露可能直接影响蜂后的生殖器官，对蜂群繁殖成功构成潜在威胁。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8838&amp;v=1&amp;s=ca5a34c536feb2b8" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8838&amp;v=2&amp;s=8b56a63029e39781" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8838&amp;v=3&amp;s=12788e8f263715ce" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8838&amp;v=4&amp;s=2c38286ec649b173" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8838&amp;v=5&amp;s=2ff9b49d0cc21e22" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 58 分</div>
+      <div class="card-title"><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42791355/">Photolabile oligonucleotides with topological light gradients enable spatially resolved single-cell transcriptomics and epigenomics.</a></div>
+      <div class="card-title-zh">具有拓扑光梯度的光不稳定寡核苷酸实现空间分辨单细胞转录组学和表观基因组学</div>
+      <div class="news">为在单细胞测序中保留细胞的空间位置信息，研究者开发了基于光控可切割寡核苷酸的scSTAMP-seq技术，通过图案化光照在细胞上&quot;盖印&quot;空间坐标，揭示了人胚胎体中空间组织与表观遗传状态协同调控细胞程序的规律。</div>
+      <div class="meta">Nature biotechnology · 2026-09-25</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Piscopio Robert A, Chialastri Alex, Wang Chieh, Godzik Mikolaj, Heom Kellie A, Wang Weiyue, Li Lauren J, Saxena Neha, Wilson Maxwell Z, Dey Siddharth S</div>
+<div class="meta">DOI: 10.1038/s41587-026-03328-5</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42791355/">https://pubmed.ncbi.nlm.nih.gov/42791355/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>scSTAMP-seq技术可迁移至昆虫社会单细胞空间组学研究，但当前仅用于人类胚胎模型。</div>
+<div class="abstract"><span class="abs-label">背景</span>空间信息在单细胞分析中至关重要，但如何在标准单细胞测序平台上保留空间信息仍具挑战。现有方法需要开发模块化的光编码条形码策略，以实现对活细胞和固定细胞的空间标记。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了scSTAMP-seq（单细胞空间转录组和多组学分析）技术，利用胆固醇偶联的光可切割标签寡核苷酸（photocleavable hashtag oligonucleotides）标记细胞，通过模式化光照在单细胞多组测序前将空间坐标&quot;印刻&quot;到单个细胞上。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该技术被应用于人类胚胎样体（human embryoids），揭示了空间组织和表观遗传状态如何共同调控异质性生物系统中的细胞程序。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>scSTAMP-seq为空间分辨的单细胞转录组学和表观基因组学研究提供了模块化工具，有助于理解空间组织与表观遗传调控在复杂生物系统中的作用机制。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8852&amp;v=1&amp;s=71baea5c018580c8" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8852&amp;v=2&amp;s=0ca6dd64b76d2821" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8852&amp;v=3&amp;s=78364e736da16725" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8852&amp;v=4&amp;s=ee2b06e48c9dd83a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8852&amp;v=5&amp;s=601afadc6044f526" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42788878/">Nucleoplasmin-Like Protein, Expression Differences During the Caste Polyphenism Processes in Apis mellifera.</a></div>
+      <div class="card-title-zh">核质蛋白样蛋白在意大利蜜蜂级型多型过程中的表达差异</div>
+      <div class="news">为揭示核质蛋白样蛋白在蜜蜂级型分化中的表达规律，研究者利用免疫蛋白质组学与免疫组织化学技术，发现该蛋白在工蜂幼虫第4天即呈现与未分化幼虫不同的核分布模式，而蜂王幼虫维持原有分布，提示其可能作为级型分化的早期分子标志物，推动昆虫社会性发育机制研究。</div>
+      <div class="meta">Archives of insect biochemistry and physiology · 2026-09-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Sagona Simona, D&#x27;Onofrio Chiara, Tafi Elena, Giuffrida Maria Gabriella, Coppola Francesca, Lazzarini Giulia, Pirone Andrea, Miragliotta Vincenzo, Felicioli Antonio</div>
+<div class="meta">DOI: 10.1002/arch.70221</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42788878/">https://pubmed.ncbi.nlm.nih.gov/42788878/</a></div>
+<div class="meta">Keywords: caste differentiation、honey bees、immunohistochemistry、polyphenism</div>
+<div class="reason"><span class="abs-label">推荐理由</span>以意大利蜜蜂为对象，揭示核质蛋白样蛋白在级型多型性中的时空表达差异，直接契合用户级型分化和蜜蜂研究核心。</div>
+<div class="abstract"><span class="abs-label">背景</span>在蜜蜂中，蜂王与工蜂的分化由食物调控，始于孵化后前3天。级型多型现象涉及多种分子和过程，包括保幼激素、王浆蛋白（royalactin）和DNA甲基化等。此前有研究发现工蜂幼虫在孵化后72小时存在一种蛋白酶（PS4），且该酶可被蜂王浆抑制。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究通过双向电泳（2DE）分离了此前报道的级型特异性蛋白水解活性蛋白点，并利用质谱鉴定其为核质蛋白样蛋白（nucleoplasmin-like protein）。随后，针对保守的核质蛋白肽段制备多克隆抗体，用于免疫蛋白质组学和免疫组织化学分析，比较了定向发育为工蜂和蜂王的幼虫中该蛋白的表达与组织定位。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Western blot分析显示，在该龄期，定向工蜂和蜂王幼虫中分别检测到43-88 kDa和74-104 kDa的条带，可能对应核质蛋白样蛋白的不同聚合构象。免疫组织化学结果显示，未分化幼虫中该蛋白呈普遍的核分布；工蜂命运幼虫早在第4天即偏离此模式，而蜂王命运幼虫则保持与未分化幼虫相似的分布模式。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了核质蛋白样蛋白在蜜蜂级型分化中的潜在作用，其表达和分布差异可能反映了不同级型的发育轨迹。进一步研究该蛋白在第三至第四幼虫龄期及幼虫后阶段的时间动态变化具有重要价值。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8828&amp;v=1&amp;s=e75a6352b3e49da1" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8828&amp;v=2&amp;s=ada5b87166346520" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8828&amp;v=3&amp;s=f283c1a5bd812eff" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8828&amp;v=4&amp;s=a032114c9db9045b" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=8828&amp;v=5&amp;s=80acaec67678fbc1" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日15篇论文主要集中于单细胞组学与空间组学领域，涵盖空间转录组校正、单核转录组关联分析、时空图谱构建等核心技术；同时涉及AI辅助分析工具开发，如图神经网络用于阿尔茨海默病表型解析、几何动力学嵌入模型用于RNA速度分析等。技术趋势方面，多模态数据整合成为突出特点，多篇研究将单细胞转录组与空间组学、表观遗传学或机器学习相结合；光控空间编码等新技术拓展了单细胞测序的空间信息保留能力。此外，蜜蜂相关研究形成独立板块，涉及分子发育、感觉生物学、病毒组学及毒理学等方向。对研究者而言，空间组学工具与AI方法的交叉融合提供了技术优化路径，而多物种比较研究框架可为模式生物选择提供参考。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=xuanyabing%40genomics.cn&amp;d=2026-09-28&amp;s=d12000ee2d999457">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=xuanyabing%40genomics.cn&amp;d=2026-09-28&amp;s=d12000ee2d999457">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

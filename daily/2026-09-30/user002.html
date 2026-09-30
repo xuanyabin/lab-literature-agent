@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-09-30</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-09-30</h1>
+    <p class="hello">yan-zys，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">昨日全库新增 691 篇 · 命中您的关键词 146 篇 · 本次推送 15 篇（必读 1 · 重要 0 · 参考 14）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-must">Must Read</span> · 75 分</div>
+      <div class="card-title"><span class="badge cat-module">脑图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42805172/">Single-cell multiomics across nine mammals reveals cell-type-specific regulatory conservation in the brain.</a></div>
+      <div class="card-title-zh">单细胞多组学跨九种哺乳动物揭示脑中细胞类型特异性的调控保守性</div>
+      <div class="news">为解析大脑基因调控的演化规律及其与疾病关联，研究团队对九种哺乳动物大脑皮层进行单细胞多组学分析，发现神经精神疾病风险同时富集于保守性和人类特异性调控元件，而神经退行性疾病风险仅局限于保守元件，为理解调控演化如何塑造脑疾病易感性提供了新框架。</div>
+      <div class="meta">Cell genomics · 2026-09-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Anderson Ashlyn G, Rogers Brianne B, Barinaga Erin A, Loupe Jacob M, WaMaina Elisa, Johnston S Quinn, Limbo Henry L, Gardner Elizabeth A, Moyer Anna J, Gross Amanda L, Martin Douglas R, Thyme Summer B, Rizzardi Lindsay F, Myers Richard M, Cooper Gregory M, Cochran J Nicholas</div>
+<div class="meta">DOI: 10.1016/j.xgen.2026.101367</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42805172/">https://pubmed.ncbi.nlm.nih.gov/42805172/</a></div>
+<div class="meta">Keywords: comparative genomics、gene regulation、multiomics、neurogenomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>跨物种单细胞多组学解析脑内细胞类型特异性调控保守性，直接契合比较单细胞与神经调控演化研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>理解脑中的基因调控对于阐明神经系统疾病的遗传基础至关重要。顺式调控元件（CREs）调控基因表达，但其功能与进化依赖于序列以及顺式和反式调控背景。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者从九种哺乳动物的皮层生成单核RNA和ATAC-seq数据，鉴定细胞类型特异性候选CREs；开发整合序列、染色质可及性和增强子-基因关联的多维保守性框架；在人神经祖细胞和神经元中进行大规模平行报告基因实验，并利用CRISPR干扰验证保守位点的增强子功能。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定了细胞类型特异性候选CREs，测量了保守性和人特异性CREs的活性，验证了包括FAM181B在内的保守位点增强子功能；基序富集分析发现区分保守与进化CREs的转录因子；连锁不平衡评分回归显示保守性和人特异性CREs均富集神经精神类GWAS风险，而神经退行性疾病风险仅限于保守元件。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现定义了增强子保守性的功能维度，揭示了调控进化如何塑造脑生物学和疾病易感性，为理解神经系统疾病的遗传机制提供了新视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9372&amp;v=1&amp;s=07cce30ce79f3d88" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9372&amp;v=2&amp;s=034b848def8668a0" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9372&amp;v=3&amp;s=d677c8684a26f4ce" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9372&amp;v=4&amp;s=96646941bc867b66" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9372&amp;v=5&amp;s=89278bf152d390a5" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42806091/">Cell atlas of the developing human meninges reveals a dura-like nature of meningiomas.</a></div>
+      <div class="card-title-zh">发育中人脑膜的细胞图谱揭示脑膜瘤的硬脑膜样本质</div>
+      <div class="news">为明确脑膜瘤的细胞起源，作者构建了妊娠5-13周人类胎儿脑膜的单细胞与空间转录组参考图谱，发现脑膜瘤细胞在转录组层面更接近硬脑膜谱系而非传统认为的蛛网膜，提示脑膜瘤可能起源于硬脑膜谱系细胞，为开发靶向治疗策略提供了新依据。</div>
+      <div class="meta">Nature cell biology · 2026-09-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Vinsland Elin, Marco Salas Sergio, Kapustová Ivana, Hu Lijuan, Webb Simone, Li Xiaofei, He Xiaoling, Nilsson Mats, Haniffa Muzlifah, Barker Roger A, Persson Oscar, Raleigh David R, Sundström Erik, Lönnerberg Peter, Linnarsson Sten</div>
+<div class="meta">DOI: 10.1038/s41556-026-02074-9</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42806091/">https://pubmed.ncbi.nlm.nih.gov/42806091/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>人类脑膜单细胞图谱与脑膜瘤起源，虽为肿瘤研究，但提供了脑膜细胞类型参考，可借鉴其跨发育阶段的比较方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>脊椎动物中枢神经系统被脑膜（包括软脑膜、蛛网膜和硬脑膜）包裹。蛛网膜被认为是颅内最常见原发性肿瘤——脑膜瘤（meningiomas）的起源，但缺乏分子证据支持。由于对其细胞起源了解有限，目前尚无有效的药物治疗用于抵抗局部干预的脑膜瘤。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究生成了人胎儿脑膜在受孕后第5-13周的综合参考单细胞和空间转录组图谱，并将脑膜瘤与胎儿脑膜进行了比较分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现脑膜各层同时发育，并鉴定出一个内层的CDH1阳性硬脑膜层，其表达紧密连接基因，与屏障功能一致。与胎儿脑膜相比，脑膜瘤细胞在转录组上类似于硬脑膜谱系细胞，且常见的脑膜瘤驱动基因在硬脑膜谱系中表达。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提出了脑膜瘤可能起源于硬脑膜谱系细胞的假说，为深入理解脑膜瘤生物学提供了新的视角，可能为脑膜瘤的治疗策略开发提供理论基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9362&amp;v=1&amp;s=82061e7f36de7cd8" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9362&amp;v=2&amp;s=fdbc80ac41580342" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9362&amp;v=3&amp;s=d2d385f9d3f00145" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9362&amp;v=4&amp;s=381c24b8512361ab" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9362&amp;v=5&amp;s=146fe2f23ab81737" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-module">脑图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42805184/">A molecular and spinal circuit basis for the functional segregation of itch and pain.</a></div>
+      <div class="card-title-zh">痒与痛功能分离的分子及脊髓环路基础</div>
+      <div class="news">为厘清Grpr+神经元是否参与疼痛及其内部功能分工，作者结合功能缺失/获得实验、转录组学与计算增强子筛选，发现Grpr+神经元存在功能异质性：Tac1-亚群介导化学性痒觉，而Tac1富集的bombesin不敏感亚群介导机械性痛觉超敏，为脊髓感觉模态分辨机制提供了亚群特异的遗传工具。</div>
+      <div class="meta">Neuron · 2026-09-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Noh Myung-Chul, Corrigan Kelly A, Williams Sean-Paul G, Peirs Cedric, Leone Michael J, Headrick Daniel J, Guvercin Mustafa, Lee Suhjin, Phan BaDoi N, Zhao Xinyi, Henry David A, Yeramosu Deepika, Babu Sudhagar, Brown Ashley R, Van De Weerd Robert, Dum Richard P, Mathys Hansruedi, Pfenning Andreas R, Seal Rebecca P</div>
+<div class="meta">DOI: 10.1016/j.neuron.2026.08.029</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42805184/">https://pubmed.ncbi.nlm.nih.gov/42805184/</a></div>
+<div class="meta">Keywords: chronic pain、dorsal horn、gastrin-releasing peptide receptor、genomic enhancers、itch、mechanical allodynia、neural circuits、neuropathic pain、polyneuropathic pain、transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>神经元亚型功能分化研究，但限于小鼠脊髓感觉回路，缺乏跨物种演化视角。</div>
+<div class="abstract"><span class="abs-label">背景</span>脊髓背角具有显著的细胞多样性，但这种细胞复杂性如何实现感觉模态的区分仍是一个根本性问题。表达胃泌素释放肽受体（Grpr+）的神经元长期被认为专门介导痒觉，但其广泛激活也能诱发疼痛相关行为。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者采用功能缺失和功能获得性实验方法，结合转录组学分析，并利用计算生物学方法鉴定增强子序列，以获得亚群特异性的遗传学工具。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Grpr+神经元包含由速激肽-1（Tac1）定义的功能 distinct 亚群，对应于物种间保守的转录组亚型。Tac1-亚群为化学性痒觉所必需，而一种对蛙皮素不敏感、富含Tac1的亚群则是多种损伤状态下机械性痛觉过敏所必需的。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究阐明了Grpr+神经元群体内的功能多样性，鉴定了机械性痛觉过敏的汇聚节点，并提供了亚群富集的研究工具，为深入探究痒与痛的神经机制奠定了基础。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9366&amp;v=1&amp;s=24457460c133ccc4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9366&amp;v=2&amp;s=49f1c803fc63e570" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9366&amp;v=3&amp;s=6892b5d6c8daca39" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9366&amp;v=4&amp;s=859ae5930cf40fd9" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9366&amp;v=5&amp;s=f437a09608f1e840" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 47 分</div>
+      <div class="card-title"><span class="badge cat-module">脑图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.23.753900">Atlas of adult Danionella fish telencephalon reveals retention of larval characters</a></div>
+      <div class="card-title-zh">成年Danionella鱼类端脑的图谱揭示幼体特征的保留</div>
+      <div class="news">为解决成年脊椎动物端脑体积过大难以在全脑环路动态中解读功能的问题，研究者利用幼态延续鱼类Danionella的透明微型优势，构建成年端脑神经解剖图谱，发现其保留幼虫特征——细胞室周迁移极度减少、pallial分区拓扑重组，并形成类似昆虫嗅小球的分隔状尾侧pallium，为成年全脑功能成像与连接组学研究提供了新型模式资源。</div>
+      <div class="meta">bioRxiv · 2026-09-29</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Perelmuter J. T., Bass A. H.</div>
+<div class="meta">DOI: 10.64898/2026.09.23.753900</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.23.753900">https://www.biorxiv.org/content/10.64898/2026.09.23.753900</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>以透明鱼类为模型构建端脑图谱，涉及脑进化、细胞分布及全脑成像，契合用户比较神经解剖与细胞图谱研究兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>脊椎动物成年端脑（telencephalon）的体积通常阻碍了我们将其功能置于全脑环路动态中解读。Danionella是一类与斑马鱼（Danio rerio）近缘的微型透明硬骨鱼类，因其幼态持续（progenesis）现象——以性成熟提前和生长停止为特征的异时性发育形式——有望在成年脊椎动物中实现全脑成像和连接组学研究。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用分子标记、神经束路示踪（tract tracing）以及细胞分布模式的定量比较，详细构建了成年Danionella dracula（Dracula鱼）端脑的神经解剖学图谱；同时通过转基因技术构建了GCaMP Dracula鱼品系，建立了带注释的三维图谱，并将功能成像数据与之配准。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>结果显示，Dracula鱼及其他Danionella物种的成年个体表现出从脑室周区（periventricular zones）细胞迁移的极度减少，以及主要 pallial 分区（包括一个类似昆虫小球体glomeruli的囊状尾侧pallium）的拓扑重组。这些特征在斑马鱼幼体中也得到证实，为Danionella成年个体具有幼体样端脑提供了关键证据。尽管如此，大多数成年硬骨鱼端脑的典型区域仍可被识别。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为理解幼态持续导致的全新细胞构筑如何支持成年Danionella丰富行为库提供了重要资源，其建立的转基因品系、三维图谱及功能成像数据配准方法，将促进对成年脊椎动物全脑神经环路的研究。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9386&amp;v=1&amp;s=4337c152cf8af9e8" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9386&amp;v=2&amp;s=59672edd6c4476b6" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9386&amp;v=3&amp;s=8eb03b52f730c6a8" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9386&amp;v=4&amp;s=dbfde123b289b716" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9386&amp;v=5&amp;s=1a7067b30b99185b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">脑图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.23.753244">Spinal V2a neurons support locomotor propagation via long-range connectivity</a></div>
+      <div class="card-title-zh">脊髓V2a神经元通过长程连接支持运动传播</div>
+      <div class="news">为厘清脊髓V2a神经元在运动网络中的环路作用，研究者利用幼体斑马鱼定量分析其单突触输出并结合局部缺失实验，发现V2a神经元主要通过长程连接投射到运动和前运动靶标以介导运动输出的传播与协调，而非提供局部循环兴奋，为理解脊髓运动协调机制提供了新视角。</div>
+      <div class="meta">bioRxiv · 2026-09-29</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Bello-Rojas S., Tian C., Piekarz K. M., Niehaus M., Bagnall M. W.</div>
+<div class="meta">DOI: 10.64898/2026.09.23.753244</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.23.753244">https://www.biorxiv.org/content/10.64898/2026.09.23.753244</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>斑马鱼V2a神经元长程连接研究，涉及脊椎动物脊髓神经环路演化，可比较不同物种运动神经网络的保守性。</div>
+<div class="abstract"><span class="abs-label">背景</span>脊髓包含多种对运动控制至关重要的神经元。尽管这些脊髓中间神经元在运动网络模型中具有重要作用，但其环路机制仍不清楚。V2a（vsx2+）中间神经元是一种谷氨酸能神经元群体，被认为参与调控运动速度、节律生成和损伤后恢复。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究人员以幼鱼斑马鱼（larval zebrafish）为模型，定量分析了V2a神经元的单突触输出，并通过局部去除V2a神经元的方法研究其功能。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，V2a神经元的大多数单突触输出以长程方式投射到运动神经元和 premotor 靶标，而非作为局部反复兴奋的来源；局部去除V2a神经元会损害运动输出的长程传播，但不影响局部节律生成。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究将V2a神经元定位为脊髓中运动传播和长程协调的主要介导者，修正了以往认为V2a神经元主要提供局部反复兴奋的理论模型。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9375&amp;v=1&amp;s=3b97e0c3df9a7c38" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9375&amp;v=2&amp;s=3cec0ce3836d2445" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9375&amp;v=3&amp;s=f9a94e76d8370e58" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9375&amp;v=4&amp;s=ffec5eefb04ec094" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9375&amp;v=5&amp;s=f50e22e8293acf00" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 43 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.23.753836">SpatialTRACE predicts anatomical axes and regions in spatial transcriptomics and microscopy</a></div>
+      <div class="card-title-zh">SpatialTRACE预测空间转录组学和显微成像中的解剖学轴和区域</div>
+      <div class="news">为解决空间转录组学中组织切片手工注释劳动量大的问题，研究者开发了SpatialTRACE图模型与图像模型，发现仅需10个标注绒毛即可预测隐窝-绒毛轴等解剖坐标，且仅基于DAPI图像就能推断解剖结构并揭示视黄酸受体抑制剂处理后小肠中P14 CD8 T细胞的分布变化，推动了解剖图谱从空间转录组向显微成像数据的扩展应用。</div>
+      <div class="meta">bioRxiv · 2026-09-29</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Monell A. T., Gogate A. A., Patravali D., Abadie K., Yeo G. W., Goldrath A. W., Heeg M.</div>
+<div class="meta">DOI: 10.64898/2026.09.23.753836</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.23.753836">https://www.biorxiv.org/content/10.64898/2026.09.23.753836</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>空间转录组解剖定位方法可借鉴用于跨物种脑区比较，但当前应用限于小鼠肠道免疫。</div>
+<div class="abstract"><span class="abs-label">背景</span>空间转录组学可测量组织切片中的基因表达，但其解读需要解剖学图谱将基因表达和细胞组成与组织结构联系起来。然而，对整张切片进行注释通常需要大量人工劳动。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了SpatialTRACE（Tissue Region and Axis Coordinate Estimation，组织区域与轴坐标估计），包括基于图和基于图像的模型，将少量结构的注释扩展为组织范围的解剖学轴和区域图谱。SpatialTRACE-Graph结合基因表达谱与空间邻域信息预测空间转录组数据集中的解剖学坐标或区域归属；SpatialTRACE-Image则仅利用DAPI（4&#x27;,6-二脒基-2-苯基吲哚）从整张组织图像预测相同的解剖学轴坐标和区域，该多尺度视觉变换器从SpatialTRACE-Graph生成的坐标和区域预测中学习。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在小鼠小肠的独立验证切片中，SpatialTRACE-Graph仅使用10个注释训练绒毛即可预测隐窝-绒毛（crypt-villus）和上皮距离轴坐标，并从区域注释中识别出派尔集合淋巴结（Peyer&#x27;s patches）。SpatialTRACE-Image实现了仅基于DAPI的预测。研究者将SpatialTRACE-Image应用于免疫荧光图像，绘制了急性系统性淋巴细胞性脉络丛脑膜炎病毒（LCMV）Armstrong株感染后小肠中抗原特异性P14 CD8 T细胞的解剖学分布：与对照组相比，视黄酸受体抑制剂处理组P14 CD8 T细胞总数更少，其中位于绒毛上部固有层（upper-villus lamina propria）的比例更小，而在肌层（muscularis）相对富集。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>SpatialTRACE模型减少了重复性手动注释工作，并提供了一条将从空间转录组学中学到的解剖学图谱扩展到含DAPI的显微成像数据的途径。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9328&amp;v=1&amp;s=35f06971e89ed91d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9328&amp;v=2&amp;s=1888a30661f62e41" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9328&amp;v=3&amp;s=e99182c7e63e8aaa" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9328&amp;v=4&amp;s=2119dd15c4b6031a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9328&amp;v=5&amp;s=202e95caf0223853" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 42 分</div>
+      <div class="card-title"><span class="badge cat-module">三维时空图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42806090/">Spatially resolved multiomics of human meningeal development reveal lineage and disease dynamics.</a></div>
+      <div class="card-title-zh">空间分辨多组学揭示人类脑膜发育中的谱系与疾病动态变化</div>
+      <div class="news">为揭示人类脑膜发育的细胞组成与免疫屏障建立机制，作者整合单核RNA-ATAC多组学与空间转录组学并开发Nichefinder和cell2home工具，发现血脑屏障内皮的基因调控网络、卵黄囊来源的髓系谱系起源，以及21三体中成纤维细胞趋化因子降低伴随JAK-STAT信号增强的异常模式，为理解脑膜发育及唐氏综合征相关神经免疫疾病提供新视角。</div>
+      <div class="meta">Nature cell biology · 2026-09-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">To Ken, Pett J Patrick, Dufva Olli, Chipampe Nana-Jane, Polanski Krzysztof, Cujba Ana-Maria, Roberts Kenny, Predeus Alexander V, Yayon Nadav, Kanemaru Kazumasa, Patel Manal I, Horsfall David, Li Tong, Mazin Pavel, Cakir Batuhan, Kapuge Rakesh, Wilk Alicja, Memi Fani, He Xiaoling, Solanky Nita, Kayhanian Saeed, Mair Richard, Rademaker Koen, Bayraktar Omer Ali, Haniffa Muzlifah, Barker Roger A, Buckley Christopher D, Teichmann Sarah A</div>
+<div class="meta">DOI: 10.1038/s41556-026-02075-8</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42806090/">https://pubmed.ncbi.nlm.nih.gov/42806090/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦人类脑膜发育与免疫，与用户关注的神经系统演化、细胞类型起源等核心方向关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>脑膜（meninges）正日益被认识到是支持颅脑发育的关键基质和免疫微环境。本研究旨在构建人类脑膜发育的多组学图谱，以深入理解其细胞组成和调控机制。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究人员从孕后6至21周的人类胎儿不同颅区采集样本，构建了配对的单核RNA测序（snRNA-seq）和转座酶可及染色质测序（ATAC-seq）图谱，并结合空间转录组学技术解析脑膜各层的细胞类型。研究还开发了两种分析工具：Nichefinder（用于空间标签转移和邻近分析）和cell2home（用于推断趋化信号）。此外，研究还纳入了21三体（trisomy 21，即唐氏综合征）样本进行分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该多组学图谱定义了发育过程中血脑屏障内皮细胞身份的基因调控网络；数据支持脑膜髓系细胞（包括为屏障免疫做好准备的外周血管巨噬细胞）起源于卵黄囊；利用cell2home鉴定了可能驱动B细胞从颅骨骨髓迁移至产前脑膜的相互作用；在21三体样本中观察到成纤维细胞趋化因子表达降低，同时JAK-STAT信号通路增强。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究提供了人类脑膜发育的综合图谱，揭示了塑造早期屏障免疫的细胞和调控程序，为理解脑膜相关疾病的机制提供了重要基础。开发的Nichefinder和cell2home工具为空间多组学数据分析提供了新方法。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9361&amp;v=1&amp;s=967af3b0b326aaa0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9361&amp;v=2&amp;s=0873d61c5533650e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9361&amp;v=3&amp;s=b6204be7a5214d3e" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9361&amp;v=4&amp;s=363160304402eb08" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9361&amp;v=5&amp;s=1e1b59aab5d78e5e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 34 分</div>
+      <div class="card-title"><span class="badge cat-module">脑图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42805182/">A microglial SPP1-ITGB1 feedback loop sustains thalamic hyperexcitability and post-stroke pain.</a></div>
+      <div class="card-title-zh">小胶质细胞SPP1-ITGB1反馈环路维持丘脑过度兴奋与卒中后疼痛</div>
+      <div class="news">为揭示急性脑损伤向慢性中枢性卒中后疼痛转变的机制，作者通过遗传学和药理学手段发现小胶质细胞SPP1-ITGB1正反馈环路通过维持促伤害感受微环境驱动丘脑过度兴奋和慢性疼痛维持，为神经免疫学领域提供了新的治疗靶点。</div>
+      <div class="meta">Neuron · 2026-09-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Dai Ruicheng, Wu Wenting, Zhou Xiangyu, Zhou Yu, Gao Xinwei, Luo Minmin</div>
+<div class="meta">DOI: 10.1016/j.neuron.2026.08.028</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42805182/">https://pubmed.ncbi.nlm.nih.gov/42805182/</a></div>
+<div class="meta">Keywords: P2X7 receptor、chemokines、mechanical allodynia、neuropathic pain、optogenetics、osteopontin、scRNA-seq、thalamic hemorrhage</div>
+<div class="reason"><span class="abs-label">推荐理由</span>探讨卒中后慢性疼痛的小胶质细胞机制，为病理神经科学，与用户演化发育研究兴趣不符。</div>
+<div class="abstract"><span class="abs-label">背景</span>中枢性卒中后疼痛（CPSP）是稳态恢复失败的表现，但急性损伤如何转变为慢性疼痛仍不清楚。虽然胶质细胞反应性是卒中的标志，但将这一激活转化为持续神经元过度兴奋的效应分子尚未明确。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用小鼠CPSP样行为模型，结合光遗传学激活、基因敲除和药理学干预等手段，对SPP1-ITGB1信号轴进行功能解析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现出血诱导的ATP释放激活P2X7受体，触发小胶质细胞中分泌型磷蛋白1（SPP1）的 robust 表达；SPP1通过自分泌整合素β1（ITGB1）信号形成自我放大环路，维持趋化因子丰富的促伤害感受微环境。光遗传学激活该小胶质细胞状态足以在无损伤情况下诱导机械性痛觉过敏和丘脑过度兴奋。SPP1虽在急性期诱导，但其通过ITGB1的信号传导特异性地用于维持慢性疼痛。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究将SPP1-ITGB1轴定义为适应性不良感觉可塑性的关键驱动因素，为难治性中枢疼痛提供了有前景的治疗靶点。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9365&amp;v=1&amp;s=a33a773bf8e792a2" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9365&amp;v=2&amp;s=e47545acb3600af7" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9365&amp;v=3&amp;s=ba09dd4f0f14aa8c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9365&amp;v=4&amp;s=3efd16c173aa73e1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9365&amp;v=5&amp;s=cd5c65303ef2e055" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">动物适应与生理</h2>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 42 分</div>
+      <div class="card-title"><span class="badge cat-module">高原/低氧适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42804980/">Brain structure, but not size, changes across an altitudinal gradient in the Plateau brown frog (Rana kukunoris).</a></div>
+      <div class="card-title-zh">高原林蛙（Rana kukunoris）脑结构而非脑大小随海拔梯度发生变化</div>
+      <div class="news">为探究高海拔环境压力如何驱动两栖动物脑演化，作者沿海拔梯度量化高原林蛙的脑大小与结构，发现雌性个体通过增大视顶盖、减小小脑实现脑区投资权衡，而雄性无显著变化，揭示出海拔选择驱动的性别特异性脑结构适应策略。</div>
+      <div class="meta">Zoology (Jena, Germany) · 2026-09-25</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Yu Tong Lei, Sun Hai Qing, Yao Ming Zhu</div>
+<div class="meta">DOI: 10.1016/j.zool.2026.126355</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42804980/">https://pubmed.ncbi.nlm.nih.gov/42804980/</a></div>
+<div class="meta">Keywords: Anurans、Brain evolution、Cognitive ability、Environmental pressure、Neural trade-offs、Sexual dimorphism</div>
+<div class="reason"><span class="abs-label">推荐理由</span>两栖动物脑结构的海拔梯度适应性演化，涉及脑区功能权衡与选择压力，为比较脊椎动物脑演化提供生态维度案例。</div>
+<div class="abstract"><span class="abs-label">背景</span>高海拔环境带来能量限制及其他环境挑战的方向选择压力，驱动种群水平的性状沿海拔梯度分化。脊椎动物脑大小的种内变异主要受能量限制驱动，本研究在一个认知要求高、资源匮乏的高海拔系统中对此进行了检验。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>沿海拔梯度对高原林蛙（Rana kukunoris）的脑大小和脑结构进行量化，以检验认知缓冲假说（CBH）、昂贵脑假说（EBH）、发育限制假说（DCH）和功能限制假说（FCH）的预测。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>未发现相对脑大小随海拔升高或纬度变化而普遍减小的证据。但发现雌性小脑（cerebellum）大小随海拔升高而减小，而视顶盖（optic tectum）大小随海拔升高而增大，这与功能限制假说（FCH）所提出的环境压力下脑区之间的权衡一致。此外，雌性视顶盖增大支持认知缓冲假说（CBH），因为视顶盖的相对大小与辨别学习能力呈正相关。然而，雄性任何脑结构的相对大小与海拔或纬度均无显著相关性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究提出了一种由海拔选择驱动的性别特异性进化策略：对于体型较大的雌性，高能量成本 necessitates 权衡，优先投资视顶盖以最大化生存和繁殖力等适合度组分，可能以小脑投资为代价。需要进一步沿海拔梯度开展研究，以揭示驱动适应性脑进化的复杂机制。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9376&amp;v=1&amp;s=bc4a6da7b83c4d96" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9376&amp;v=2&amp;s=e71d93e5f3a7fdde" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9376&amp;v=3&amp;s=8e7a745c0a8e264e" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9376&amp;v=4&amp;s=6a4e9b212c057bef" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9376&amp;v=5&amp;s=c1771abf1f8b93e4" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 38 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42805117/">Beyond static perception: Animals, neurons and synapses move to compute efficiently.</a></div>
+      <div class="card-title-zh">超越静态感知：动物、神经元与突触通过运动实现高效计算</div>
+      <div class="news">针对传统静态视角难以解释生物神经系统动态信息处理的局限，作者整合实验观察与生物物理建模，揭示从亚细胞结构到整体动物运动的跨尺度自主动作通过形态动力学采样与主动感知加速编码并提升精度，为高效、预测性和抗噪声的神经计算机制及类脑智能设计提供新框架。</div>
+      <div class="meta">Physics of life reviews · 2026-09-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Juusola Mikko, Takalo Jouni, Kemppainen Joni, MaBouDi HaDi, Bu Bruce Yi, Shukla Shashwat, Zhou Yiyin, Lazar Aurel A, de Polavieja Gonzalo</div>
+<div class="meta">DOI: 10.1016/j.plrev.2026.09.009</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42805117/">https://pubmed.ncbi.nlm.nih.gov/42805117/</a></div>
+<div class="meta">Keywords: Brain、Cognition、Information theory、Neural synchronisation、Predictive coding、Stochastic sampling、Synaptic transmission</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提出运动耦合编码与神经架构演化的新视角，与神经元演化及高效神经计算的起源相关。</div>
+<div class="abstract"><span class="abs-label">背景</span>传统上，神经元常被建模为通过化学和电信号传递信息的固定系统，但这种静态观点与生物学现实不符。生物体内存在跨越多个尺度的动态过程，从整个动物的运动到亚细胞水平的运动。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者结合最新的实验观察与生物物理学 realistic 建模，从超微结构形态动力学变化到整体身体运动，分析运动如何动态塑造神经信息处理。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，跨尺度的运动动态改变量子采样事件的波形、潜伏期、不应期及超微结构组织，从而提高信号保真度并扩展时空分辨率。超快速的细胞和突触结构机械调整与视网膜、眼、头及身体运动相互作用，加速编码并增强精度。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提出了运动耦合编码的新视角，为理解大脑如何实现高效、预测性和抗噪声计算提供了新见解，并为未来实验验证和生物启发的人工智能设计奠定了基础。研究还推测性地提出，运动耦合采样可能影响了多个层面神经架构的进化，有助于实现高效的预测性认知。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9379&amp;v=1&amp;s=8fc6f6ad1e2d1d86" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9379&amp;v=2&amp;s=3bded71e17ba2938" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9379&amp;v=3&amp;s=4abeff205db93e2c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9379&amp;v=4&amp;s=969d3e171f9aa26e" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9379&amp;v=5&amp;s=1cd06e7fe0c657a1" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42809618/">Catecholamine Chemistry Dictated the Divergence of Melanization and Signaling Processes During Animal Evolution.</a></div>
+      <div class="card-title-zh">儿茶酚胺化学决定了动物演化过程中黑色素化与信号传导过程的分化</div>
+      <div class="news">为解决脊椎动物为何选用去甲肾上腺素和肾上腺素作为外周神经递质的演化谜题，作者通过比较不同儿茶酚胺的氧化聚合倾向性并结合多组学关联分析，发现这两种递质因较多巴胺更不易聚合成黑色素而更适合外周信号传导，同时揭示了自主神经系统起源与内骨骼演化的深层关联。</div>
+      <div class="meta">BioEssays : news and reviews in molecular, cellular and developmental biology · 2026-10-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Njus David, Friedrich Markus</div>
+<div class="meta">DOI: 10.1002/bies.70189</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42809618/">https://pubmed.ncbi.nlm.nih.gov/42809618/</a></div>
+<div class="meta">Keywords: autonomic nervous system、catecholamines、dopamine、exoskeleton、innate immunity、melanin、phenoloxidase</div>
+<div class="reason"><span class="abs-label">推荐理由</span>将神经递质化学特性与脊椎动物内骨骼、自主神经系统演化相联系，契合用户基因调控与器官演化兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>高等脊椎动物（有颌类）与其他动物的区别在于其拥有复杂的内骨骼，并使用肾上腺素（epinephrine）和去甲肾上腺素（norepinephrine）等儿茶酚胺类神经递质。这些特征的起源可能与儿茶酚胺氧化聚合形成黑色素（melanin）的不同倾向性有关。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者比较了不同儿茶酚胺（包括多巴胺、其前体DOPA、去甲肾上腺素和肾上腺素）氧化聚合形成黑色素的倾向性差异，并结合化学证据，探讨了外周神经系统发育与基因家族内容变化、免疫应答组织方式以及内部支持结构复杂化之间的相关性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，与多巴胺及其前体DOPA相比，去甲肾上腺素和肾上腺素更不易发生聚合反应。因此，后者更可能在脊椎动物外周信号传导中被适应性选择利用。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了儿茶酚胺化学性质与脊椎动物两大标志性特征——复杂内骨骼和特定神经递质使用——之间的深层联系，为理解动物演化中神经、免疫与骨骼系统的协同演化提供了新的化学视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9390&amp;v=1&amp;s=d5f6d8c6c0f95f0c" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9390&amp;v=2&amp;s=fac006379a2ed1af" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9390&amp;v=3&amp;s=622e1649bb731de9" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9390&amp;v=4&amp;s=4a1e15ce7654e128" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9390&amp;v=5&amp;s=641f496cf56cecc8" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 37 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42805176/">Cargo crosslinking nucleates AP-1 lattice formation.</a></div>
+      <div class="card-title-zh">货物交联促进AP-1晶格形成</div>
+      <div class="news">为阐明货物分子是否直接参与衣被组装的问题，作者利用冷冻电镜解析人源AP-1与含串联分选基序货物分子的复合物结构，并在斑马鱼中验证功能，发现单个货物分子可通过μ1-σ1界面桥接相邻AP-1复合物以促进接头蛋白寡聚化，从而驱动网格蛋白笼组装，为囊泡运输的货物驱动机制提供了新视角。</div>
+      <div class="meta">Cell · 2026-09-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Deng Huaqing, Jia Guowen, Yang Qin, Zhao Lin, Li Ping, Ling Min, Fan Jiaqi, Tu Yingfeng, Yong Xin, Lai Ying, Su Zhaoming, Jia Da</div>
+<div class="meta">DOI: 10.1016/j.cell.2026.09.022</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42805176/">https://pubmed.ncbi.nlm.nih.gov/42805176/</a></div>
+<div class="meta">Keywords: adaptor protein、cargo、coat assembly、coat protein、vesicle trafficking</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽涉及斑马鱼神经元发育，但核心为囊泡运输的分子结构机制，与细胞类型演化关联有限。</div>
+<div class="abstract"><span class="abs-label">背景</span>囊泡运输对于真核细胞内蛋白质和脂质的正确分布至关重要，该过程依赖于包被系统（包括接头蛋白-网格蛋白复合物）将货物选择性纳入运输载体。虽然货物识别的分子基础已得到充分确立，但货物在多大程度直接促进包被组装仍不完全清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用冷冻电子显微镜（cryo-EM）技术，解析了人源AP-1复合物与含有串联分选基序的货物结合的结构，分辨率分别为3.5 Å和4.0 Å。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>结构分析揭示，单个携带串联基序的货物分子可通过此前未被识别的μ1-σ1复合物间界面桥接两个相邻的AP-1复合物，从而促进接头蛋白寡聚化。该界面有助于高效的AP-1-网格蛋白笼组装、货物运输以及斑马鱼的神经发育。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现支持了一种新模型：在生理条件下，货物结合可以促进高阶接头蛋白组装，这是对已建立的包被驱动机制的重要补充。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9392&amp;v=1&amp;s=f445b4e07bc740c5" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9392&amp;v=2&amp;s=d8f196565cf65041" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9392&amp;v=3&amp;s=88f1eaeac25241f7" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9392&amp;v=4&amp;s=322f6715dc612fe5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9392&amp;v=5&amp;s=64adaeaa24a97600" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 36 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://doi.org/10.1126/science.aem6546">Giant cuttlefish’s stunning mating aggregation decimated by toxic algae off Australia</a></div>
+      <div class="card-title-zh">澳大利亚近海有毒藻类致巨型乌贼壮观聚集交配活动遭毁灭性打击</div>
+      <div class="news">针对有毒藻华对海洋头足类种群的影响问题，作者通过现场记录与生态调查方法，发现一次有毒藻华事件几乎消灭了澳大利亚巨型乌贼的独特繁殖种群，揭示了极端环境事件对海洋无脊椎动物聚集繁殖行为的毁灭性后果。</div>
+      <div class="meta">Science · 2026-09-24</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Stokstad Erik</div>
+<div class="meta">DOI: 10.1126/science.aem6546</div>
+<div class="meta"><a href="https://doi.org/10.1126/science.aem6546">https://doi.org/10.1126/science.aem6546</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及用户关注的头足类动物，但仅为生态灾害报道，缺乏演化发育或细胞类型的科学内容。</div>
+<div class="abstract"><span class="abs-label">背景</span>澳大利亚近海发生了有毒藻类爆发（algal bloom），对当地独特的巨型乌贼（cuttlefish）种群造成了严重影响。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>有毒藻类爆发几乎消灭了这一体长可达一米的头足类动物（cephalopod）的独特种群，该种群以其壮观的聚集交配行为而闻名。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该事件揭示了有害藻华对海洋生态系统及独特动物行为的严重威胁，为海洋生物保护和环境监测提供了重要警示。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=8900&amp;v=1&amp;s=4ad40cf2288c6124" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=8900&amp;v=2&amp;s=0e9a3550dba0bcad" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=8900&amp;v=3&amp;s=833018e9d677b139" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=8900&amp;v=4&amp;s=6ca4c24d7ff5061b" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=8900&amp;v=5&amp;s=bedb13e2e1d23e71" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 34 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.23.753804">Endogenous SMN Heterogeneity Defines Dynamic States of Motor Neuron Vulnerability and Resilience</a></div>
+      <div class="card-title-zh">内源性SMN异质性定义运动神经元脆弱性与弹性的动态状态</div>
+      <div class="news">为揭示神经退行性疾病中选择性神经元易损性的内在机制，作者通过纵向活细胞成像和组学分析，发现内源性SMN蛋白丰度的自然异质性决定运动神经元的动态易损性状态，且神经元可通过增加SMN向韧性状态转变，为靶向增强神经元韧性提供了新策略。</div>
+      <div class="meta">bioRxiv · 2026-09-29</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Thomas J., Ramme A., Yun J., Caldarelli A., Vrettou S., Rost F., Dokuzluoglu Z., Grass T., Wirth B., Rodriguez-Muela N.</div>
+<div class="meta">DOI: 10.64898/2026.09.23.753804</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.23.753804">https://www.biorxiv.org/content/10.64898/2026.09.23.753804</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>揭示运动神经元异质性与脆弱性动态状态，涉及神经元亚型差异，但侧重疾病机制而非进化起源。</div>
+<div class="abstract"><span class="abs-label">背景</span>选择性神经元脆弱性是神经退行性疾病的标志性特征，即在共享遗传和疾病背景下部分神经元退化而另一些保持弹性，但其内在机制尚不清楚。脊髓性肌萎缩症（SMA)和肌萎缩侧索硬化症(ALS)等疾病中，运动神经元(MN)的命运差异与内源性存活运动神经元(SMN)蛋白丰度的自然异质性有关。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用人SMN-Clover报告基因运动神经元进行纵向活细胞成像，追踪内源性SMN蛋白丰度动态变化；并结合转录组学和蛋白质组学分析，鉴定与脆弱性和弹性状态相关的分子程序；通过LMO3过表达实验验证其在促进神经元弹性中的作用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>高内源性SMN丰度的神经元在健康、SMA和ALS遗传背景下均显著延长存活时间；部分低SMN神经元可逐渐增加内源性SMN丰度，向更具弹性的状态转变；低SMN神经元自发活动增加，将内源性SMN丰度与神经元生理和存活联系起来；体内实验显示选择性脆弱的运动神经元群体在疾病进展过程中表现出内源性SMN丰度的相应变化；抗凋亡调节因子LMO3过表达可降低p53响应基因表达、增加运动神经元存活并促使神经元向更高内源性SMN状态转变。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究建立了内源性蛋白异质性作为动态神经元脆弱性决定因素的概念，揭示神经元弹性是一种可识别的可塑性分子状态，可通过治疗手段加以强化，为神经退行性疾病的干预策略提供了新思路。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9387&amp;v=1&amp;s=ec0491786a8bed8b" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9387&amp;v=2&amp;s=272d1f9d38b87dbc" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9387&amp;v=3&amp;s=1365d5e45dd68bc5" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9387&amp;v=4&amp;s=6d0148b32d7d69df" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9387&amp;v=5&amp;s=37a37046c52e3b87" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 34 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42805185/">Peripheral CXCR3 blockade mitigates T cell infiltration and neurodegeneration in a mouse model of tauopathy.</a></div>
+      <div class="card-title-zh">外周CXCR3阻断减轻tau蛋白病小鼠模型中的T细胞浸润与神经退行性变</div>
+      <div class="news">为明确CXCR3在tauopathies中的作用，作者利用基因敲除和抗体阻断方法，发现CXCR3依赖的T细胞趋化是tau介导神经退行性变的关键通路，为tauopathies提供了潜在的疾病修饰治疗策略。</div>
+      <div class="meta">Neuron · 2026-09-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Emmerson Joshua T, Hu Hao, Savani Vivek, Lin Peter, Rohde Mina, Sharma Prabal, Self Wade, Li Yongyi, Nulman Jonathan, Bosch Megan E, Liu Zhe, Serrano Javier Remolina, Bao Xin, Yuede Carla M, Jorfi Mehdi, Tanzi Rudolph E, Ulrich Jason D, Holtzman David M</div>
+<div class="meta">DOI: 10.1016/j.neuron.2026.08.030</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42805185/">https://pubmed.ncbi.nlm.nih.gov/42805185/</a></div>
+<div class="meta">Keywords: CXCL10、CXCR3、T-lymphocyte、adaptive immunity、inflammation、neurodegeneration、tauopathy</div>
+<div class="reason"><span class="abs-label">推荐理由</span>研究神经退行性疾病中T细胞浸润机制，属于临床神经免疫领域，与演化发育生物学距离较远。</div>
+<div class="abstract"><span class="abs-label">背景</span>趋化因子受体CXCR3介导T细胞向炎症组织的募集，但其在tau蛋白病（tauopathies）中的作用尚不明确。研究表明，海马内注射干扰素-γ（IFNγ）可急性触发CXCL10上调及脑实质T细胞浸润。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用基因敲除或抗体介导的CXCR3阻断方法阻止IFNγ诱导的T细胞浸润，并在tau蛋白病及神经退行性变小鼠模型中进行慢性全身性抗CXCR3治疗；同时利用单细胞RNA测序和流式细胞术分析脑内T细胞亚群变化。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>慢性全身性抗CXCR3治疗显著减少tau蛋白病小鼠脑实质中CD4+和CD8+ T细胞的积累，减轻神经退行性变，并改善部分认知功能；CXCR3阻断降低小胶质细胞MHC-II表达，但不广泛抑制经典疾病相关炎症表型。单细胞RNA测序和流式细胞术进一步揭示脑内活化CD4+ T细胞比例降低，以及CD8+ T细胞终末耗竭水平升高。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究确定CXCR3依赖性趋化作用是tau介导神经退行性变相关T细胞亚型的关键信号通路，并提示CXCR3阻断可作为tau蛋白病潜在的疾病修饰治疗策略。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9364&amp;v=1&amp;s=34b4df5f592a016f" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9364&amp;v=2&amp;s=b8c6e70515bdae60" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9364&amp;v=3&amp;s=753ebd0e948bc4d9" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9364&amp;v=4&amp;s=9efcdd7a47d328b8" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhangyanshu%40genomics.cn&amp;p=9364&amp;v=5&amp;s=946bacdea69fe85c" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日论文主要集中于神经科学、发育生物学与组学技术交叉领域，涵盖单细胞多组学、空间转录组学、神经环路解析及神经免疫调控等方向。技术层面呈现多组学整合与跨物种比较趋势，如单细胞RNA-seq与ATAC-seq联用、空间转录组与显微成像结合，以及基于计算模型的增强子筛选与图谱预测工具开发。多篇研究采用斑马鱼、小鼠等模式生物进行功能验证，体现从分子到环路的多尺度整合策略。对研究者而言，这批文献提供了脑发育与疾病调控的新认知框架，特别是在神经精神疾病风险元件演化、脑膜瘤细胞起源、脊髓感觉模态分辨及神经退行性疾病免疫干预等具体问题上具有直接参考价值；同时，SpatialTRACE等工具类研究为空间组学数据分析提供了可扩展的方法学参考。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=zhangyanshu%40genomics.cn&amp;d=2026-09-30&amp;s=62c0a778a0d35d60">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=zhangyanshu%40genomics.cn&amp;d=2026-09-30&amp;s=62c0a778a0d35d60">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

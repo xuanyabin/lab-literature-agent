@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-10-08</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-10-08</h1>
+    <p class="hello">zhouyang，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">过去 8 天全库新增 844 篇 · 命中您的关键词 197 篇 · 本次推送 15 篇（必读 1 · 重要 3 · 参考 11）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">基因组演化与多样性</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 63 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42811130/">Developmental contexts of gene-regulatory evolution following whole genome duplication in salmonids.</a></div>
+      <div class="card-title-zh">鲑形目鱼类全基因组复制后基因调控演化的发育背景</div>
+      <div class="news">为破解脊椎动物古远全基因组加倍后基因调控演化之谜，作者利用鲑鱼科近期自体四倍体事件建立771组多组学数据集，发现加倍后调控演化受脊椎动物保守的发育和组织特异性约束塑造，且在系统发育型时期存在基因组内调控约束峰值，为比较基因组学及水产研究提供重要资源。</div>
+      <div class="meta">Nature ecology &amp; evolution · 2026-09-29</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Baudement Marie-Odile, Morata Diego Perojil, Gillard Gareth B, Dewari Pooran S, Gundappa Manu Kumar, Podgorniak Tomasz, Grønvold Lars, Baranasic Damir, Laurent Audrey, Giudicelli François, Zunar Bojan, Carrera-García Erika, Perquis Aline, Brionne Aurélien, Thi Nguyen Tan, Ruiz Daniels Rose, Merino Gabriela A, Thybert David, Ilsley Garth R, Louis Alexandra, Hvidsten Torgeir R, Berthelot Camille, Harrison Peter W, Roest Crollius Hugues, Guiguen Yann, Lenhard Boris, Sandve Simen R, Bobe Julien, Kent Matthew P, Lien Sigbjørn, Macqueen Daniel J</div>
+<div class="meta">DOI: 10.1038/s41559-026-03171-6</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42811130/">https://pubmed.ncbi.nlm.nih.gov/42811130/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>研究脊椎动物全基因组加倍后的调控演化，虽涉及发育约束，但未直接涉及性染色体或性别决定机制。</div>
+<div class="abstract"><span class="abs-label">背景</span>脊椎动物早期演化过程中的全基因组复制（WGD）事件可能通过扩增功能多样化的遗传物质来促进表型创新，但其古老起源使得人们难以了解WGD后二倍化过程中基因调控的演化机制。鲑形目鱼类（salmonids）经历了一次较近的自多倍体WGD事件，仍处于二倍化的较早阶段，为研究这些机制提供了独特窗口。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究在大西洋鲑（Atlantic salmon）和虹鳟（rainbow trout）中生成涵盖胚胎期和成年组织的771个多组学数据集，以研究基因表达和调控元件的演化。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究表明，鲑形目鱼类WGD后的调控演化受到已知作用于脊椎动物物种的发育和组织特异性约束的塑造。研究鉴定出脊椎动物系统发生型时期（phylotypic period）基因组内调控约束的峰值，这与携带深度保守非编码元件的重复增强子对的功能保留相关，这些元件富集于主发育转录因子基序。研究还进一步鉴定了增强子和转座元件在重复基因表达分歧中的作用。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究推进了对WGD后调控演化的理解，并提供了一个开放资源，以支持脊椎动物比较基因组学研究以及鲑形目鱼类水产养殖和保护研究应用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9585&amp;v=1&amp;s=599aea5f40f7835d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9585&amp;v=2&amp;s=cf8b975e19f7c3ce" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9585&amp;v=3&amp;s=cf474410966aea87" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9585&amp;v=4&amp;s=ef335e026c271c6a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9585&amp;v=5&amp;s=70f2c34cb6d8dae7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-important">Important</span> · 61 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42811076/">CCNB1IP1 regulatory evolution underlies gradual increases in cortical size and folding in primates.</a></div>
+      <div class="card-title-zh">CCNB1IP1调控进化是灵长类动物皮层大小和褶皱逐渐增加的基础</div>
+      <div class="news">为揭示灵长类大脑皮层逐渐扩张和折叠的分子机制，作者以树鼩为外群比较分析CCNB1IP1基因的顺式调控元件，并结合基因过表达与敲入实验，发现CCNB1IP1通过泛素介导的降解途径抑制E2F1转录因子，增加基底祖细胞和神经元数量，从而促进皮层扩大和折叠，为理解人类认知演化的神经发育基础提供了关键分子证据。</div>
+      <div class="meta">Nature genetics · 2026-09-29</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Hu Ting, Ma Pengcheng, Kong Yifan, Tan Yulian, Sun Xuelian, Wang Jianhong, Xiang Kun, Mao Bingyu, Wu Qingfeng, Yi Soojin V, Shi Lei</div>
+<div class="meta">DOI: 10.1038/s41588-026-02773-x</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42811076/">https://pubmed.ncbi.nlm.nih.gov/42811076/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>灵长类皮层进化与CCNB1IP1调控演化，涉及用户关注的人脑皮层发育，但缺乏性别差异或性染色体相关分析。</div>
+<div class="abstract"><span class="abs-label">背景</span>皮层的逐渐扩张和折叠是人类认知进化的关键因素，但其分子基础尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>以树鼩（tree shrew）为外群，通过比较顺式调控元件分析，鉴定CCNB1IP1（cyclin B1 interacting protein 1）基因；在细胞水平进行过表达实验，并通过泛素介导的降解通路研究其与E2F1的分子机制；构建CCNB1IP1敲入小鼠模型。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>发现CCNB1IP1在灵长类中获得了脑表达，并在进化过程中表达量逐渐增加，与皮层大小和褶皱增加平行；过表达CCNB1IP1影响细胞周期，增加基底祖细胞和神经元数量；CCNB1IP1通过泛素介导的降解通路抑制转录因子E2F1；CCNB1IP1敲入可使原本光滑的小鼠大脑产生皮层褶皱。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>揭示了CCNB1IP1表达水平的进化变化促进了灵长类皮层的扩大和折叠，为理解人类大脑进化的分子机制提供了重要见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9595&amp;v=1&amp;s=f10bf64bf341e64b" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9595&amp;v=2&amp;s=95ab5b21f5638735" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9595&amp;v=3&amp;s=a8053fca588f3b20" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9595&amp;v=4&amp;s=5a1ea858972fbf91" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9595&amp;v=5&amp;s=b715f96ac2df9878" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-important">Important</span> · 60 分</div>
+      <div class="card-title"><span class="badge cat-module">群体基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42816582/">Wild rice locus enables microbiome re-domestication for enhanced nitrogen-use efficiency.</a></div>
+      <div class="card-title-zh">野生稻位点促进微生物组再驯化以提高氮利用效率</div>
+      <div class="news">为解决作物驯化导致有益根际微生物丧失的问题，作者利用栽培稻与野生稻杂交群体结合QTL定位和转基因验证，发现野生稻来源的受体样激酶基因OsRLK可招募增强氮吸收的Acinetobacter，从而显著提高水稻氮利用效率和产量性状，为微生物组导向的养分高效育种提供了遗传框架。</div>
+      <div class="meta">Nature microbiology · 2026-09-30</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chang Jingjing, Wang Dianwen, Yao Zongmu, Pang Yingnan, Zhang Hengfei, Wang Changji, Xie Yuanbo, Sun Yu, Zhang Jianfeng, Li Weiqiang, Liang Aizhen, Li Xiangnan, Chen Dazhou, Chen Hongping, Chen Xuewen, Wang Enze, Tran Lam-Son Phan, Wang Jilin, Raaijmakers Jos M, Tian Chunjie, Kuramae Eiko E</div>
+<div class="meta">DOI: 10.1038/s41564-026-02498-x</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42816582/">https://pubmed.ncbi.nlm.nih.gov/42816582/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="abstract"><span class="abs-label">背景</span>作物驯化（如水稻）导致植物丧失了与根系相关、对氮利用效率至关重要的有益微生物。这些微生物能否通过野生植物与栽培植物的杂交遗传，以及涉及的宿主基因尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>利用源自栽培稻（Oryza sativa）及其野生近缘种Oryza rufipogon的两个重组自交系群体，结合微生物组分析、数量性状位点（QTL）定位、群体基因组学和转基因验证，鉴定与核心细菌类群相关的宿主数量性状位点。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>鉴定出113个候选植物基因，其中主要存在于野生稻中的受体样激酶编码基因OsRLK与增强植物氮吸收的Acinetobacter显著相关。OsRLK的敲除和过表达实验（接种Acinetobacter合成菌群）验证了其在氮利用效率中的作用。田间试验表明，过表达系显著提高了产量相关性状。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究建立了微生物组再驯化的遗传基础，为微生物组指导的养分高效作物育种提供了框架。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9634&amp;v=1&amp;s=6913e1764fecae19" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9634&amp;v=2&amp;s=80b998d0f01d5657" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9634&amp;v=3&amp;s=55e20f692c3d6403" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9634&amp;v=4&amp;s=bfdd07522c2a7a95" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9634&amp;v=5&amp;s=55177bb1b1c359da" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 58 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42842684/">Rapid protamine evolution suppresses meiotic drive in Drosophila.</a></div>
+      <div class="card-title-zh">鱼精蛋白的快速进化抑制了果蝇中的减数分裂驱动</div>
+      <div class="news">为揭示精蛋白快速演化的驱动力，作者利用体内基因替换和性染色体融合工程技术，发现果蝇精蛋白Mst77F通过剂量与序列依赖的方式保护X染色体免受减数分裂驱动侵害，表明抑制性染色体驱动是其快速演化的核心动力。</div>
+      <div class="meta">Science advances · 2026-10-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chang Ching-Ho, A de la Cruz Aida Flor, Lai Hung-Yu, Mejia Natividad Isabel, Noyola Alex, Angelo Magsino Abellanosa Elian, Lee Nicolas D, Malik Harmit S</div>
+<div class="meta">DOI: 10.1126/sciadv.aeb5514</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42842684/">https://pubmed.ncbi.nlm.nih.gov/42842684/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>揭示精蛋白快速演化与性染色体减数分裂驱动的关系，为性染色体冲突和基因组演化提供新视角。</div>
+<div class="abstract"><span class="abs-label">背景</span>许多动物物种在精子发生过程中会用鱼精蛋白（protamine）替换组蛋白。鱼精蛋白对精子功能至关重要，但其快速进化的原因尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用体内基因替换技术，在Drosophila melanogaster中考察了鱼精蛋白Mst77F快速进化的原因和后果，包括用分歧较大的直系同源基因替换内源Mst77F、改变Mst77F剂量、以及构建性染色体融合系等实验手段。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>用分歧较大的Mst77F直系同源基因进行替换会导致X染色体精子出现DNA压缩缺陷，成熟X染色体精子减少，后代雄性比例偏高。降低D. melanogaster Mst77F剂量引起同样的性别比例偏倚，而增加Mst77F直系同源基因剂量则可挽救该表型。工程化性染色体融合实验揭示Mst77F以剂量依赖和序列依赖的方式保护D. melanogaster X染色体免受杀手-靶标减数分裂驱动系统的侵害。与D. melanogaster不同，Mst77F在Drosophila yakuba中对生育力并非必需，但仍对抑制性比扭曲具有重要作用。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究发现，抑制性染色体减数分裂驱动的持续压力是鱼精蛋白快速进化的根本原因，为理解精子发生中染色质蛋白快速进化的分子机制提供了重要见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9642&amp;v=1&amp;s=dc43068649922ff0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9642&amp;v=2&amp;s=d063b8a46d3adfb0" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9642&amp;v=3&amp;s=834703f44fbd7c4b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9642&amp;v=4&amp;s=3a90301aa7562525" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9642&amp;v=5&amp;s=8c84f72f694a27bb" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-module">群体基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42831486/">Inferring the Landscapes of Mutation and Recombination in the Common Marmoset (Callithrix jacchus) in the Presence of Twinning and Hematopoietic Chimerism.</a></div>
+      <div class="card-title-zh">在双胎与造血嵌合背景下推断普通狨猴（Callithrix jacchus）的突变与重组景观</div>
+      <div class="news">针对普通狨猴孪生和造血嵌合现象导致标准群体遗传学方法失效的问题，研究者利用高质量群体基因组数据推断其突变与重组景观，发现该物种具有较低的neutral mutation rates但与其他类人猿相当的重组率，且重组景观由PRDM9介导的热点主导，为这一重要模式生物的进化基因组学研究提供了关键资源。</div>
+      <div class="meta">American journal of primatology · 2026-10-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Soni Vivak, Versoza Cyril J, Jensen Jeffrey D, Pfeifer Susanne P</div>
+<div class="meta">DOI: 10.1002/ajp.70208</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42831486/">https://pubmed.ncbi.nlm.nih.gov/42831486/</a></div>
+<div class="meta">Keywords: Callitrichidae、mutation、neutral divergence、platyrrhine、primate、recombination</div>
+<div class="reason"><span class="abs-label">推荐理由</span>灵长类基因组进化与重组景观研究，PRDM9介导的重组热点与脊椎动物基因组进化相关，但性染色体内容不足。</div>
+<div class="abstract"><span class="abs-label">背景</span>普通狨猴（Callithrix jacchus）是生物医学研究中最常用的非人灵长类模型之一，但该物种的群体基因组学研究仍相对不足。这种研究缺失部分源于该物种繁殖模式相关的两个生物学特性——频繁的双胎和同胞嵌合现象，这些特性可能影响依赖Wright-Fisher模型假设的标准群体遗传学方法。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究利用高质量的群体基因组数据，在存在上述生物学特征的情况下，推断普通狨猴的突变率和重组率及其景观模式，并基于人工智能的模型预测了该物种特异性PRDM9-DNA结合复合物的三维结构。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究结果表明，虽然普通狨猴表现出相对较低的中性突变率，但其重组率与其他类人猿相当。此外，普通狨猴的重组景观与许多脊椎动物类似，似乎以PRDM9介导的热点为主导。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为普通狨猴的群体遗传学提供了新见解，同时由于精细尺度的突变和重组图谱对进化推断至关重要，本研究也将作为有价值的资源，助力这一广泛研究系统的未来基因组学研究。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9700&amp;v=1&amp;s=e1ba022a3dd71b65" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9700&amp;v=2&amp;s=199d2d29744d66c6" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9700&amp;v=3&amp;s=fc9fffa2d206181a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9700&amp;v=4&amp;s=335a38c03b703030" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9700&amp;v=5&amp;s=1651cde43cd3ab51" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 43 分</div>
+      <div class="card-title"><span class="badge cat-module">群体基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42838560/">Comparative population genomics reveal stark differences in the genomic structure and drivers of isolation for two sky island bumble bees.</a></div>
+      <div class="card-title-zh">比较种群基因组学揭示两种天空岛熊蜂在基因组结构与隔离驱动因素上的显著差异</div>
+      <div class="news">为厘清天空岛屿物种基因组结构的驱动因素，研究者利用SNP数据比较分析两种共存熊蜂的群体基因组学特征，发现生态位空间的细微差异可导致截然不同的基因组结构——生境特化的Bombus centralis种群高度分化而广适性的Bombus huntii几乎无基因组结构，揭示了隔离阻力在天空岛屿系统中的关键作用。</div>
+      <div class="meta">Proceedings. Biological sciences · 2026-10-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Jones Laura J, Ponisio Lauren C, Jha Shalene</div>
+<div class="meta">DOI: 10.1098/rspb.2026.1217</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42838560/">https://pubmed.ncbi.nlm.nih.gov/42838560/</a></div>
+<div class="meta">Keywords: Bombus、gene flow、isolation、resistance、single nucleotide polymorphism、sky island</div>
+<div class="reason"><span class="abs-label">推荐理由</span>比较两种熊蜂的群体基因组结构，聚焦生态隔离与基因流，未涉及性染色体或性别相关研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>遗传多样性对物种存续和生物多样性保护至关重要。具有极端海拔梯度的区域（包括&#x27;天空岛&#x27;系统）预计会限制基因流，原因包括高海拔生境斑块之间的扩散障碍（隔离-by-resistance, IBR）以及斑块间的绝对距离（隔离-by-distance, IBD）。然而，天空岛物种基因组结构的驱动因素仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究利用单核苷酸多态性（single-nucleotide polymorphism, SNP）数据，评估了IBR和IBD对科迪勒拉和马达雷天空岛中两种同域分布熊蜂——Bombus centralis和Bombus huntii——基因组结构的影响。这两种物种体型和食性宽度相似，但B. centralis强烈依赖高海拔森林和草地生境，而B. huntii可利用更广泛的生境。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现两种物种均存在中等至高度的近亲繁殖，但B. centralis种群高度分化，而B. huntii几乎无基因组结构差异。IBR（由土地覆盖和海拔导致）在两种物种中均显著，而IBD仅在B. huntii中得到支持。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究强调了天空岛系统中隔离风险的存在，并证明生态位空间的微小差异可导致截然不同的基因组结构，为理解物种特异性响应及制定保护策略提供了重要见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9561&amp;v=1&amp;s=d79af2c31bcd2c83" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9561&amp;v=2&amp;s=509c7cc6a471ba00" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9561&amp;v=3&amp;s=d3165666ced336d5" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9561&amp;v=4&amp;s=a141ea597c6e6a12" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9561&amp;v=5&amp;s=46064652574bd002" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 47 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42810347/">OpenFISH enables same-section spatial transcriptomics and MALDI-MSI integration.</a></div>
+      <div class="card-title-zh">OpenFISH实现同切片空间转录组学与MALDI-MSI整合</div>
+      <div class="news">为解决空间转录组学与代谢组学难以在同一切片实现单细胞水平整合的问题，作者开发了开源模块化平台OpenFISH及MALDI-MSI兼容工作流程，发现中枢神经系统中细胞类型特异性代谢异质性及5xFAD模型中细胞类型相关的协调代谢变化，推动空间多组学整合研究。</div>
+      <div class="meta">Neuron · 2026-09-29</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Li Xinyang, Huang Yuan, Wang Shuo, Li Ya, Jiang Fengting, Gao Jiawei, Yang Yaran, Wu Qing-Feng, Ge Woo-Ping, Duan Lihui</div>
+<div class="meta">DOI: 10.1016/j.neuron.2026.09.007</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42810347/">https://pubmed.ncbi.nlm.nih.gov/42810347/</a></div>
+<div class="meta">Keywords: metabolomics、neurodegenerative disease、neurodevelopment、neuroinflammation、spatial multi-omics、transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>空间转录组学方法学创新，可应用于用户关注的细胞类型特异性分析，但需结合性染色体研究场景方可提升相关性。</div>
+<div class="abstract"><span class="abs-label">背景</span>将高分辨率空间转录组学与代谢组学整合对于将细胞身份与代谢状态联系起来至关重要，但同切片、单细胞水平的对齐受限于不兼容的基底材料、化学反应条件和成像方式。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了OpenFISH——一种开源、低成本、模块化的空间转录组学平台，以及兼容基质辅助激光解吸电离质谱成像（MALDI-MSI）的工作流程。通过优化的组织处理流程和引导式图像配准管道，实现转录本与代谢物的细胞类型感知共定位。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该研究揭示了中枢神经系统中细胞类型特异性代谢异质性以及海马区室层面的代谢分区现象。在5xFAD阿尔茨海默病模型小鼠中的探索性实验发现了协调的细胞类型相关代谢变化，包括小胶质细胞中显著的磷脂变化、总体分析中被掩盖的兴奋性神经元代谢转变，以及少突胶质细胞中升高的溶血磷脂酰乙醇胺相关特征。OpenFISH还可独立定量免疫挑战后的转座元件激活，并鉴定出Reeler突变体中候选的纹状体D1神经元模式化改变。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该工作为同切片空间多组学研究提供了一个开放、低成本且可定制的框架，克服了现有技术在空间多组学整合方面的局限性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9549&amp;v=1&amp;s=be6ad6ba88b88e4f" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9549&amp;v=2&amp;s=30687cb027d763bf" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9549&amp;v=3&amp;s=f695f29ba237f1c5" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9549&amp;v=4&amp;s=86581a8c828768a2" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9549&amp;v=5&amp;s=5d621273c0fe77b1" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42838061/">Spatially resolved genome architecture in mouse embryonic development.</a></div>
+      <div class="card-title-zh">小鼠胚胎发育中空间分辨的基因组结构</div>
+      <div class="news">为解析高阶染色质结构在组织发育中的原位分布规律，研究团队开发了SpaceA空间组学方法，发现小鼠胚胎A/B区室身份在E12.5至E13.5阶段发生剧烈时空转变，且胚胎肝脏呈现独特的区室间增强染色质凝聚现象，为理解发育中的空间基因组调控提供了新视角。</div>
+      <div class="meta">Developmental cell · 2026-10-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ma Yuang, Gou Bo, Xu Yuetong, Sun Fujun, Shu Muya, Lu Falong, Jiang Ni, Li Xiang</div>
+<div class="meta">DOI: 10.1016/j.devcel.2026.09.004</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42838061/">https://pubmed.ncbi.nlm.nih.gov/42838061/</a></div>
+<div class="meta">Keywords: compartment organization、embryo development、genome architecture、spatial omics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽聚焦胚胎发育染色质结构，但涉及哺乳动物器官发育时空调控，与用户关注的发育生物学和三维核空间有间接关联。</div>
+<div class="abstract"><span class="abs-label">背景</span>高阶染色质结构与细胞分化和衰老相关，但其在组织中的天然分布及在生物体发育中的作用尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究团队开发了SpaceA技术，这是一种用于原位染色质构象分析的空间组学方法。与高通量染色体构象捕获技术（Hi-C）相比，SpaceA能捕获更多超过10 Mb距离的染色质互作。该技术被应用于九个小鼠胚胎切片进行分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在E12.5至E13.5阶段，compartment A/B身份发生显著时空变化，伴随转录水平的剧烈转变，但组蛋白修饰变化不明显。胚胎肝脏表现出独特的、增强的compartment间染色质凝缩现象，伴随基因表达抑制，这一现象通过显微成像和异染色质黏附特征提取得到验证。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究建立了用于解析组织空间染色质异质性（特别是通过长程互作）如何调控多细胞生物复杂生物学过程的平台。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9579&amp;v=1&amp;s=8d145a30a4962733" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9579&amp;v=2&amp;s=ad8ed6ae2f3757bb" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9579&amp;v=3&amp;s=4832ff5027f95167" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9579&amp;v=4&amp;s=fc8bb40d7be3ed2a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9579&amp;v=5&amp;s=15f58b73513a3c36" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42816601/">Single-cell profiling and genetic regulation of alternative polyadenylation in the human brain.</a></div>
+      <div class="card-title-zh">人脑替代性多聚腺苷酸化的单细胞图谱绘制与遗传调控</div>
+      <div class="news">为揭示脑APA调控的细胞类型特异性机制，研究团队构建了涵盖379例人脑、200万细胞的单细胞APA图谱，整合全基因组测序发现3&#x27;aQTL优先与pQTL共定位，并在17种脑疾病中鉴定出168个独立于eQTL的GWAS风险位点，为理解阿尔茨海默病、帕金森病等神经疾病的遗传机制提供了新的转录后调控维度。</div>
+      <div class="meta">Nature genetics · 2026-09-30</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Nan Jiuhong, Boix Carles A, Shi Shaohui, Fan Xiaoxi, Ni Jiacheng, Wang Kai, Shuai Xiaoyu, Ding Ke, Wu Puqi, An Yao, Sun Na, Hou Lei, Chen Kexuan, Huang Xianpei, Li Chengyu, Akay Leyla, Louderback Kate, Nawaid Hiba, Park Yongjin P, Fu Xudong, Liu Chong, Li Xiaoyu, Yin Yafei, Mo Wei, Yang Zhanghua, Ma Weirui, Hu Xinyang, Bennett David A, Kellis Manolis, Tsai Li-Huei, Sunyaev Shamil, Li Jingyun, Xiong Xushen</div>
+<div class="meta">DOI: 10.1038/s41588-026-02758-w</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42816601/">https://pubmed.ncbi.nlm.nih.gov/42816601/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>单细胞脑APA图谱涉及用户关注的人脑皮层、细胞类型特异性及顺反式调控，但缺乏性别差异分析。</div>
+<div class="abstract"><span class="abs-label">背景</span>替代性多聚腺苷酸化（APA）在mRNA命运调控中起核心作用，在大脑和神经元中表现出高度变异性，但脑APA调控尚未在细胞类型分辨率上进行系统解析，其在脑细胞类型中的遗传控制及其对遗传病的贡献仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究构建了衰老人脑APA的单细胞图谱，涵盖来自379例人死后脑组织的200万个细胞（包括阿尔茨海默病患者及对照个体）；将APA变异与全基因组测序数据整合，以鉴定细胞类型分辨的3&#x27;非翻译区数量性状位点（3&#x27;aQTLs）。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>APA为理解阿尔茨海默病（AD）的基因调控变化提供了独立的机制层面，APA改变的基因与表达变化的基因不同，但常汇聚于相似通路；鉴定出4,288个基因的3&#x27;aQTLs，发现3&#x27;aQTLs优先与pQTLs共定位而非eQTLs；在17种脑性状和疾病中鉴定出168个依赖3&#x27;aQTLs的GWAS位点，其中仅17.5%与eQTLs共享，包括AD的PLEKHA1和APOC2、精神分裂症的PAK6和AP3B2、双相情感障碍的NDUFA13等；3&#x27;非翻译区选择可改变SNCA mRNA在细胞内的定位。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为解析APA的顺式和反式调控提供了细胞类型特异性基础，有助于理解这一关键转录后调控层对疾病遗传力的贡献。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9652&amp;v=1&amp;s=bb555cdaa708ed35" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9652&amp;v=2&amp;s=7336e4971eb2eba0" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9652&amp;v=3&amp;s=f1a9186ef9ff7ddb" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9652&amp;v=4&amp;s=19019bf5f5c31bf0" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9652&amp;v=5&amp;s=9c97d1aca7da3981" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 45 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42842367/">Single-cell transcriptomics reveals the heterogeneous landscape of innate lymphoid cells in zebrafish.</a></div>
+      <div class="card-title-zh">单细胞转录组学揭示斑马鱼固有淋巴细胞（ILCs）的异质性景观</div>
+      <div class="news">为解析低等脊椎动物先天淋巴样细胞的组成与功能，作者利用单细胞转录组学在斑马鱼中鉴定出多样化的ILC亚群，发现其早期独立于造血干细胞产生、成年期依赖造血干细胞维持，并揭示il2rβ在ILC介导免疫中的关键作用，为脊椎动物先天免疫演化研究提供新视角。</div>
+      <div class="meta">Cell reports · 2026-10-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Cheng Kefan, Trinh Thi Huong, Cao Ying, Feng Shachuan, Liang Jiaxin, Zhao Shizheng, Yin Jiaxu, Dong Tao, Wen Zilong</div>
+<div class="meta">DOI: 10.1016/j.celrep.2026.118086</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42842367/">https://pubmed.ncbi.nlm.nih.gov/42842367/</a></div>
+<div class="meta">Keywords: CP: immunology、immunity、innate lymphoid cell、interleukin-2 receptor beta、single cell RNA-seq、zebrafish</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽为脊椎动物单细胞转录组研究，但聚焦先天免疫细胞发育而非性染色体或性别决定相关机制。</div>
+<div class="abstract"><span class="abs-label">背景</span>固有淋巴细胞（ILCs）是一类活化不依赖于抗原受体的淋巴细胞。与哺乳动物中ILCs仅占少数不同，它们在低等脊椎动物中是优势淋巴细胞群体，被认为在这些动物中发挥关键免疫作用，但其确切组成和功能活性尚未得到充分表征。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用单细胞RNA测序（scRNA-seq）技术，对斑马鱼ILCs进行系统性分析，鉴定其细胞亚群组成、组织分布特征，并探究其发育起源及il2rβ在ILC介导免疫中的功能。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定了多种不同的ILC亚群，包括与哺乳动物对应亚群相似的传统亚群，以及具有独特特征和不同组织分布的非传统ILC样群体；发现完整的ILC库在发育早期即已出现，且不依赖于造血干细胞（HSCs），但其成年期的维持依赖于HSC依赖的机制；同时揭示了白细胞介素-2受体β（il2rβ）在斑马鱼ILC介导免疫中的关键作用。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究定义了斑马鱼ILCs的景观和个体发生，揭示了其未被充分认识的多样性，为脊椎动物固有免疫系统的进化提供了重要见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9571&amp;v=1&amp;s=04c5386da3016536" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9571&amp;v=2&amp;s=14ffae37cbd4164d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9571&amp;v=3&amp;s=dda80239b0cf0152" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9571&amp;v=4&amp;s=3b74e77a5d7a814e" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9571&amp;v=5&amp;s=9c4c3d152f93508d" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 43 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42841740/">Serval: A modular framework for decoding imaging based spatial transcriptomics data.</a></div>
+      <div class="card-title-zh">Serval：一个用于解码基于成像的空间转录组数据的可扩展模块化框架</div>
+      <div class="news">针对成像空间转录组学中条形码解码准确性不足且缺乏系统基准测试的问题，作者开发了模块化解码框架Serval及基于余弦相似性优化的CoSiD方法，发现CoSiD在MERFISH和DART-FISH平台上均显著提升了转录本回收率与数据可靠性，为跨平台空间转录组分析提供了通用工具。</div>
+      <div class="meta">Bioinformatics (Oxford, England) · 2026-10-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Tsui Jenkin, Adam Naila, Choi Woongcheol, Liu Luna Y, Flores Cristina, Ansari Shadi, Kong Esther, Thapliyal Yukta, Lee Hakwoo, Haider Shahid, Von Riedemann Isaac, O&#x27;Flanagan Ciara, IMAXT Cancer Grand Challenges Consortium, Aparicio Samuel, Roth Andrew</div>
+<div class="meta">DOI: 10.1093/bioinformatics/btag707</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42841740/">https://pubmed.ncbi.nlm.nih.gov/42841740/</a></div>
+<div class="meta">Keywords: DART-FISH、MERFISH、barcode decoding、benchmarking、cosine similarity、spatial transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>空间转录组解码方法学工具，用户若开展性染色体空间基因组学研究或可借鉴技术框架。</div>
+<div class="abstract"><span class="abs-label">背景</span>基于成像的空间转录组技术为研究完整组织中的细胞组织和基因表达开辟了新途径，但下游分析的准确性关键取决于从荧光模式重建条形码并将其映射到基因身份的解码步骤。目前解码方法日益增多，但系统性基准测试仍然有限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了Serval，一个模块化解码框架，将关键解码阶段分离为可独立配置的模块，支持灵活整合替代算法；并基于该框架开发了CoSiD（余弦相似度解码器），通过优化与已知条形码的余弦相似度来提高转录本回收率。研究在合成和真实MERFISH数据集上评估了CoSiD及基线方法，并将Serval框架扩展至DART-FISH平台。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>CoSiD在MERFISH数据集上实现了更高的转录本回收率，与表达参考的相关性优于现有方法。在DART-FISH平台上的应用表明，CoSiD提高了转录本回收率和聚类稳定性，并支持对人类初级运动皮层等复杂生物结构进行更直接的注释。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究建立的模块化解码框架促进了稳健、跨平台的空间转录组分析，支持对多样化生物样本进行更准确的分析。Serval和CoSiD已开源发布。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9544&amp;v=1&amp;s=396fe94a57a82d72" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9544&amp;v=2&amp;s=3f394066b2a22b8b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9544&amp;v=3&amp;s=83149ddf19669c60" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9544&amp;v=4&amp;s=025fd0c3a30f45c5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9544&amp;v=5&amp;s=cdd691708e35ffaf" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42837462/">Spatial and single-nucleus transcriptomics reveals the molecular pathology of type 2 diabetes-associated cognitive dysfunction.</a></div>
+      <div class="card-title-zh">空间转录组学和单核转录组学揭示2型糖尿病相关认知功能障碍的分子病理机制</div>
+      <div class="news">为揭示2型糖尿病相关认知功能障碍（DACD）的分子机制，作者整合空间转录组学与单核RNA测序技术，发现海马和等皮层兴奋性神经元是DACD中最易受损的细胞群体且存在显著突触功能障碍，并证实乳酸脱氢酶B（Ldhb）过表达可缓解线粒体功能障碍与认知损伤，为DACD治疗靶点研究提供新方向。</div>
+      <div class="meta">Proceedings of the National Academy of Sciences of the United States of America · 2026-10-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wu Wei, Yang Yumeng, Zhang Xixi, Liao Baojian, Kong Siyu, Xie Bingbing, Lu Yanping, Jiang Mingyue, Liang Xiu, Zhang Lei, Zhou Meiyi, Zhang Xiaojing, Shao Ningyi, Lyon Gholson J, Shu Yaqing, Suo Shengbao, Ma Ning</div>
+<div class="meta">DOI: 10.1073/pnas.2529793123</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42837462/">https://pubmed.ncbi.nlm.nih.gov/42837462/</a></div>
+<div class="meta">Keywords: diabetes-associated cognitive dysfunction、lactate dehydrogenase B、single-nucleus RNA sequencing、spatial transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及兴奋性神经元和细胞类型特异性分析，但聚焦糖尿病认知障碍，与用户性染色体、性别决定等研究兴趣关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>2型糖尿病相关认知功能障碍（DACD）的潜在机制尚不清楚，阻碍了治疗进展。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究整合空间转录组学和单核RNA测序技术，对3月龄和6月龄DACD小鼠模型脑组织进行时空分子和细胞图谱绘制。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现DACD存在区域特异性和细胞类型特异性的转录组改变，海马和等皮层的兴奋性神经元受影响最严重，表现出明显的突触功能障碍；鉴定出Rfx3和Mef2c等疾病相关转录因子；发现Hsp90b1-Lrp6和S100a1-Ryr2等多对配体-受体，其下游信号网络汇聚于乳酸脱氢酶B（Ldhb）这一共同效应分子；脑区广泛性和兴奋性神经元特异性Ldhb过表达可缓解DACD诱导的线粒体功能障碍、氧化应激、神经元凋亡和认知损伤。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究描绘了DACD的时空转录组图谱，为机制探索提供了宝贵资源，并突出Ldhb作为DACD潜在治疗靶点的重要性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9551&amp;v=1&amp;s=b5cbdb86dc49d6a2" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9551&amp;v=2&amp;s=f53b49718c5b2960" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9551&amp;v=3&amp;s=edb665f7a0634092" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9551&amp;v=4&amp;s=0af1ffb08b4ba05f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9551&amp;v=5&amp;s=b40d620179bdef32" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 43 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42835138/">A machine learning framework for interpreting phylogenetic tree patterns in interkingdom horizontal gene transfer.</a></div>
+      <div class="card-title-zh">一种用于解释跨界水平基因转移系统发育树模式的机器学习框架</div>
+      <div class="news">为解决跨域水平基因转移鉴定依赖专家手动解读系统发育树、主观性强且难以规模化的问题，作者构建机器学习框架将树形拓扑自动分类为五种进化模式，发现随机森林分类器准确率达0.89且显著优于传统方法，为可重复、规模化的系统发育基因组学分析提供新工具。</div>
+      <div class="meta">Frontiers in bioinformatics · 2026-09-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Aguirre-Carvajal Kevin, Munteanu Cristian R, Armijos-Jaramillo Vinicio</div>
+<div class="meta">DOI: 10.3389/fbinf.2026.1891949</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42835138/">https://pubmed.ncbi.nlm.nih.gov/42835138/</a></div>
+<div class="meta">Keywords: computational evolutionary biology、interkingdom horizontal gene transfer、machine learning、phylogenetic pattern classification、phylogenomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>跨域水平基因转移与基因组进化相关，但缺乏性染色体、性别决定等用户核心研究要素。</div>
+<div class="abstract"><span class="abs-label">背景</span>水平基因转移（HGT）是遗传物质在非亲缘关系生物间移动的过程，已被公认为细菌基因组进化的重要驱动力。然而，真核生物中HGT的进化影响仍存在争议，尤其是跨界水平基因转移（iHGT）的识别因缺乏金标准方法而尤为困难。现有自动化方法虽可检测iHGT候选事件，但系统发育树拓扑结构的解读传统上依赖专家人工检查，存在主观性强、难以重复且无法扩展至大数据集的问题。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者将系统发育树解读形式化为监督式机器学习问题，定义了五种 recurrent 系统发育模式（iHGT、NoHGT、Limited donor evidence、Multiple major clades 和 Patchy phylogeny），并开发了特征提取流程，通过六个生物学可解释的描述符从无根基因树中捕获分类学组成和系统发育拓扑信息。研究采用重复分层交叉验证评估多种机器学习算法，并通过置换重要性、SHAP分析、规则基线和特征消融评估模型可解释性，进一步在模拟数据集、真实生物学iHGT候选数据集及独立注释的外部数据集上验证性能。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>随机森林（RF）分类器取得最佳性能（AUC-ROC = 0.98；准确率 = 0.89）。拓扑距离和谱系分布特征被确定为分类性能的最强贡献因素。特征消融和规则基线比较表明，模型性能无法仅由显式注释规则解释，而是受益于分支组成和拓扑信息的结合。RF分类器在模拟和真实生物学数据集上的误分类率较低（分别为7.8%和10.43%），与独立注释外部数据集具有实质性一致（69.4%），并在所有评估指标上持续优于AVP（Alienness vs. Predictor）、Alien Index和HGT Index。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究支持将机器学习用于专家定义的系统发育模式的自动化、可重复和可扩展分类。该框架还揭示，一些通常被解释为iHGT证据的拓扑结构可能反映替代性进化过程，强调了对iHGT进行谨慎和情境感知推断的必要性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9593&amp;v=1&amp;s=c13ef0137feff84c" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9593&amp;v=2&amp;s=052f14890a1c6ce4" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9593&amp;v=3&amp;s=cac527efc0e7584f" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9593&amp;v=4&amp;s=69abddad72963c65" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9593&amp;v=5&amp;s=5667392e341dafc8" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-must">Must Read</span> · 82 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42821693/">X and Y chromosomes as determinants of aging and disease.</a></div>
+      <div class="card-title-zh">X与Y染色体作为衰老和疾病的决定因素</div>
+      <div class="news">为区分性染色体与性腺激素对衰老和疾病的独立作用，作者整合X染色体失活逃逸、Y染色体丢失等机制研究与小鼠模型及人类数据，发现XX/XY通过基因剂量、表观遗传和免疫代谢等细胞自主效应独立塑造健康与疾病轨迹，推动性染色体生物学向精准医学转化。</div>
+      <div class="meta">Science (New York, N.Y.) · 2026-10-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Dubal Dena B, Ambrosio Fabrisia, Stout Michael B, Theodorescu Dan</div>
+<div class="meta">DOI: 10.1126/science.aeh0145</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42821693/">https://pubmed.ncbi.nlm.nih.gov/42821693/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>系统性综述X/Y染色体对衰老和疾病的细胞自主效应，涵盖剂量补偿、X染色体失活逃逸等核心研究方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>传统上，性别差异被归因于性腺激素，但越来越多的证据表明，性染色体对健康、衰老和疾病具有独特的细胞自主效应。XX和XY染色体组型通过改变基因剂量、表观遗传编程、免疫信号、代谢和细胞应激反应来影响女性和男性的衰老和疾病轨迹。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本综述整合了性染色体生物学的机制进展，包括X染色体失活逃逸、X再激活、X亲本来源、X偏斜、X和Y连锁基因功能以及Y染色体丢失等；并结合小鼠模型、人类研究以及能够区分激素驱动效应与染色体介导效应的新兴技术进行分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>性染色体效应涉及衰老、神经疾病、免疫、癌症以及心脏代谢疾病等多个领域，揭示了XX和XY在基因表达调控和细胞功能方面的差异。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究强调将性染色体生物学整合到精准医学中，对诊断、生物标志物、治疗策略和临床试验设计具有重要的转化应用价值，为区分激素与染色体介导的性别差异提供了新视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9714&amp;v=1&amp;s=73eded710424d45e" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9714&amp;v=2&amp;s=976a34b86c1e6456" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9714&amp;v=3&amp;s=3f7ec816af3dba7b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9714&amp;v=4&amp;s=596400da1b45c29e" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9714&amp;v=5&amp;s=66462c3935da69b7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42838556/">Developmental bias of body size and caste by the fire ant social supergene.</a></div>
+      <div class="card-title-zh">火蚁社会超基因对体型与品级发育偏向性的影响</div>
+      <div class="news">为揭示火蚁社会超基因导致体型和品级偏向性的发育机制，作者利用保幼激素类似物处理结合跨物种发育基因表达分析，发现超基因对发育轨迹的影响具有不完全外显性，其偏向性并非由保幼激素介导的生长差异驱动，而与超基因的顺式调控演化有关，为理解社会性昆虫超基因的自私遗传效应提供了新视角。</div>
+      <div class="meta">Proceedings. Biological sciences · 2026-10-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zeng Haolin, Eidson Corrie E, Cushman D Alekzandre, Nascimento Mathews, Jones Beryl M, Hunt Brendan G</div>
+<div class="meta">DOI: 10.1098/rspb.2026.1338</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42838556/">https://pubmed.ncbi.nlm.nih.gov/42838556/</a></div>
+<div class="meta">Keywords: allosome、gas8、inversion polymorphism、juvenile hormone、selfish genetic element、supergene</div>
+<div class="reason"><span class="abs-label">推荐理由</span>研究火蚁社会超基因与品级分化，属于社会昆虫行为遗传学，与用户关注的性染色体演化和性别决定无关。</div>
+<div class="abstract"><span class="abs-label">背景</span>超基因（supergene）是驱动复杂表型分化的连锁基因簇。在红火蚁Solenopsis invicta中，一个超基因决定其多态性社会组织，其衍生型（b）单倍型相对于祖先型（B）单倍型在大型工蚁和繁殖蚁（gyne）中过度富集，表现为一种自私遗传元件。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者通过给蚁群施用保幼激素（juvenile hormone, JH）类似物，检验这种品级偏向性是否反映保幼激素介导的生长发生改变；同时利用另一种蚂蚁的发育基因表达数据，分析超基因基因型间差异表达基因与繁殖蚁和工蚁 destined 幼虫间差异表达直系同源基因的重叠情况。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>BB和Bb蛹达到相似的最大体型，并表现出可比的保幼激素介导的生长反应，尽管Bb在上层体型等级中持续过度富集。研究还揭示，超基因基因型间差异表达基因与繁殖蚁与工蚁 destined 幼虫间差异表达的直系同源基因之间存在显著富集的重叠，这可能部分由超基因的顺式调控进化所塑造。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究结果与超基因对高度社会性昆虫中基于体型的品级分配相关发育轨迹具有不完全外显效应的假设一致，为理解超基因如何通过发育途径影响社会昆虫的品级分化提供了重要见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9543&amp;v=1&amp;s=f61b52a5ebcba740" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9543&amp;v=2&amp;s=c1015bc8215bd37d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9543&amp;v=3&amp;s=67e6f7dfc2d8892a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9543&amp;v=4&amp;s=2b35df772cf21e0d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=zhouyang%40genomics.cn&amp;p=9543&amp;v=5&amp;s=334216997a94296f" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日论文涵盖四大核心方向：性染色体与衰老疾病机制、全基因组加倍与基因调控演化、神经发育与认知功能分子基础，以及微生物组与作物驯化遗传框架。技术层面呈现两大趋势：一是空间多组学与单细胞技术的深度整合，如OpenFISH实现同切片空间转录组与质谱成像联合分析，SpaceA解析胚胎发育中的三维基因组架构；二是机器学习与模块化计算工具的广泛应用，Serval框架优化空间转录组条形码解码，随机森林模型自动化识别跨域水平基因转移。此外，比较基因组学与进化发育生物学方法贯穿多篇研究，从鲑鱼、灵长类到社会性昆虫均有涉及。对研究者而言，今日文献提供了性染色体精准医学、脑疾病APA调控新维度、作物微生物组育种等前沿切入点，同时开源工具与多物种数据资源可直接支撑实验设计与方法创新。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=zhouyang%40genomics.cn&amp;d=2026-10-08&amp;s=911810ede6f8fb46">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=zhouyang%40genomics.cn&amp;d=2026-10-08&amp;s=911810ede6f8fb46">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

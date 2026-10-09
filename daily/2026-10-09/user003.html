@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-10-09</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-10-09</h1>
+    <p class="hello">guoqunfei，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">昨日全库新增 721 篇 · 命中您的关键词 49 篇 · 本次推送 15 篇（必读 0 · 重要 4 · 参考 11）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">基因组演化与多样性</h2>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-important">Important</span> · 62 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42848741/">Genome-wide evolution of lineage-specific chromatin accessibility links regulatory changes to cichlid phenotypic diversity.</a></div>
+      <div class="card-title-zh">全基因组谱系特异性染色质可及性演化将调控变化与慈鲷表型多样性联系起来</div>
+      <div class="news">为揭示全基因组调控演化如何驱动东非慈鲷的表型多样化，研究者整合高覆盖度ATAC-seq与RNA-seq对五种慈鲷的四个组织进行比较分析，发现加速的调控序列演化、染色质可及性分歧与转录因子结合位点转换共同重塑了全基因组调控网络，为理解非编码区演化促进快速适应性辐射提供了关键机制。</div>
+      <div class="meta">Genome biology and evolution · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Mehta Tarang K, Man Angela L, Etherington Graham, Smith Alan M, Indermaur Adrian, Salzburger Walter, Joyce Domino, Di-Palma Federica, Haerty Wilfried</div>
+<div class="meta">DOI: 10.1093/gbe/evag247</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42848741/">https://pubmed.ncbi.nlm.nih.gov/42848741/</a></div>
+<div class="meta">Keywords: Adaptive radiation、Chromatin accessibility、Cichlid fishes、Epigenomics、Gene regulatory networks、Regulatory divergence</div>
+<div class="reason"><span class="abs-label">推荐理由</span>研究非编码调控演化与表型多样化，与用户关注的regulatory elements、lineage divergence及non-coding genomic variation高度相关，但物种为鱼类而非用户关注的猪或节肢动物。</div>
+<div class="abstract"><span class="abs-label">背景</span>东非维多利亚湖、马拉维湖和坦噶尼喀湖的慈鲷经历了爆发性适应辐射，在数百万年内产生了广泛的形态、生态和行为多样性。理解全基因组调控演化如何促进这一多样化过程，需要对跨物种和组织的染色质可及性、转录因子结合及基因调控网络进行比较分析。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者结合高覆盖度ATAC-seq与匹配的RNA-seq技术，对5种东非慈鲷物种的前脑、视网膜、肝脏和睾丸进行分析，这些物种涵盖辐射型与非辐射型谱系。同时整合转录因子足迹分析和表达数据，并将启动子转录因子结合位点变异扩展至更广泛的马拉维慈鲷和罗非鱼系统发育中进行研究。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，尽管数千个启动子相关可及位点在物种和组织间保守，但超过半数共享启动子存在加速核苷酸演化特征，尤其与发育和感觉功能相关的基因。相反，谱系和组织特异性可及启动子（尤其是视网膜中）表现出强烈的调控分歧，并在视觉系统过程中功能富集。转录因子结合位点在活跃启动子处普遍存在更替，86-97%的高置信度网络边为物种特异性。视觉基因（如actr1）启动子中的功能性变异按支系和生态位分离。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了加速调控序列演化、染色质可及性分歧和转录因子结合位点更替如何共同重塑标志性脊椎动物辐射中的全基因组调控架构，为理解非编码调控演化如何驱动快速表型多样化提供了重要见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9802&amp;v=1&amp;s=85aad9ccffbdceb5" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9802&amp;v=2&amp;s=9b8f1234943696c1" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9802&amp;v=3&amp;s=baa050fa18434cd0" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9802&amp;v=4&amp;s=8b04d356a149f79a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9802&amp;v=5&amp;s=debf32d4a97cb0d4" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-module">群体基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42848896/">Message in a bottleneck: Nested founder effects from French Polynesia to Rapa Nui and Hawai&#x27;i.</a></div>
+      <div class="card-title-zh">瓶颈中的信息：从法属波利尼西亚到拉帕努伊与夏威夷的嵌套式奠基者效应</div>
+      <div class="news">为厘清波利尼西亚人群东迁过程中的遗传瓶颈与临床遗传学意义，研究者利用覆盖波利尼西亚的全基因组测序数据，发现夏威夷与复活节岛虽地理相距最远却遗传关系最近，可能源自曼加雷瓦的同一批超远程航海者定居，并鉴定出在东波利尼西亚常见而gnomAD完全缺失的FAN1功能丧失突变，为太平洋岛屿人群的精准医学提供了新靶点。</div>
+      <div class="meta">Science (New York, N.Y.) · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Shanks Cole, Huang Edward C, Thomassin Christophe, Emde Anne-Katrin, Rodière Vahinetua, Moraga Mauricio, Sandoval Karla, Merriman Tony, Pascart Tristan, Moreno-Estrada Andrés, Castel Stephane E, Fox Keolu, Ioannidis Alexander G</div>
+<div class="meta">DOI: 10.1126/science.aec7662</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42848896/">https://pubmed.ncbi.nlm.nih.gov/42848896/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>群体基因组学和创始人效应分析相关，但侧重人类医学遗传学，缺乏用户关注的染色体结构变异与比较基因组学元素。</div>
+<div class="abstract"><span class="abs-label">背景</span>奠基者效应可导致强烈的、群体特异性的等位基因频率分化，包括常染色体隐性遗传病。欧洲后裔群体（如芬兰人和阿米什人）中的奠基者效应研究已催生了可实际应用的基因检测。本研究表明，波利尼西亚人在定居东波利尼西亚过程中经历了强度高出数量级的累积性奠基者效应。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>利用覆盖波利尼西亚地区的全基因组序列数据，分析夏威夷和复活节岛（拉帕努伊）等瓶颈效应最显著的群体，追溯其遗传起源与迁徙路径。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>夏威夷和复活节岛（拉帕努伊）是瓶颈效应最强的两个群体，这两座地理距离遥远但遗传关系最近的岛屿可能由同一批超级航海者定居，其祖先可追溯至芒阿雷瓦。研究还鉴定了由这一系列连续性海洋奠基者事件产生的临床相关遗传变异，包括在东波利尼西亚常见（&gt;1%）、但在gnomAD数据库中完全缺失的FAN1基因功能丧失性突变。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了波利尼西亚人群独特的极端奠基者效应历史，为东波利尼西亚群体提供了具有临床价值的遗传变异信息，有助于开发针对性的基因检测和遗传咨询。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9868&amp;v=1&amp;s=503452f10cc70e48" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9868&amp;v=2&amp;s=45bdd890286f63b3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9868&amp;v=3&amp;s=9fb16559cc22da0b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9868&amp;v=4&amp;s=17230a1dc87194eb" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9868&amp;v=5&amp;s=0d11e64b644d0c68" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">群体基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42848507/">Introgression catalyzing plumage evolution and speciation in an Asian songbird complex.</a></div>
+      <div class="card-title-zh">渐渗催化亚洲鸣禽复合群的羽色演化与物种形成</div>
+      <div class="news">为揭示渐渗杂交如何驱动物种形成与羽色多样性，研究者基于染色体级别基因组与66个体重测序数据，发现Naumann&#x27;s Thrush从Red-throated Thrush适应性渐渗黑色素相关基因（ASIP、OCA2和HERC2），导致其与近缘种快速分化并产生羽色趋同，为杂交促进物种形成提供了新证据。</div>
+      <div class="meta">Cell reports · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Jiang Chuan, Zhu Wenwen, Alström Per, Xu Yanchun, Zhou Yang, Jin Jiazheng, Mohamed Nassoro, Ma Yue, Bai Suying, Liu Yang, Li Bo</div>
+<div class="meta">DOI: 10.1016/j.celrep.2026.118108</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42848507/">https://pubmed.ncbi.nlm.nih.gov/42848507/</a></div>
+<div class="meta">Keywords: CP: genomics、adaptive introgression、genomic islands、melanin pigmentation、songbird、speciation</div>
+<div class="reason"><span class="abs-label">推荐理由</span>鸟类渐渗杂交与羽色进化，虽涉及基因组分化但物种与用户关注的猪、蜘蛛、蚂蚁等无关联。</div>
+<div class="abstract"><span class="abs-label">背景</span>杂交与渐渗（introgression）能够促进物种形成和表型多样性。本研究探究了两种近缘亚洲鸣禽——红尾鸫（Turdus naumanni, Nau）和斑鸫（T. eunomus, Eun）之间的基因组分化，以及它们与地理上相邻的红喉鸫（T. ruficollis, Ruf）的演化关系。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用从头组装染色体级别基因组以及66个个体的全基因组重测序数据，对三个物种间的分化和渐渗进行了分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Nau与Eun之间的基因组分化仅限于少数基因组岛（genomic islands），这些区域与从Ruf渐渗到Nau中的区域重叠。值得注意的是，这些区域包含三个在Nau中受到强选择的黑色素相关基因（ASIP、OCA2和HERC2），这可能解释了Nau与Ruf之间羽色相似性的成因。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明Nau与Eun之间的形态和遗传分化可能是由Ruf向Nau的黑色素相关基因适应性渐渗所驱动的。本研究揭示了渐渗如何产生快速的基因组和表型分化，提示了一种可能普遍存在但被忽视的物种形成机制。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9856&amp;v=1&amp;s=a7ac6986657569a7" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9856&amp;v=2&amp;s=d6f3983dd5b926d9" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9856&amp;v=3&amp;s=b6d39b68baa89173" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9856&amp;v=4&amp;s=b8f086425a72532f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9856&amp;v=5&amp;s=01b0c6076c141143" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42842684/">Rapid protamine evolution suppresses meiotic drive in Drosophila.</a></div>
+      <div class="card-title-zh">鱼精蛋白的快速进化抑制了果蝇中的减数分裂驱动</div>
+      <div class="news">为揭示精蛋白快速演化的驱动力，作者利用体内基因替换和性染色体融合工程技术，发现果蝇精蛋白Mst77F通过剂量与序列依赖的方式保护X染色体免受减数分裂驱动侵害，表明抑制性染色体驱动是其快速演化的核心动力。</div>
+      <div class="meta">Science advances · 2026-10-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chang Ching-Ho, A de la Cruz Aida Flor, Lai Hung-Yu, Mejia Natividad Isabel, Noyola Alex, Angelo Magsino Abellanosa Elian, Lee Nicolas D, Malik Harmit S</div>
+<div class="meta">DOI: 10.1126/sciadv.aeb5514</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42842684/">https://pubmed.ncbi.nlm.nih.gov/42842684/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>揭示精蛋白快速演化的减数分裂驱动抑制机制，涉及基因组冲突和快速演化，与用户关注的基因组进化、生殖演化有一定关联。</div>
+<div class="abstract"><span class="abs-label">背景</span>许多动物物种在精子发生过程中会用鱼精蛋白（protamine）替换组蛋白。鱼精蛋白对精子功能至关重要，但其快速进化的原因尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用体内基因替换技术，在Drosophila melanogaster中考察了鱼精蛋白Mst77F快速进化的原因和后果，包括用分歧较大的直系同源基因替换内源Mst77F、改变Mst77F剂量、以及构建性染色体融合系等实验手段。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>用分歧较大的Mst77F直系同源基因进行替换会导致X染色体精子出现DNA压缩缺陷，成熟X染色体精子减少，后代雄性比例偏高。降低D. melanogaster Mst77F剂量引起同样的性别比例偏倚，而增加Mst77F直系同源基因剂量则可挽救该表型。工程化性染色体融合实验揭示Mst77F以剂量依赖和序列依赖的方式保护D. melanogaster X染色体免受杀手-靶标减数分裂驱动系统的侵害。与D. melanogaster不同，Mst77F在Drosophila yakuba中对生育力并非必需，但仍对抑制性比扭曲具有重要作用。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究发现，抑制性染色体减数分裂驱动的持续压力是鱼精蛋白快速进化的根本原因，为理解精子发生中染色质蛋白快速进化的分子机制提供了重要见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9642&amp;v=1&amp;s=a59f29ef0811cf78" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9642&amp;v=2&amp;s=a5cc64628c8f538c" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9642&amp;v=3&amp;s=cada54e72933e742" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9642&amp;v=4&amp;s=bad986367dbbc555" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9642&amp;v=5&amp;s=b1794134c8d0c397" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42847928/">CpG Islands Are Associated with Conserved Core Functions and Gene Family Evolution in Vertebrates.</a></div>
+      <div class="card-title-zh">CpG岛与脊椎动物的保守核心功能及基因家族进化相关</div>
+      <div class="news">为厘清CpG岛在基因演化中的作用，研究者通过比较分析脊椎动物启动子区域，发现含CpG岛的基因进化更保守且主导核心细胞功能，而古老核心基因家族偏好富集CpG岛、新近特化基因则 depleted，揭示了启动子表观特征与基因组功能分化及演化动态的深层关联。</div>
+      <div class="meta">Journal of evolutionary biology · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Khan Ammad Aslam, Mustafa Sania</div>
+<div class="meta">DOI: 10.1093/jeb/voag106</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42847928/">https://pubmed.ncbi.nlm.nih.gov/42847928/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦脊椎动物启动子调控元件，与用户关注的非编码变异和调控元件有概念关联，但物种和方法偏离较大。</div>
+<div class="abstract"><span class="abs-label">背景</span>CpG岛（CGIs）是脊椎动物基因启动子区域富集的关键基因组特征，在恒温动物中尤为丰富，且存在于大多数哺乳动物持家基因的启动子中，在转录调控中具有重要作用。尽管CGIs的分布和生理功能已被充分表征，但其在基因和基因组进化中的作用仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究通过比较分析启动子中含有CGI的基因（GCPs）与不含CGI的基因（non-GCPs），系统考察了CGIs与基因进化保守性、功能类别以及基因家族内旁系同源基因分布的关系。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现GCPs在进化上高度保守，而非GCP基因则在相对宽松的约束下进化；GCPs主要与核功能和代谢等核心细胞过程相关，而非GCP基因则富集于免疫应答和感觉知觉等特殊功能。在基因家族层面，GCPs优先富集于古老的核心功能基因，而在新近衍生的特化基因中 depleted；此外，基因家族大小与GCP频率之间存在关联。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了启动子CGIs、基因功能与脊椎动物基因组进化之间的新联系，提出CGIs与基因保守性的关联可能反映了作用于这些基因的不同调控和功能约束，而非CGIs对基因保守性的直接因果效应。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9815&amp;v=1&amp;s=2675a3bf6f9c25c0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9815&amp;v=2&amp;s=b8580eeae7a1d52e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9815&amp;v=3&amp;s=52a357bb2d8cfc29" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9815&amp;v=4&amp;s=4a7ba81e043bfc81" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9815&amp;v=5&amp;s=2c9fff7894228833" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">三维时空图谱</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42848909/">A DNA Typewriter records the cell lineage history of a mouse, from zygote to late organogenesis.</a></div>
+      <div class="card-title-zh">DNA打字机记录小鼠从受精卵到晚期器官发生的细胞谱系历史</div>
+      <div class="news">为解决哺乳动物发育中细胞谱系难以直接观测的问题，作者利用DNA Typewriter顺序分子记录器，追踪小鼠从受精卵到晚期器官发生的完整细胞谱系，发现第一次卵裂后子细胞的克隆优势及细胞类型耦合的层次规律，推动发育谱系研究进入单细胞分辨率时代。</div>
+      <div class="meta">Science (New York, N.Y.) · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Yu Qi, Kim Haedong, Seidel Sophie, Acosta-Clark James F, Martin Beth K, O&#x27;Connor Kyle, Daza Riza M, Gasperini Molly, Nathans Jenny F, Lam Maggie, Gamo Elena, Vijay Kumar Shruthi, Kuo Lauren, Lalanne Jean-Benoît, Simeonov Kamen P, Pepper Marion, Trapnell Cole, Gray Jesse M, Choi Junhong, Qiu Chengxiang, Shendure Jay</div>
+<div class="meta">DOI: 10.1126/science.ael0508</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42848909/">https://pubmed.ncbi.nlm.nih.gov/42848909/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>DNA Typewriter谱系记录技术新颖，但聚焦哺乳动物发育而非用户关注的物种进化与基因组结构变异。</div>
+<div class="abstract"><span class="abs-label">背景</span>哺乳动物生物学在时间和空间上展开，但组织和器官对观察手段是不透明的。本研究利用DNA Typewriter这一序贯分子记录器，在接近两周的发育时间内记录小鼠的细胞谱系。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者将DNA Typewriter（一种序贯分子记录器）应用于小鼠胚胎发育过程，从单个胚胎重建了包含128万个转录组分析细胞的时间校准、简约法支持的、以受精卵为根的谱系树。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现首次卵裂产生的子细胞被编辑爆发明确标记，可作为内联重复样本；研究量化了原肠胚形成期间出现的克隆优势；谱系树中姐妹细胞的细胞类型共享率远高于随机水平，而异型姐妹细胞标记终末分化；克隆共出现的时间扫描恢复了细胞类型耦合的日期层级结构，内部节点的推断标签重现了已知的发育状态路径。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究使长期以来遥不可及的、基于谱系锚定的哺乳动物发育个体发生学成为可能，为理解哺乳动物发育提供了新的视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9867&amp;v=1&amp;s=c49af3889e1b5b46" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9867&amp;v=2&amp;s=8eee875a0e5d4134" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9867&amp;v=3&amp;s=efea2e35a569eb60" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9867&amp;v=4&amp;s=74688f7ed1fab589" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9867&amp;v=5&amp;s=a290c8c38213c3e7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 73 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.10.02.756147">HapSolo2: GPU-accelerated optimization for removing secondary haplotigs from diploid genome assemblies</a></div>
+      <div class="card-title-zh">HapSolo2：基于GPU加速的去除二倍体基因组组装中次级单倍型重叠群（secondary haplotigs）的优化方法</div>
+      <div class="news">为解决二倍体基因组组装中次级单倍型序列虚增基因组大小和重复基因的问题，研究者开发GPU加速的HapSolo2工具，以miniprot替代逐contig BUSCO运行并引入最速下降与模拟退火算法，在单GPU上实现比10 CPU进程快5.6–7.6倍的优化速度，将鳄梨基因组重复直系同源基因比例从52.0%降至5.6%且完整性损失不超过1.3个百分点，使单工作站分钟级完成单倍型去冗余成为可能。</div>
+      <div class="meta">bioRxiv · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Yin J., Agrawal M., Goel P., Solares E. A.</div>
+<div class="meta">DOI: 10.64898/2026.10.02.756147</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.10.02.756147">https://www.biorxiv.org/content/10.64898/2026.10.02.756147</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接优化基因组组装流程，采用BUSCO评估与miniprot替代方案，契合用户染色体尺度组装与基因组比较研究需求。</div>
+<div class="abstract"><span class="abs-label">背景</span>在二倍体基因组组装中，保留的次级单倍型重叠群（secondary haplotigs）会虚增基因组大小并造成基因重复，因此需要将其去除。HapSolo（Solares等，2021）将这一步骤视为优化问题，通过搜索三个成对比对阈值（一致性百分比、查询覆盖度、以及比对查询长度与比对参考长度之比）来最小化基于单拷贝、重复和缺失保守直系同源基因（conserved orthologs）定义的成本。但原始实现存在依赖BUSCO v3逐contig运行、基于Python 2.7和pandas、仅使用单一随机前向游走优化器、以及依赖不再分发的OrthoDB v9谱系数据集等局限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究开发了HapSolo2，重新实现了该算法：用基于miniprot的直系同源基因分类替代逐contig的BUSCO步骤，支持OrthoDB v9、v10或v12.2谱系数据集；在原有随机前向游走基础上增加了最速下降法（steepest descent）和模拟退火法（simulated annealing）；并在单个GPU上使用批处理的CuPy数组操作评估所有优化器。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在鳄梨（Persea americana）5,122个contigs、1,440个直系同源基因的组装上，100,000次迭代的随机游走和最速下降法在单张NVIDIA RTX A6000上的运行速度分别是10个CPU进程的5.6倍和7.6倍。在4个二倍体组装（Anopheles funestus、Persea americana、Vitis vinifera和Amblyraja radiata；212 Mb至3.2 Gb）和三个OrthoDB版本上的45次运行中，三种优化器达到的最优成本彼此相差在1.8%以内。BUSCO v6.1独立评估显示，HapSolo2将P. americana的重复直系同源基因从52.0%降至5.6%，V. vinifera从17.9%降至10.4%，A. funestus从7.8%降至2.8%，完整性最多下降1.3个百分点。在鳄梨组装上，HapSolo2将原始HapSolo的成本从0.2200降至0.1036，并将contig N50从3,366 kb提高到4,608 kb。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>HapSolo2使基于直系同源基因引导的单倍型重叠群去除在单工作站上可在数分钟内完成，无需依赖BUSCO安装，且在不同OrthoDB版本间具有可重复性。该工具以可安装的Python包形式分发，包含统一的命令行流程、组装统计和绘图工具、Apptainer容器，以及遗留直系同源基因数据集的存档副本。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9846&amp;v=1&amp;s=6f86f38ccbbf49a6" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9846&amp;v=2&amp;s=04c1592e17cedfb1" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9846&amp;v=3&amp;s=54180831e19f445a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9846&amp;v=4&amp;s=b61ce4d0c40b18ad" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9846&amp;v=5&amp;s=f57f8e346969d774" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 66 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.10.01.756022">CRAIC: interactive interrogation of multiple sequence alignment uncertainty</a></div>
+      <div class="card-title-zh">CRAIC：多序列比对不确定性的交互式探究</div>
+      <div class="news">为解决多序列比对中模糊或错误区域给系统发育学和比较基因组学带来大量误差的问题，作者开发了跨平台桌面工具CRAIC，利用三状态成对隐马尔可夫模型的后验匹配概率提供五种互补的比对置信度视图，发现可靠性评分可有效定位错误比对列，但该工具主要设计用于交互式检验和人工审核而非自动过滤。</div>
+      <div class="meta">bioRxiv · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">McInerney J. O.</div>
+<div class="meta">DOI: 10.64898/2026.10.01.756022</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.10.01.756022">https://www.biorxiv.org/content/10.64898/2026.10.01.756022</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>多序列比对不确定性评估工具，可辅助用户比较基因组学中的序列比对质量控制和系统发育分析。</div>
+<div class="abstract"><span class="abs-label">背景</span>多序列比对（MSA）常被视为已解决的问题，然而模糊或错误比对区域是系统发育学和比较基因组学中许多错误的来源。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>CRAIC是一个跨平台桌面工作台，将比对视为待压力检验的一组假设。该工具基于三状态配对隐马尔可夫模型（pair-HMM）的后验匹配概率，推导比对置信度的互补视图，包括可靠性叠加层、多比对器分歧图、局部重新比对沙盒、交互式后验探索器以及真实比对已知时的逐残基同源性预测视图。整合了MAFFT、MUSCLE、ProbCons、Clustal Omega、ClustalW和PRANK等比对工具。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>可靠性评分能够定位错误比对的列；CRAIC虽可实现自动过滤，但主要构建用于检查和人工审校。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>CRAIC为研究人员提供了交互式审校和探究多序列比对不确定性的综合平台，有助于提高系统发育学和比较基因组学研究的可靠性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9839&amp;v=1&amp;s=c4dee71e4c55bb94" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9839&amp;v=2&amp;s=8670f2c308843226" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9839&amp;v=3&amp;s=defe697a44393613" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9839&amp;v=4&amp;s=860d5fb646ef96de" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9839&amp;v=5&amp;s=b78052849da8f776" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 58 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42847503/">FAANGMine Genomic Data Warehouse for Farm Animal Species.</a></div>
+      <div class="card-title-zh">FAANGMine：农场动物物种基因组数据仓库</div>
+      <div class="news">为解决家畜功能注释数据分散、缺乏统一整合框架的问题，研究者基于InterMine系统开发FAANGMine数据仓库，实现了调控元件、变异、QTL、基因注释及表达数据的多源整合与组织特异性功能注释，为家畜基因组学研究提供了灵活的查询与可视化工具。</div>
+      <div class="meta">Genetics · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Walsh Amy T, Kambal Sumaya, Finno Carrie J, Kalbfleisch Theodore S, Petersen Jessica L, Sivasankaran Sathesh K, Shamimuzzaman Md, McKendrick Makenna M, Hagen Darren E, Elsik Christine G</div>
+<div class="meta">DOI: 10.1093/genetics/iyag265</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42847503/">https://pubmed.ncbi.nlm.nih.gov/42847503/</a></div>
+<div class="meta">Keywords: Bos taurus、Capra hircus、Equus caballus、Gallus gallus、Ovis aries、Sus scrofa、database、genome annotation、livestock、regulatory elements</div>
+<div class="reason"><span class="abs-label">推荐理由</span>家畜基因组数据仓库整合调控元件与变异数据，直接支持用户猪比较基因组学与群体SV研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>功能注释的预测潜力要求将调控数据置于基因、表达、变异和性状等背景中解读。FAANGMine是一个将这些数据整合到单一框架中的数据仓库，旨在促进对农场动物物种调控元件、变异、数量性状位点（QTL）、基因和基因注释的探索。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>FAANGMine使用InterMine生物数据仓库系统开发，并进行了增强以支持组织特异性功能注释数据的整合，包括染色质状态、染色质可及性、染色质结构、组蛋白修饰和CTCF结合位点。该平台整合了来自RefSeq、Ensembl、KEGG、Reactome、OrthoDB、Online Mendelian Inheritance in Man、UniProt、Gene Ontology、AnimalQTLdb、InterPro和PubMed等多种来源的基因注释数据以及基于RNA-seq预计算的基因表达水平。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>FAANGMine突出了由功能注释动物基因组（FAANG）联盟成员生成的参考功能注释数据集，通过丰富的关联元数据支持灵活且聚焦的查询。数据检索可通过基于网络的搜索工具或应用程序编程接口（API）实现。此外，FAANGMine网站还包含JBrowse基因组浏览器，用于在基因、表达、QTL和单核苷酸变异的背景下可视化调控元件。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>FAANGMine为农场动物物种的功能基因组学研究提供了重要的数据整合与挖掘平台，促进了调控元件与基因表达、遗传变异及性状之间关系的探索，有助于推动农场动物功能注释研究的发展和应用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9848&amp;v=1&amp;s=70307bc2e5404845" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9848&amp;v=2&amp;s=446928a132dd6bb8" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9848&amp;v=3&amp;s=12d57367f24cae84" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9848&amp;v=4&amp;s=d3fb06a428953b9c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9848&amp;v=5&amp;s=bb5575690452ef40" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-important">Important</span> · 63 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.07.16.739007">Reversing aging-like 3D genome disorganization in a Drosophila interphase model</a></div>
+      <div class="card-title-zh">在果蝇间期模型中逆转衰老样三维基因组结构紊乱</div>
+      <div class="news">为探究三维基因组结构在衰老过程中的退化机制，研究者利用果蝇核膜模型模拟核纤层耗竭及其恢复过程，发现衰老样Hi-C图谱无序性和染色体领地退化在重建野生型核纤层相关结构域-核膜相互作用后基本可逆且状态稳定，为衰老干预提供了可验证的染色质结构恢复策略。</div>
+      <div class="meta">bioRxiv · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Onufriev A. V., Zhang J., Sharakhov I. V., Tolokh I. S.</div>
+<div class="meta">DOI: 10.64898/2026.07.16.739007</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.07.16.739007">https://www.biorxiv.org/content/10.64898/2026.07.16.739007</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接研究TAD分辨率的三维基因组可逆性调控，与用户三维基因组组织、Hi-C方法及TAD研究兴趣高度契合。</div>
+<div class="abstract"><span class="abs-label">背景</span>近期实验证据表明，衰老可能源于表观遗传景观的渐进性恶化，而逆转这一趋势可实现细胞和组织 rejuvenation（ rejuvenation/ rejuvenation）。目前尚缺乏关于如何恢复该景观关键组分——基因组三维结构——的机制性理解。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究利用完整的果蝇（Drosophila melanogaster）细胞核模型，在拓扑关联结构域（TADs，约100 kb分辨率）水平上研究核纤层依赖的基因组三维结构破坏与恢复；通过减弱染色质-核纤层相互作用来模拟衰老相关的染色质组织丢失，并采用适当归一化的Hi-C接触图谱的香农熵以及染色体疆域（chromosome territories）的退化程度来表征这种丢失。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，由核纤层耗竭引起的Hi-C图谱无序性增加和染色体疆域退化在很大程度上是可逆的：当恢复野生型（WT）样的核纤层关联结构域（LAD）-核膜相互作用时，原始与恢复后的染色质构象状态在整体Hi-C接触矩阵上基本无法区分，且恢复后的WT状态保持稳定。此外，即使从更严重的核纤层耗竭且区室结构被破坏的状态（所有吸引相互作用均被关闭）出发，WT样的三维结构也能被恢复。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提出了一个可直接通过实验验证的预测：恢复功能性的LAD-核纤层相互作用将促进核纤层依赖性结构破坏后WT样三维染色质结构的恢复。研究者进一步假设，核纤层蛋白（lamin）的恢复可能通过恢复年轻态的LAD-核纤层附着，延长果蝇寿命并改善其他衰老相关表型。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9855&amp;v=1&amp;s=c2512d2925a56872" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9855&amp;v=2&amp;s=39ba534b07f1c39a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9855&amp;v=3&amp;s=777657470f3cb8dd" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9855&amp;v=4&amp;s=7c554a41e5abaea3" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9855&amp;v=5&amp;s=9c26b6f19ad018bb" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.05.27.727961">Epigenome Alterations and 3D Chromatin Architecture Remodeling in Inflammatory Macrophage Activation under Diabetic Conditions</a></div>
+      <div class="card-title-zh">糖尿病条件下炎症性巨噬细胞激活中的表观基因组改变与三维染色质结构重塑</div>
+      <div class="news">为阐明糖尿病条件下巨噬细胞异常激活的表观调控机制，作者整合多组学技术绘制了首个人类巨噬细胞增强子互作图谱，发现高糖联合TNF-α处理诱导三维染色质结构域重构，形成促炎调控枢纽，为糖尿病相关炎症的靶向干预提供了新思路。</div>
+      <div class="meta">bioRxiv · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Reddy M. A., Bhattacharya S., Tanwar V. S., Malek V., Chen Z., Zhang L., Lanting L., Wu X., Grant M. B., Tompkins J., Chen Z. B., Natarajan R.</div>
+<div class="meta">DOI: 10.64898/2026.05.27.727961</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.05.27.727961">https://www.biorxiv.org/content/10.64898/2026.05.27.727961</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>首次绘制糖尿病条件下巨噬细胞增强子互作图谱，揭示TAD重构与enhancer-promoter动态变化，与用户3D chromatin architecture、regulatory elements及non-coding variation研究高度吻合。</div>
+<div class="abstract"><span class="abs-label">背景</span>糖尿病中异常的单核细胞/巨噬细胞激活驱动慢性炎症及糖尿病并发症。尽管表观遗传机制参与这些过程，但三维（3D）染色质重组的贡献尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者采用整合多组学方法，对暴露于模拟糖尿病环境的高葡萄糖和TNF-α（HT）条件下的人CD14单核细胞来源巨噬细胞进行基因表达、染色质可及性和3D染色质结构分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>HT诱导的炎症转录程序重现了糖尿病中的观察结果，并动态重塑染色质可及性、增强子-启动子互作和拓扑关联结构域。炎症基因表现出染色质可及性增加，而细胞周期和代谢基因则显示可及性降低及增强子-启动子互作减弱。这些结构变化促进谱系决定性和信号依赖性转录因子在增强子-启动子环上的汇聚，形成协调促炎反应的独特调控枢纽。在糖尿病患者外周血来源的单核细胞中观察到相似的增强子-启动子互作。此外，通过CRISPR干扰靶向HT诱导的增强子扰乱染色质互作可抑制附近CCL2及其他趋化因子基因。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究首次绘制了糖尿病条件下巨噬细胞的综合增强子连接图谱，揭示了3D表观基因组广泛的疾病相关重塑，为糖尿病相关炎症的治疗提供了将染色质结构和表观遗传机制作为潜在靶点的新视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9852&amp;v=1&amp;s=ee8ab722fc2d53d0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9852&amp;v=2&amp;s=f5f0fe2d4f6788e5" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9852&amp;v=3&amp;s=6800028fb595b8e5" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9852&amp;v=4&amp;s=97ff5b1f9b475a86" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9852&amp;v=5&amp;s=b49e0e6d68bbf52e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 49 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42848106/">Host chromatin architecture in HPV-driven cervical cancer: molecular mechanisms and therapeutic resistance.</a></div>
+      <div class="card-title-zh">HPV驱动型宫颈癌中的宿主染色质架构：分子机制与治疗耐药性</div>
+      <div class="news">为解释HPV状态及E6/E7介导的p53/RB通路破坏无法完全解释的病变差异，作者整合病毒致癌与宿主基因组调控，提出从宿主染色质架构及转录程序角度解析HPV驱动型宫颈癌的可实验验证框架，发现HPV持续感染和整合可通过表观遗传许可性、三维基因组组织、增强子-启动子重连及黏连蛋白动态等机制影响MYC/E2F为中心的增殖输出，进而促进治疗耐受和耐药恶性状态，为宫颈癌分层和干预靶点优先排序提供新思路。</div>
+      <div class="meta">Medical oncology (Northwood, London, England) · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Kumagai Katsuyoshi, Suzuki Yasuhiro, Kitahara Kei, Chiba Ayumi, Yajima Hiroaki</div>
+<div class="meta">DOI: 10.1007/s12032-026-03445-w</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42848106/">https://pubmed.ncbi.nlm.nih.gov/42848106/</a></div>
+<div class="meta">Keywords: Cervical cancer、Chromatin architecture、Human papillomavirus、MYC、Therapeutic resistance、Therapeutic vulnerability</div>
+<div class="reason"><span class="abs-label">推荐理由</span>系统阐述三维基因组组织、TAD、enhancer-promoter rewiring及cohesin动态，与用户3D genome organization研究兴趣直接契合，但疾病模型偏向人类医学。</div>
+<div class="abstract"><span class="abs-label">背景</span>高危型人乳头瘤病毒（HPV）持续感染是宫颈癌的主要病因，但HPV状态及E6/E7介导的p53/RB轴破坏尚不能完全解释HPV相关病变在持续存在、恶性进展、治疗反应和复发方面的差异。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本综述系统梳理了HPV持续感染和整合与表观遗传许可性、三维基因组组织、增强子-启动子重连、黏连蛋白（cohesin）动力学及WAPL相关染色质调控之间的关联证据；同时探讨了染色质信息生物标志物、公共数据集、扰动引导优先级排序、经验证的宫颈癌细胞系、类器官及患者来源模型等研究手段的应用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>宿主染色质架构及相关转录程序可能促进HPV介导的检查点破坏后恶性细胞状态的稳定化；这些机制可能影响以MYC/E2F为中心的增殖输出，并与情境依赖性信号传导及肿瘤微环境适应相协作，从而导致治疗耐受和耐药恶性状态的形成。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该综述将病毒致癌作用与宿主基因组调控及适应性耐药相整合，提出了一个可用于HPV驱动型宫颈癌风险分层和候选干预节点优先排序的概念性及实验可验证框架，为克服治疗耐药提供了新思路。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9850&amp;v=1&amp;s=a8e90449584bf9e1" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9850&amp;v=2&amp;s=cabfffdcb4a0c50c" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9850&amp;v=3&amp;s=605f3d2c451c0a2b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9850&amp;v=4&amp;s=a48cf1593e2d0d59" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9850&amp;v=5&amp;s=fdcbf944b60c097f" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 45 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42848887/">Epigenetic aging and transposon dysregulation reflect size-related lifespan compression in dogs.</a></div>
+      <div class="card-title-zh">表观遗传衰老与转座子失调反映犬体型相关的寿命压缩</div>
+      <div class="news">为揭示生物衰老内在速率如何塑造寿命，研究者基于1640个犬甲基化组数据构建表观遗传时钟，发现体型较大和雄性犬存在加速的分子衰老，且体型相关甲基化变化在转座元件上尤为显著，为理解寿命差异的表观遗传基础提供了新视角。</div>
+      <div class="meta">Science (New York, N.Y.) · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Mariner Blaise L, McCoy Brianah M, Greenier Ashlee, Brassington Layla, Slikas Elizabeth, Adjangba Christine, Cheng Claire, Marye Abbey, Harrison Benjamin R, Bamberger Tal, Algavi Yadid, Muller Efrat, Harris Adam, Rout Emily, Reichel Cindy, Sohrab Vista, Dog Aging Project Consortium‡, Karlsson Elinor, Akey Joshua M, Avery Anne C, Borenstein Elhanan, Promislow Daniel E L, Snyder-Mackler Noah, Akey Joshua M, Anderson Rozalyn M, Borenstein Elhanan, Castelhano Marta G, Coleman Amanda E, Creevy Kate E, Dunbar Matthew D, Fajt Virginia R, Hoffman Jessica M, Jonlin Erica C, Kaeberlein Matt, Karlsson Elinor K, Kerr Kathleen F, Ma Jing, MacLean Evan L, McGrath Stephanie, Olby Natasha J, Promislow Daniel E L, Reed May J, Ruple Audrey, Schwartz Stephen M, Shrager Sandi, Snyder-Mackler Noah, Tolbert M Katherine</div>
+<div class="meta">DOI: 10.1126/science.aeb2986</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42848887/">https://pubmed.ncbi.nlm.nih.gov/42848887/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及转座元件表观调控，但研究对象为家犬衰老，与用户关注的物种基因组进化关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>家犬（domestic dogs）的寿命差异极大，为研究内在生物学衰老速率如何塑造寿命提供了天然实验模型。本研究利用这一模型，探讨表观遗传衰老与寿命之间的关系。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者基于894只犬的1640个甲基化组（methylomes）数据，开发了一种能够预测死亡风险的表观遗传时钟（epigenetic clock），并在人类年龄相关基因的直系同源位点（orthologs）上分析了犬的年龄相关甲基化变化。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现表观遗传衰老在生命早期最快；犬在人类年龄相关基因直系同源位点上表现出一致的年龄效应，提示免疫通路存在保守的重塑；体型较大和雄性犬（寿命较短）表现出加速的分子衰老，且这种效应由不同的表观遗传架构介导——性别依赖性甲基化变化集中于X染色体，而体型相关甲基化在转座子（transposable elements, TEs）上尤为显著。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明表观遗传学能够反映犬的寿命差异，并识别出转座子作为体型相关寿命的潜在介导因子，为理解衰老机制及寿命调控提供了新视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9861&amp;v=1&amp;s=a71fc43268a33ada" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9861&amp;v=2&amp;s=4075d028f0c93f1e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9861&amp;v=3&amp;s=911d29532710a32d" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9861&amp;v=4&amp;s=291cc4364838b3b9" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9861&amp;v=5&amp;s=8769d0b25ea465b7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42848510/">Functional identification of non-coding regulatory regions that drive breast and skin carcinogenesis.</a></div>
+      <div class="card-title-zh">驱动乳腺癌和皮肤癌发生的非编码调控区域的功能鉴定</div>
+      <div class="news">为揭示非编码突变促进肿瘤发生的机制，研究者开发大规模体内CRISPR平铺筛选技术，发现非编码调控元件的癌症驱动突变比之前认为的更为普遍且具影响力，并阐明MIR21和ZFP36L2调控元件突变通过失调基因表达驱动癌变的分子机制。</div>
+      <div class="meta">Cell reports · 2026-10-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Oh Robin H, Cheng Kevin C L, Serafimova Evgenija, Langille Ellen, Pérez-Castro Miguel Ángel, Lowden Christopher, Nurtanto Jocelyn, Dessapt Julien, Fotiadou Iosifina, Haider Shahan, Berman Jacob, Tsai Ricky, Malik Ahmad, Uusküla-Reimand Liis, Loganathan Sampath K, Al-Zahrani Khalid N, Reimand Jüri, Schramek Daniel</div>
+<div class="meta">DOI: 10.1016/j.celrep.2026.118111</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42848510/">https://pubmed.ncbi.nlm.nih.gov/42848510/</a></div>
+<div class="meta">Keywords: CP: cancer、CP: genomics、MIR21、ZFP36L2、breast cancer、cis-regulatory regions、in vivo CRISPR tiling screen、non-coding mutations、skin cancer、xenograft CRISPR screen</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦人类癌症非编码调控元件功能鉴定，虽涉及regulatory elements，但物种和应用场景与用户关注的动物比较基因组学及进化生物学差距较大。</div>
+<div class="abstract"><span class="abs-label">背景</span>全基因组测序已在蛋白质编码基因中发现了数百个癌症驱动突变，但非编码突变如何促进肿瘤发生的认识仍然有限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发并开展了大规模功能筛选，以鉴定在非转化的人乳腺上皮细胞以及乳腺癌和 skin cancer 小鼠模型中驱动癌症发生的非编码调控元件。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定出12个与16个基因相关的频繁突变调控元件作为候选癌症驱动因子；其中，与microRNA MIR21和肿瘤抑制基因ZFP36L2相关的两个调控元件的突变可导致其表达失调，进而引发致癌转化。ZFP36L2被鉴定为p53靶基因，其启动子中p53结合基序的突变足以驱动肿瘤发生。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，非编码调控元件中的癌症驱动突变比之前假设的更为普遍和强效，为理解非编码区突变在肿瘤发生中的作用提供了重要依据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9849&amp;v=1&amp;s=a19b52a8e6907503" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9849&amp;v=2&amp;s=58539e2eb0425347" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9849&amp;v=3&amp;s=1f774a0a13c61feb" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9849&amp;v=4&amp;s=f957d5401e749bd4" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9849&amp;v=5&amp;s=461f8f76d308ee40" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 38 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://doi.org/10.1038/s41586-026-11038-w">Overcoming key challenges in the evolutionary transition to multicellularity</a></div>
+      <div class="news">为克服多细胞演化过渡中的关键挑战，作者整合理论与实验方法，揭示了细胞合作、分化和整合的演化机制，为理解生命复杂性起源提供了新框架。</div>
+      <div class="meta">Nature · 2026-10-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ozan Bozdag G., Tong Kai, Yunker Peter J., Herron Matthew D., Ratcliff William C.</div>
+<div class="meta">DOI: 10.1038/s41586-026-11038-w</div>
+<div class="meta"><a href="https://doi.org/10.1038/s41586-026-11038-w">https://doi.org/10.1038/s41586-026-11038-w</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>多细胞演化过渡主题宽泛，未涉及用户关注的基因组结构变异或比较基因组学方法。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9616&amp;v=1&amp;s=bccb2b70b614a6c4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9616&amp;v=2&amp;s=ce6168dcccad236f" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9616&amp;v=3&amp;s=34d75815d8921c11" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9616&amp;v=4&amp;s=275eab8fd20363d9" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=guoqunfei%40genomics.cn&amp;p=9616&amp;v=5&amp;s=0634a99a1f17f929" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日推荐的15篇论文主要集中于基因组组装与优化、三维基因组结构与表观遗传调控、进化与群体基因组学三大方向。基因组组装方面，HapSolo2利用GPU加速解决二倍体单倍型去冗余问题，CRAIC则聚焦多序列比对质量评估；三维基因组与表观遗传研究占据显著比重，涵盖果蝇衰老模型、糖尿病巨噬细胞激活、HPV宫颈癌及犬表观遗传时钟等，共同揭示染色质架构动态与疾病关联；进化与群体遗传学方面涉及慈鲷调控演化、太平洋岛屿人群瓶颈效应及鸟类渐渗杂交等。
+
+技术趋势上，GPU加速计算（如HapSolo2的CuPy阵列操作）正提升传统生物信息学工具效率；多组学整合（ATAC-seq/RNA-seq/Hi-C）成为解析调控机制的标准范式；CRISPR筛选与DNA分子记录器等实验技术持续拓展功能基因组学研究边界。
+
+对该研究者而言，本日文献提供了从算法优化到机制解析的多层次参考：计算研究者可关注HapSolo2的优化策略与CRAIC的置信度评估框架；从事三维基因组或表观遗传研究者能获取跨物种（果蝇、人类、犬）的架构调控证据；进化与群体遗传学方向则涵盖适应性辐射、物种形成及人群历史等多元案例，为假设构建和方法借鉴提供直接支持。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=guoqunfei%40genomics.cn&amp;d=2026-10-09&amp;s=d78169e75a5b174d">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=guoqunfei%40genomics.cn&amp;d=2026-10-09&amp;s=d78169e75a5b174d">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

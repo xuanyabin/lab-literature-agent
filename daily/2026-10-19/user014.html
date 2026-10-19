@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-10-19</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-10-19</h1>
+    <p class="hello">wangying，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">过去 3 天全库新增 902 篇 · 命中您的关键词 227 篇 · 本次推送 15 篇（必读 1 · 重要 14 · 参考 0）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 74 分</div>
+      <div class="card-title"><span class="badge cat-module">脑图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42880229/">Cellular scaling laws in the mammalian brain.</a></div>
+      <div class="card-title-zh">哺乳动物大脑中的细胞缩放规律</div>
+      <div class="news">为揭示哺乳动物大脑细胞数量随脑大小的变化规律，研究团队系统分析了多种哺乳动物脑细胞的缩放关系，发现神经元与胶质细胞遵循不同的异速生长法则，为理解大脑演化与发育提供定量框架。</div>
+      <div class="meta">Cell · 2026-10-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chen Fei, Macosko Evan Z</div>
+<div class="meta">DOI: 10.1016/j.cell.2026.08.044</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42880229/">https://pubmed.ncbi.nlm.nih.gov/42880229/</a></div>
+<div class="meta">Keywords: artificial intelligence、cellular neuroscience、single-cell genomics、spatial genomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>构建全脑细胞图谱并揭示细胞类型缩放规律，契合用户细胞图谱研究兴趣，但偏重理论框架而非技术方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>近期全脑细胞图谱揭示了一致的细胞结构特征：离散神经元细胞类型多样性最高的区域并非神经元数量最多的皮层和小脑，而是下丘脑和脑干等深部皮层下结构。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者通过对比分析大脑不同区域的细胞组成特征，提出将脊椎动物大脑划分为&quot;学习子系统&quot;和&quot;调控子系统&quot;的理论框架，并类比机器学习模型进行阐释。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现学习子系统（皮层、纹状体和小脑）通过重复模块的复制来扩展计算能力，类似于机器学习模型中参数的增加；而调控子系统（下丘脑、苍白球和脑干）则通过特化细胞类型的多样化来编码先天本能和反射，作为高维生物&quot;奖励函数&quot;。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该框架解释了进化如何以不同方式影响这两个子系统，为理解大脑结构和脑疾病病因提供了统一视角，并可能为人工智能模型设计提供启示。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11158&amp;v=1&amp;s=b9b7575e8e3c0ec4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11158&amp;v=2&amp;s=28f4718da3ab8c1a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11158&amp;v=3&amp;s=dd9a09896beb1b2a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11158&amp;v=4&amp;s=f387121e1bfd72ea" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11158&amp;v=5&amp;s=6c3399e4b046eef3" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-important">Important</span> · 71 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.10.09.757915">Scale-resolved correlation functions unify spatial omics across platforms and resolutions</a></div>
+      <div class="card-title-zh">尺度分辨的相关函数统一跨平台与跨分辨率的空间组学</div>
+      <div class="news">针对空间组学跨平台数据难以比较的问题，研究者开发SCOTE计算框架，通过解析所有长度尺度上的特征空间关系，发现平台伪影具有可识别的尺度局部化特征，且分子级分析能捕捉细胞级方法遗漏的生物学效应，为统一多平台空间组学分析提供了新工具。</div>
+      <div class="meta">bioRxiv · 2026-10-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ilin M., Singh Y., Mages S. W.</div>
+<div class="meta">DOI: 10.64898/2026.10.09.757915</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.10.09.757915">https://www.biorxiv.org/content/10.64898/2026.10.09.757915</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>SCOTE框架解决空间组学跨平台可比性难题，直接契合用户空间组学方法开发兴趣，GPU加速适配大数据需求。</div>
+<div class="abstract"><span class="abs-label">背景</span>空间组学平台在分辨率、检测panel大小、灵敏度和模态等维度上具有高度多样性，导致不同平台的数据分析结果难以比较。现有平台特异性分析方法无法解决这一跨平台可比性问题。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究开发了SCOTE（Spatial COvariance TEnsors，空间协方差张量）计算框架，该框架可对所有特征对在所有长度尺度上的空间关系进行量化，适用于分子坐标和分箱计数两种数据形式。该方法可在CPU和GPU上高效运行。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>SCOTE能够在不同平台、样本和患者间测量相同的数量并估计统计误差，从而将测量效应与生物学效应分离，平台伪影表现为可识别的尺度局部化特征。在分子水平上，SCOTE解析出了小鼠脾脏中细胞水平分析遗漏的基因敲除效应；并证明组织面积和重复次数（而非分子深度）决定了统计误差。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>SCOTE为空间组学数据提供了跨平台、跨分辨率的统一分析框架，能够区分技术伪影与真实生物学信号，且计算效率高，可在单GPU上26分钟内处理十亿分子级别的全转录组切片数据，匹配了空间组学数据集的快速增长需求。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11182&amp;v=1&amp;s=7380b1c09e416170" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11182&amp;v=2&amp;s=b82bd97c139246b0" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11182&amp;v=3&amp;s=261bf571a9663a5c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11182&amp;v=4&amp;s=dd783cd090d837ca" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11182&amp;v=5&amp;s=067578f74804ecc4" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-important">Important</span> · 70 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42886820/">Glycome remodeling programs pathogenic γδ T17 cell responses in autoimmunity.</a></div>
+      <div class="card-title-zh">糖组重塑程序调控自身免疫中致病性γδ T17细胞应答</div>
+      <div class="news">为阐明γδ T细胞糖基化调控机制，作者利用单细胞RNA测序发现γδ T17细胞依赖MGAT1-MGAT5介导的分支N-糖基化，证实N-聚糖缺失驱动致病性IL-17A炎症表型，而补充糖聚糖可重编程细胞至低致病状态，为自身免疫病治疗提供新靶点。</div>
+      <div class="meta">Science immunology · 2026-10-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Santos-Pereira Beatriz, Nogueira Rafaela, Tafesse Yohannes, Correia-Silva Ariana, Leite-Gomes Eduarda, Sanchez Sanchez Guillem, Luppens Xavier, Young Lyndsay E A, Cavadas Bruno, Vasconcelos Carlos, Oliveira Daniela, Lé Ana, Torres Joana, Campar Ana, Serodio João F, Marinho António, Alves José D, Torres Tiago, Drake Richard R, Vermijlen David, Alves Inês, Pinho Salomé S</div>
+<div class="meta">DOI: 10.1126/sciimmunol.aec9553</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42886820/">https://pubmed.ncbi.nlm.nih.gov/42886820/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>运用scRNA-seq解析γδ T细胞糖基化调控机制，为单细胞技术在免疫学中的应用提供范例。</div>
+<div class="abstract"><span class="abs-label">背景</span>糖基化在T细胞生物学中具有重要作用，但γδ T细胞的糖组学特征尚未被揭示。尽管γδ T细胞在宿主防御、组织稳态和疾病中的重要性日益增加，但指导其活化、分化和功能的糖基化机制仍不明确。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者采用单细胞RNA测序技术，分析γδ T细胞的糖基化特征；通过基因操作研究MGAT1-MGAT5介导的分支型N-糖基化在γδ T细胞中的功能；并检测自身免疫病和炎症性疾病患者γδ T细胞的糖基化状态。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，3型/γδ T17/白介素-17A（IL-17A）定向分化的γδ T细胞依赖MGAT1-MGAT5介导的分支型N-糖基化。γδ T细胞表面分支型N-糖链缺失作为外周信号，驱动IL-17A促炎表型，伴随Vγ4+亚群偏移及固有样特性印记，这种改变的糖型可诱导严重银屑病。自身免疫和炎症性疾病患者的γδ T细胞表现出分支型N-糖链缺陷。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>糖基补充可将γδ T细胞重编程为低致病性状态，表明N-糖链是γδ T细胞此前未被认识的免疫检查点，为自身免疫病的治疗提供了新策略。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11202&amp;v=1&amp;s=516aea18b0ba08f4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11202&amp;v=2&amp;s=b8f6ed90a7bc4ac4" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11202&amp;v=3&amp;s=1a1ad109c3e2f4a4" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11202&amp;v=4&amp;s=537a6641a9ce433d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11202&amp;v=5&amp;s=214484907617aa02" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-important">Important</span> · 69 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42891116/">Single-Cell Multiomics Integration Reveals Cell Trajectories and Regulatory Networks in Breast Cancer Progression.</a></div>
+      <div class="card-title-zh">单细胞多组学整合揭示乳腺癌进展中的细胞轨迹与调控网络</div>
+      <div class="news">为揭示乳腺癌上皮-间充质转化过程中的调控机制，作者整合单细胞转录组、染色质可及性与肠道微生物组数据，发现SNAI1-ZEB1-FOXM1核心调控网络驱动肿瘤细胞命运分支，并证实肠道菌群失调是乳腺癌的系统共决定因素，为肿瘤微环境与宿主互作研究提供了新的多组学框架。</div>
+      <div class="meta">International journal of genomics · 2026-10-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Jin Xiangyu, Ma Chengyin, Xin Hongqiang, Liu Yi, Sun Changjiang</div>
+<div class="meta">DOI: 10.1155/ijog/9324717</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42891116/">https://pubmed.ncbi.nlm.nih.gov/42891116/</a></div>
+<div class="meta">Keywords: 16S rRNA sequencing、SCENIC、breast cancer、cell-cell communication、epithelial-to-mesenchymal transition、gut microbiome、gut–breast axis、microbiome dysbiosis、multiomics integration、pseudotime trajectory、regulatory networks、single-cell RNA sequencing、tumor microenvironment</div>
+<div class="reason"><span class="abs-label">推荐理由</span>scRNA-seq与scATAC-seq多组学整合及细胞轨迹分析是用户核心方法，但乳腺癌研究对象偏离用户关注的非哺乳类模式物种。</div>
+<div class="abstract"><span class="abs-label">背景</span>乳腺癌是一种分子异质性肿瘤，不同亚型预后和治疗反应各异。尽管已有大量基因组研究，但驱动乳腺癌从管腔状态向间充质状态进展的单细胞转录轨迹、染色质调控景观和细胞间通讯网络仍不完全清楚。此外，肠道微生物组失调作为乳腺癌风险、免疫调节和治疗反应的系统性调节因素，其与高分辨率单细胞图谱的联合表征尚未开展。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者整合单细胞RNA测序（scRNA-seq）、染色质可及性分析（scATAC-seq）、细胞间通讯推断（CellChat）和肠道微生物组16S rRNA分析，对GEO数据库（GSE161529）中42,037个高质量单细胞进行多组学分析，涵盖肿瘤及癌旁正常组织；同时分析了599对乳腺癌-健康对照的肠道微生物组数据。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>无偏聚类鉴定出12种细胞群体，涵盖管腔A/B、基底型、HER2+、癌相关成纤维细胞（CAF）、肿瘤相关巨噬细胞（TAM）、CD8 T细胞、调节性T细胞（Treg）、NK细胞、B细胞、内皮细胞和周细胞。拟时序轨迹分析揭示连续的上皮-间充质转化（EMT）谱系及三条分化分支。SCENIC分析鉴定出SNAI1(+)、ZEB1(+)和FOXM1(+)为基底/间充质细胞中最差异激活的调控子。CellChat发现TGF-β1-TGFBR1（CAF→肿瘤）和PD-L1-PD-1（肿瘤→CD8 T细胞）为主要通讯轴。多组学整合将细胞类型分类AUC从0.76提升至0.91。肠道微生物组分析显示乳腺癌患者存在显著菌群失调，Shannon多样性降低，9个属差异富集，随机森林分类器AUC达0.79。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究构建了乳腺癌进展的整合单细胞多组学与肠道微生物组图谱，表征了驱动细胞轨迹多样化的转录调控架构，提出SNAI1-ZEB1-FOXM1共调控网络作为候选治疗靶点，证明多组学整合可增强乳腺癌亚型的分子分层及临床预后相关性，并识别肠道微生物组失调（以多样性丧失和特定属富集为特征）作为乳腺癌病理生物学的系统性维度，值得与肿瘤内分子图谱整合研究。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11266&amp;v=1&amp;s=6d1dc671173604fb" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11266&amp;v=2&amp;s=5f9534601f0eb898" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11266&amp;v=3&amp;s=25c770dc5a9e55cd" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11266&amp;v=4&amp;s=923e803912f944a5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11266&amp;v=5&amp;s=f148bebce08e17d2" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-important">Important</span> · 67 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42889999/">Exploiting RAG1-deficient chickens to construct a single-cell transcriptional atlas of chicken heterophils during inflammation.</a></div>
+      <div class="card-title-zh">利用RAG1缺陷鸡构建炎症期间鸡异嗜性粒细胞的单细胞转录图谱</div>
+      <div class="news">由于禽类异嗜性粒细胞成熟与激活的分子程序尚不清楚，作者利用RAG1缺陷鸡模型进行单细胞RNA测序，发现其成熟过程存在八个转录亚群，以MMP9渐进上调为标志而非典型颗粒基因顺序表达，且细胞从干扰素刺激基因主导状态向脱颗粒、吞噬和胞外陷阱形成的效应表型转变，为MPO非依赖物种的先天免疫细胞进化研究提供了新视角。</div>
+      <div class="meta">Frontiers in immunology · 2026-10-02</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Woo Seung Je, Kim Jaeryeong, Seo Minseok, Han Jae Yong</div>
+<div class="meta">DOI: 10.3389/fimmu.2026.1930258</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42889999/">https://pubmed.ncbi.nlm.nih.gov/42889999/</a></div>
+<div class="meta">Keywords: chicken、emergency myelopoiesis、heterophil、inflammation、maturation、single cell RNA sequencing</div>
+<div class="reason"><span class="abs-label">推荐理由</span>构建禽类免疫细胞单细胞图谱，填补鸟类先天免疫空白，直接匹配用户Avian关注和细胞图谱研究兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>禽类异嗜性粒细胞（heterophil）天然缺乏髓过氧化物酶（MPO），使鸡成为研究MPO非依赖性先天免疫策略的独特进化模型。然而，调控异嗜性粒细胞成熟和激活的分子程序在很大程度上仍未被探索。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者在RAG1缺陷鸡模型中利用单细胞RNA测序技术，绘制了应急粒细胞生成过程中异嗜性粒细胞的成熟图谱，并进行了发育轨迹推断和转录谱分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定出八个转录不同的异嗜性粒细胞亚群（H0-H7），推断出其发育轨迹：从富集翻译活性、氧化磷酸化和存活相关基因的早期亚群，到富集效应子相关基因特征的终末亚群。与哺乳动物中性粒细胞不同，异嗜性粒细胞的成熟以MMP9渐进上调为标志，而非经典颗粒基因的序贯表达。轨迹分析显示细胞从干扰素刺激基因（ISG）主导状态向具有脱颗粒、吞噬和胞外陷阱形成能力的效应子特征转变。终末亚群表现出与增强的细胞外基质重塑、急性期反应和营养免疫相关的转录特征。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提供了禽类异嗜性粒细胞的详细单细胞图谱，为理解天然缺乏MPO物种中先天免疫细胞的发育轨迹和转录异质性提供了宝贵的进化视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11189&amp;v=1&amp;s=4bdb7dfb09cc6302" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11189&amp;v=2&amp;s=66eb8b22ee702287" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11189&amp;v=3&amp;s=6749a3c78619e2cf" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11189&amp;v=4&amp;s=68cd2565035c0540" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11189&amp;v=5&amp;s=1201aa5992d9ce5e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-important">Important</span> · 66 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">综述</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.10.16.759529">On technical biases in imaging spatial transcriptomics</a></div>
+      <div class="card-title-zh">成像空间转录组学中的技术偏倚</div>
+      <div class="news">针对成像空间转录组学技术偏差来源复杂且相互叠加的问题，作者建立统一的计数建模框架系统分类实验与计算偏差，揭示不同偏差复合显现的规律，为更稳健的实验设计和可靠的下游分析提供理论基础。</div>
+      <div class="meta">bioRxiv · 2026-10-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chen C., Borm L. E., Pascual-Reguant A., Ruano I., Risso D., Crowell H. L.</div>
+<div class="meta">DOI: 10.64898/2026.10.16.759529</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.10.16.759529">https://www.biorxiv.org/content/10.64898/2026.10.16.759529</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>系统剖析成像空间转录组技术偏差，直接支撑用户空间组学方法开发的核心研究兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>成像空间转录组学（imaging spatial transcriptomics, iST）已在单细胞和亚细胞分辨率下实现了对完整组织架构中基因表达的精准定位，但该技术平台在整个测量流程中引入了复杂的技术偏倚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者将技术偏倚分为实验来源（如样本保存和空间采样）与计算来源（如z-stack配准和视野拼接）两类，并利用公共数据集进行分析，进而提出统一的计数建模框架以形式化这些变异来源。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究展示了不同偏倚如何累积和表现，证明这些偏倚贯穿从样本制备、数据采集到定量分析的整个流程。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究呼吁对iST数据起源建立更整合的理解，并促进领域内外的知识共享，以支持更稳健的实验设计和可靠的下游分析的发展。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11169&amp;v=1&amp;s=5716637e49ad777b" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11169&amp;v=2&amp;s=ecc931de5f8f7793" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11169&amp;v=3&amp;s=9799c165e6b152c2" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11169&amp;v=4&amp;s=3ac86fe660f3ca84" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11169&amp;v=5&amp;s=4e27c87c245a8111" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-important">Important</span> · 66 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.10.15.759112">Navigating the rapidly evolving landscape of sequencing-based spatial transcriptomics technologies: a comprehensive multi-platform benchmark</a></div>
+      <div class="card-title-zh">驾驭基于测序的空间转录组技术快速演变的格局：一项全面的多平台基准研究</div>
+      <div class="news">为解决测序空间转录组技术平台众多且性能差异难以直接比较的问题，作者利用多组织类型和多保存方法的系统性基准测试方法，发现不同平台在捕获区域架构、捕获效率和空间准确性方面存在可量化的差异，并建立了统一的术语和操作性能指标框架，推动空间转录组学领域的技术标准化和实验设计优化。</div>
+      <div class="meta">bioRxiv · 2026-10-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Mortier J., Scheyltjens I., Kuznecova E., Lemeire K., Parmentier F., Defauw A., Vernaillen F., Persyn F., De Block J., Vandamme N., Dervaux S., De Rybel B., Lambrechts D., Van Hamme E.</div>
+<div class="meta">DOI: 10.64898/2026.10.15.759112</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.10.15.759112">https://www.biorxiv.org/content/10.64898/2026.10.15.759112</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>空间转录组技术平台系统性基准测试，直接契合用户spatial transcriptomics和single-cell technology development研究兴趣，为实验设计提供关键参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>基于测序的空间转录组学检测技术能够以多细胞甚至亚细胞的空间分辨率进行全转录组表达谱分析。随着越来越多平台的涌现，各平台在转录本检测化学原理、捕获区域架构、成像能力和组织兼容性等方面存在显著差异，研究人员面临着日益复杂的技术选择环境。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究对多种平台进行了系统性基准测试，涵盖多种组织类型和保存方法，直接比较了各平台的捕获区域架构、捕获效率和空间准确性。同时，基于这些结果引入了相关术语和操作性性能指标。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究建立了用于理解这些技术技术性能及其对下游数据分析和生物学解释影响的框架，为各平台提供了直接的性能比较依据。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究结果为实验设计提供了宝贵的参考资源，并有助于为未来基准测试工作建立标准。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11168&amp;v=1&amp;s=0f5a9161c7572f87" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11168&amp;v=2&amp;s=a749c2b5f6b8321b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11168&amp;v=3&amp;s=2bd5214bd67f0e62" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11168&amp;v=4&amp;s=913dd421d222bcc1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11168&amp;v=5&amp;s=025c38d12ce25124" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-important">Important</span> · 64 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42891568/">Integrating scRNA-Seq and Spatial Transcriptomics Reveal Novel Risk Stratification Signatures in Cervical Carcinoma.</a></div>
+      <div class="card-title-zh">整合单细胞RNA测序与空间转录组学揭示宫颈癌新型风险分层标志物</div>
+      <div class="news">针对LSIL进展预测标志物不足的临床难题，研究者整合单细胞测序与空间转录组学技术，鉴定出新型上皮亚群epi8及其分子标志物CRYABhigh/GAS5high和RPLP1high/SNHG5high，可实现宫颈病变进展、持续与消退的精准风险分层，为宫颈癌筛查的精准分流提供了候选生物标志物。</div>
+      <div class="meta">Journal of medical virology · 2026-10-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chen Jiayu, Xie Zhaoxiang, Liu Xuzhu, Zheng Liangkai, Li Meiqing, Liu Yanxiu, Jiang Meng, Ma Weiyan, Lin Chen, Zhou Yulin, Ke Rongqin</div>
+<div class="meta">DOI: 10.1002/jmv.71184</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42891568/">https://pubmed.ncbi.nlm.nih.gov/42891568/</a></div>
+<div class="meta">Keywords: cervical carcinoma、human papillomavirus、risk stratification、single‐cell sequencing、spatial transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>整合scRNA-seq与空间转录组技术路线与用户方法学高度重合，但物种为人体宫颈癌，与用户关注的昆虫、脊椎动物等物种偏好不符。</div>
+<div class="abstract"><span class="abs-label">背景</span>宫颈癌是全球女性第四大常见恶性肿瘤。生物标志物辅助筛查可提高诊断准确性，但预测低级别鳞状上皮内病变（LSIL）进展的生物标志物仍然有限。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者整合单细胞RNA测序（scRNA-Seq）和空间转录组学技术，鉴定与LSIL结局相关的预后生物标志物，并通过改进的原位测序（IISS）进行验证。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>对341,978个单细胞的分析鉴定出八种主要细胞群和十二个上皮亚群，包括一个此前未被识别的亚群epi8。该亚群虽主要来源于正常宫颈，但表现出癌症相关特征，并与预后标志物FAM19A4和miR124-2具有分子特征相似性。原位测序显示epi8定位于人乳头瘤病毒（HPV）感染的基底细胞附近，且在疾病进展过程中呈现分期依赖性空间变化。回顾性分析进一步表明，epi8相关标志物可将LSIL分层为进展组、持续组和消退组，其中CRYABhigh/GAS5high与进展相关，RPLP1high/SNHG5high与消退相关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究鉴定出一个与宫颈癌早期发生相关的未知上皮亚群，证明其分子标志物可实现LSIL风险分层，为宫颈癌精准分流筛查提供了候选生物标志物。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11262&amp;v=1&amp;s=1cda18fd5f70cb22" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11262&amp;v=2&amp;s=fe9ff1dc4ace8012" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11262&amp;v=3&amp;s=cb47381b944862cb" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11262&amp;v=4&amp;s=6396c54725c5450f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11262&amp;v=5&amp;s=72b8c74dfa11f084" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-important">Important</span> · 64 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42892520/">Site-Specific Cutaneous Inflammation: Mechanisms and Therapeutic Implications.</a></div>
+      <div class="card-title-zh">部位特异性皮肤炎症：机制与治疗启示</div>
+      <div class="news">为揭示炎症性皮肤病解剖学分布偏好的生物学基础，作者整合皮肤结构、免疫与微生物异质性并结合单细胞和空间转录组技术，发现区域组织特性与局部免疫生态系统共同塑造疾病特异性炎症回路，为精准治疗提供组织情境化依据。</div>
+      <div class="meta">The Journal of allergy and clinical immunology · 2026-10-17</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Marella Sahiti, Shao Shuai, Tsoi Lam C, Naik Shruti, Andersen Bogi, Kong Heidi H, Plikus Maksim V, Haniffa Muzlifah, Gudjonsson Johann E</div>
+<div class="meta">DOI: 10.1016/j.jaci.2026.09.026</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42892520/">https://pubmed.ncbi.nlm.nih.gov/42892520/</a></div>
+<div class="meta">Keywords: anatomic specialization of the skin、cutaneous microenvironment、precision dermatology、single-cell transcriptomics、site-specific skin immunity、spatial transcriptomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>单细胞与空间转录组技术应用于皮肤免疫研究，与用户空间组学技术方法高度相关。</div>
+<div class="abstract"><span class="abs-label">背景</span>炎症性皮肤病表现出显著的解剖分布模式，长期以来指导着临床诊断，但其部位特异性的生物学机制尚未完全阐明。这些区域倾向性源于人体皮肤在结构、免疫和微生物层面的异质性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>利用单细胞和空间转录组学技术，以高精度绘制炎症反应图谱，对皮肤不同部位的细胞相互作用和信号通路进行详细解析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>表皮屏障结构（包括角质层厚度10至100倍的差异、毛囊和腺体的分布）形成不同的微环境，塑造驻留免疫细胞、微生物群落和宿主抗菌防御；皮肤中约200亿组织驻留记忆T细胞（tissue-resident memory T cells）在解剖学受限的龛位中持续存在，为疾病在同一部位复发提供机制基础；皮肤微生物组在油性、湿润和干燥区域形成不同群落，且紫外线辐射、机械应力和湿度等环境因素进一步强化了区域差异。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现支持一个统一模型：区域组织特性和局部免疫生态系统共同塑造疾病特异性炎症回路，解释了炎症性疾病的解剖学倾向性，并强调了组织背景对于精准治疗的重要性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11179&amp;v=1&amp;s=cdfec8869cac4d34" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11179&amp;v=2&amp;s=02a528bcbcdda9d5" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11179&amp;v=3&amp;s=838ed4adb428617f" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11179&amp;v=4&amp;s=c19de183b11019fd" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11179&amp;v=5&amp;s=57eabdaf6801e5f0" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-important">Important</span> · 62 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42893360/">Differential evolution of neuroinflammatory remodeling programs related to scar formation and regeneration in spinal cord injury: A cross-species multi-omics analysis.</a></div>
+      <div class="card-title-zh">脊髓损伤中瘢痕形成与再生相关神经炎症重塑程序的差异性进化：一项跨物种多组学分析</div>
+      <div class="news">为揭示哺乳动物脊髓损伤后瘢痕形成与斑马鱼再生修复差异的分子机制，作者通过跨物种整合单细胞/单核转录组、空间转录组等多组学数据，发现SPP1-CD44相关神经炎症重塑程序在哺乳动物中持续存在并与瘢痕形成相关，而在斑马鱼再生过程中该程序被有效衰减，为靶向促进炎症消退和神经修复提供了关键分子靶点。</div>
+      <div class="meta">Neural regeneration research · 2026-09-30</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Tang Hao, Cheng Fei, Xu Juan, Liao Huiming, Lu Shunfei, Fu Xin, Fang Sheng</div>
+<div class="meta">DOI: 10.4103/NRR.NRRONLINE-D-26-00772</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42893360/">https://pubmed.ncbi.nlm.nih.gov/42893360/</a></div>
+<div class="meta">Keywords: CD44、SPP1、inflammatory resolution、neuroinflammation、single-cell RNA sequencing、spatial transcriptomics、spinal cord injury、zebrafish regeneration</div>
+<div class="reason"><span class="abs-label">推荐理由</span>跨物种单细胞与空间多组学整合分析脊髓损伤，方法学与用户技术栈匹配，但物种非用户关注重点。</div>
+<div class="abstract"><span class="abs-label">背景</span>哺乳动物脊髓损伤常从急性炎症反应转变为持续性神经炎症及瘢痕相关重塑，而斑马鱼在再生修复过程中可减弱损伤诱导的炎症程序。这些不同结局背后的分子机制尚不完全清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究整合了对齐阶段的小鼠和斑马鱼脊髓损伤数据集，采用单细胞和单核转录组学、空间转录组学、通路和调控子分析、基于表达的配体-受体共表达分析、机器学习验证、染色质可及性分析、计算机模拟扰动建模以及小鼠组织验证等多种方法。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>跨物种分析揭示了与分泌型磷蛋白1（secreted phosphoprotein 1, SPP1）和CD44相关的保守损伤响应程序，但两者在不同物种中具有不同的时间轨迹。小鼠脊髓损伤中，Spp1和Cd44表达从急性损伤期持续升高至瘢痕相关阶段，并在损伤相关髓系和胶质-免疫微环境中富集；而斑马鱼中spp1和cd44a虽在早期损伤反应中被诱导，但在再生恢复期下降。机器学习分析支持了SPP1-CD44相关损伤状态特征在两个小鼠脊髓损伤数据集中的跨数据集可重复性。调控子、扰动相关和染色质可及性分析进一步将Spp1定位于与信号转导及转录激活因子3（STAT3）和SMARCA4相关的损伤响应调控背景中。小鼠脊髓损伤组织验证确认了损伤后SPP1和CD44蛋白表达增加，并将SPP1信号增强定位于离子化钙结合衔接分子1（Iba1）阳性的损伤相关髓系区域。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该跨物种框架为理解哺乳动物脊髓损伤瘢痕形成与斑马鱼再生修复中SPP1-CD44相关神经炎症重塑程序的差异提供了分子见解，并鉴定了未来促进脊髓损伤后炎症消退和神经修复研究的候选调控程序。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11163&amp;v=1&amp;s=79e550cc0668d5d0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11163&amp;v=2&amp;s=02b4351862bab1e6" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11163&amp;v=3&amp;s=c7f52a164354f749" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11163&amp;v=4&amp;s=0ca48e2defdf089c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11163&amp;v=5&amp;s=57c7588f5f3b474a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-important">Important</span> · 60 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42889067/">Patient-aware single-cell analysis of fibrovascular remodeling in a predominantly colorectal cancer immunotherapy cohort.</a></div>
+      <div class="card-title-zh">以患者为单位的结直肠癌免疫治疗队列中纤维血管重塑的单细胞分析</div>
+      <div class="news">针对单细胞比较分析中患者重复取样与混杂因素导致的可靠性争议，研究者以患者为推断单位、采用响应盲法多分辨率聚类和患者阻断伪批量分析，发现结直肠癌患者肿瘤周细胞存在治疗前纤维血管转录重塑，并鉴定出一个跨患者稳定的ECM重塑CAF群体，同时明确了SPP1响应标志物及机械硬度表型的证据局限。</div>
+      <div class="meta">Frontiers in immunology · 2026-10-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Gu Yang, Li Li, Zhang Yuxian, Tang Jie, Wang Zhigang, Luo Xiaofeng</div>
+<div class="meta">DOI: 10.3389/fimmu.2026.1961075</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42889067/">https://pubmed.ncbi.nlm.nih.gov/42889067/</a></div>
+<div class="meta">Keywords: cancer-associated fibroblast、colorectal cancer、immune checkpoint blockade、pericyte、single-cell RNA sequencing</div>
+<div class="reason"><span class="abs-label">推荐理由</span>单细胞方法学严谨：采用患者为推断单位的伪批量分析策略，对解决单细胞比较中的批次效应和重复取样问题具有方法学参考价值。</div>
+<div class="abstract"><span class="abs-label">背景</span>癌症相关成纤维细胞（CAFs）和血管周细胞（pericytes）可能影响结直肠癌的细胞外基质（ECM）组织，但单细胞比较分析易受细胞回收不均、环境RNA污染、双细胞、治疗阶段混杂及同一患者重复取样等因素干扰。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者以患者为推断单位重新分析了一项已发表的单细胞RNA测序队列（22例患者，含20例结直肠癌和2例十二指肠癌），采用DecontX和scDblFinder评估环境RNA污染和双细胞；对CAFs进行六种响应盲态分辨率重聚类，并在排除优势供体后进行患者分组的伪批量分析；同时利用独立的结直肠癌单细胞和空间数据集、跨癌种免疫治疗队列及TCGA数据进行外部验证。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>经DecontX校正后，肿瘤周细胞的ECM6评分、基质硬度转录标志物及缺氧/血管生成转录程序均显著升高；鉴定出一个包含2,983个细胞的ECM重塑CAF群体，在排除P02后，15例患者的分析显示该群体具有更高的基质、炎症性和肌成纤维细胞（myCAF）相关程序及更低的炎症性CAF（iCAF）程序；SPP1高表达作为反应标志物、机械硬度表型及CAF-to-周细胞的因果信号均未得到支持。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究支持在患者水平上存在治疗前的纤维血管转录重塑，强调了以患者为单位的分析方法在区分可重复信号与供体集中或情境依赖性发现中的重要性，同时明确了ECM重塑CAF程序的证据边界。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11327&amp;v=1&amp;s=1009eb45e4320a74" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11327&amp;v=2&amp;s=d887c1d236e6c885" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11327&amp;v=3&amp;s=edf6cab3688d7ca3" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11327&amp;v=4&amp;s=aa86150d309db0e1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11327&amp;v=5&amp;s=706c0a748c381b79" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-important">Important</span> · 60 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42885991/">Immune Landscape and Intercellular Crosstalk in the Cornea of an Autoimmune-Mediated Dry Eye Disease.</a></div>
+      <div class="card-title-zh">自身免疫性干眼症角膜中的免疫景观与细胞间通讯</div>
+      <div class="news">为揭示自身免疫性干眼病中角膜免疫微环境的调控机制，研究者利用全组织免疫荧光和单细胞RNA测序技术系统解析Aire-/-小鼠模型，发现角膜上皮细胞和基质细胞主动参与免疫激活，提示非T细胞机制在慢性干眼病发病中起关键作用，为开发超越现有T细胞靶向疗法的更广泛治疗策略提供了新方向。</div>
+      <div class="meta">Investigative ophthalmology &amp; visual science · 2026-10-01</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">An Luye, Robledo Mario A, Niknezhad Seyyed Vahid, Ko Wendy, Zhang Beryl, Chen Yu Ting, McNamara Nancy A, Knox Sarah M</div>
+<div class="meta">DOI: 10.1167/iovs.67.12.32</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42885991/">https://pubmed.ncbi.nlm.nih.gov/42885991/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>scRNA-seq与CellChat分析角膜免疫细胞互作，为空间转录组研究自身免疫疾病提供方法参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>干眼症（DED）是一种常见的眼表疾病，其中自身免疫介导的亚型涉及复杂的免疫病理机制。本研究旨在利用Aire-/-小鼠这一自发性自身免疫模型，全面解析角膜中免疫细胞的组成及其与非免疫细胞的相互作用。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用野生型（WT）和自身免疫调节因子缺陷（Aire-/-）小鼠的角膜组织，通过全组织免疫荧光技术定义免疫细胞的组成和空间分布，并利用单细胞RNA测序（scRNA-seq）进一步鉴定免疫细胞亚群及细胞间通讯。使用CellChat分析免疫细胞、上皮细胞和基质细胞之间的信号通路。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>免疫荧光显示Aire-/-角膜中CD3⁺和CD4⁺ T细胞、CD45R⁺ B细胞及IBA1⁺巨噬细胞广泛浸润。scRNA-seq鉴定出多种免疫亚群，包括细胞毒性T细胞、γδ17细胞、调节性T细胞、NK T细胞、B细胞、浆细胞及多种巨噬细胞亚型。单核细胞来源的巨噬细胞表现出促炎和抗原呈递表型，CD40-CD40L信号连接T细胞、B细胞和巨噬细胞。CellChat分析揭示免疫激活、炎症、凋亡和免疫耐受丧失相关通路的协同上调。此外，Aire-/-角膜上皮细胞和角膜基质细胞（keratocytes）上调抗原呈递和促炎基因特征。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>单细胞转录组学揭示了Aire-/-角膜中复杂的多细胞炎症环境，涉及多种免疫亚群及活化的驻留上皮和基质细胞。这些发现表明非T细胞机制参与慢性干眼发病，可能解释目前美国食品药品监督管理局（FDA）批准的T细胞靶向疗法疗效有限的原因。进一步表征这些多细胞相互作用和信号通路有助于开发更广泛的自身免疫性干眼症治疗策略。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11190&amp;v=1&amp;s=218367ab5da4c8ff" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11190&amp;v=2&amp;s=8bf6b8a29ba6a3fe" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11190&amp;v=3&amp;s=cd3b0f1c5ac31a8e" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11190&amp;v=4&amp;s=4563ca831cc0ed26" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11190&amp;v=5&amp;s=874d37e7aa752975" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">动物适应与生理</h2>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-important">Important</span> · 63 分</div>
+      <div class="card-title"><span class="badge cat-module">睡眠/昼夜节律</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42880284/">Multi-omics atlas of chronic exercise.</a></div>
+      <div class="card-title-zh">慢性运动的多组学图谱</div>
+      <div class="news">为揭示运动降低全因死亡率的跨器官、性别和昼夜节律分子机制，作者对小鼠22种组织和血浆进行多组学分析，发现运动诱导骨骼肌纤维类型转换及广泛的组织特异性重塑，女性转录反应更广，单核甲基化与转录组联合分析揭示了驱动表观遗传重塑的细胞类型。</div>
+      <div class="meta">Cell · 2026-10-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Maier Geraldine, Hariharan Manoj, Ramasamy Ramesh K, Glina Aidan, van Rosmalen Laura, Pathak Suraj J, Deota Shaunak, Patel Sahil, Lin Terry, Lam Michael Tun Yin, Le Hiep D, Powale Krushali, Shimomura Takashi, Otobe Yuta, Rothenberg Vince, Sun Ming, Sakurai Takeshi, Chin Tiffany, Wu Yue, Castanon Rosa, Bartlett Anna, Chen Huaming, Nery Joseph R, Barragan Cesar, Devulapalli Swetha, Patel Hemal H, Saghatelian Alan, Yoshitane Hikari, Sahoo Debashis, Keach Susan M, Ecker Joseph R, Panda Satchidananda</div>
+<div class="meta">DOI: 10.1016/j.cell.2026.09.044</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42880284/">https://pubmed.ncbi.nlm.nih.gov/42880284/</a></div>
+<div class="meta">Keywords: metabolomics、multi-omics、muscle、proteomics、sex difference、single-nucleus DNA methylation、single-nucleus RNA seqencing、tendon、transcriptomics、voluntary exercise</div>
+<div class="reason"><span class="abs-label">推荐理由</span>单核RNA-seq与甲基化联合分析技术路线与用户方法学高度相关，哺乳动物运动模型可迁移至蜂蚁等社会性动物研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>运动可降低全因死亡率，但其分子效应在跨器官、性别和昼夜节律相位上的作用机制尚不完全清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者对小鼠进行8周自愿转轮跑步干预，在活跃期和非活跃期收集22种组织及血浆，开展批量RNA测序、代谢组学、蛋白质组学、单核RNA测序和甲基化测序。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>运动诱导了经典的肌纤维类型转换和广泛的组织特异性重塑，其中骨骼肌转录组变化最为显著。除下丘脑、肾脏和肺外，大多数组织在活跃期变化更大。雌性表现出更广泛的转录反应，并具有独特的下调模式。单核甲基化组与转录组联合分析揭示了驱动运动诱导表观遗传重塑的细胞类型，包括与特定肌核中肌纤维类型转换相关的协调基因体去甲基化和转录变化。细胞类型解析的甲基化分析揭示了强烈的、具有性别偏倚的训练表观遗传反应。机器学习识别出跨哺乳动物物种保守的运动特征。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究通过多组学整合和单核分辨率分析，系统描绘了慢性运动的分子图谱，为理解运动获益的分子机制提供了重要资源，并发现了具有跨物种保守性的运动特征。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11198&amp;v=1&amp;s=a6f85c2f5bfbbba4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11198&amp;v=2&amp;s=cb434a6d10b091df" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11198&amp;v=3&amp;s=21c7cce6c1717b09" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11198&amp;v=4&amp;s=f534f4b1302caef2" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11198&amp;v=5&amp;s=89229b69441803a2" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-must">Must Read</span> · 86 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42880218/">Emerging frontiers for AI in single-cell genomics.</a></div>
+      <div class="card-title-zh">人工智能在单细胞基因组学中的新兴前沿</div>
+      <div class="news">针对单细胞RNA基础模型应用不足及表观遗传/多组学新技术带来的机遇，该综述系统梳理了AI嵌入模型在scRNA-seq和scATAC-seq中的应用、单细胞多组学调控基因组学分析方法，以及从Perturb-seq学习虚拟细胞模型的策略，指出尽管大规模图谱数据为AI解释新数据集提供了理论基础，单细胞AI模型仍面临关键局限性。</div>
+      <div class="meta">Molecular cell · 2026-10-15</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Mitra Sneha, Li Jiaxin, Leslie Christina S</div>
+<div class="meta">DOI: 10.1016/j.molcel.2026.09.014</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42880218/">https://pubmed.ncbi.nlm.nih.gov/42880218/</a></div>
+<div class="meta">Keywords: gene regulatory networks、scATAC-seq、scRNA-seq、single cell、single-cell foundation models、virtual cells</div>
+<div class="reason"><span class="abs-label">推荐理由</span>系统综述AI在单细胞基因组学中的前沿应用，直接覆盖用户关注的scRNA-seq、scATAC-seq及多组学技术发展方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>单细胞生物学革命已持续十余年，人工智能在单细胞基因组学中的应用也日益增多。早期单细胞RNA嵌入模型及随后的&quot;基础模型&quot;（foundation models）并未在实验生物学家中获得广泛应用，但随着大规模单细胞RNA测序（scRNA-seq）图谱项目的推进，利用人工智能模型在庞大数据资源背景下解释新数据集的需求日益迫切。同时，单细胞表观遗传学/多组学检测技术和Perturb-seq技术的出现为人工智能建模带来了新机遇。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本文综述了以下内容：用于scRNA-seq和单细胞转座酶可及染色质测序（scATAC-seq）的人工智能嵌入和基础模型；利用单细胞多组学数据进行调控基因组学研究的机器学习工作；以及从Perturb-seq数据中学习&quot;虚拟细胞&quot;模型的人工智能策略。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>人工智能在单细胞基因组学领域已取得多方面进展，包括scRNA-seq和scATAC-seq的嵌入与基础模型、单细胞多组学在调控基因组学中的机器学习应用，以及基于Perturb-seq的虚拟细胞模型构建。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该文总结了单细胞人工智能模型的当前局限性，并展望了未来发展方向，为实验生物学家理解和应用人工智能工具解读单细胞数据提供了重要参考，有助于推动人工智能与单细胞生物学的深度融合。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11161&amp;v=1&amp;s=91376746c763a3d8" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11161&amp;v=2&amp;s=be4b6c65853d373d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11161&amp;v=3&amp;s=90f7a1615a07e054" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11161&amp;v=4&amp;s=e8abb7c9e3198353" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11161&amp;v=5&amp;s=5f73ac25d3af3e70" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-important">Important</span> · 62 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://www.biorxiv.org/content/10.1101/2025.10.28.681564">Benchmarking large-scale single-cell RNA-seq analysis</a></div>
+      <div class="card-title-zh">大规模单细胞RNA测序分析基准测试</div>
+      <div class="news">针对单细胞RNA测序数据规模激增带来的计算瓶颈，研究者系统比较了五种主流分析框架的可扩展性与效率，发现GPU加速和优化的线性代数配置可显著提升计算速度，而高可变基因筛选与PCA实现方式的差异是各框架性能分化的主要驱动因素，为大规模单细胞数据的高效分析提供了实用指南。</div>
+      <div class="meta">bioRxiv · 2026-10-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Billato I., Pages H., Carey V., Waldron L., Sales G., Romualdi C., Risso D.</div>
+<div class="meta">DOI: 10.1101/2025.10.28.681564</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.1101/2025.10.28.681564">https://www.biorxiv.org/content/10.1101/2025.10.28.681564</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接针对scRNA-seq大规模数据分析的计算优化，为单细胞技术发展中关键的方法学瓶颈提供实用基准参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>单细胞RNA测序（scRNA-seq）数据集规模日益增长，带来了重大计算挑战。本研究针对五种广泛使用的分析框架（Seurat、OSCA、scrapper、Scanpy和rapids_singlecell）的可扩展性、效率和准确性进行基准测试，重点关注算法和基础设施选择对性能的影响。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究使用代表性数据集进行系统性比较，包括一个130万细胞和一个420万细胞的数据集用于可扩展性评估，以及四个具有真实标签的较小数据集（BE1、sc_mixology、脐带血CITE-seq和Hao）用于聚类准确性评估。以主成分分析（PCA）为范例步骤，评估六种奇异值分解（SVD）算法（精确法、ARPACK、IRLBA、随机法、Jacobi和增量PCA）在多种数据表示形式（稠密矩阵、稀疏矩阵、HDF5）和硬件配置（CPU与GPU）下的计算性能。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>所有方法在PCA结果中表现出高度一致性，截断方法的准确性损失可忽略不计。基于GPU的rapids_singlecell计算相比最优CPU方法实现了15倍加速，且内存使用适中。在CPU上，ARPACK和IRLBA对稀疏矩阵最高效，而随机SVD对HDF5后端数据表现最佳。在完整流程中，rapids_singlecell速度最快；而在具有已知细胞身份的数据集中，OSCA和scrapper实现了最高的聚类准确性（ARI高达0.97）。性能差异主要受高变基因（HVGs）选择和PCA实现方式驱动。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，scRNA-seq分析的可扩展性关键取决于算法和基础设施因素。GPU加速和优化的BLAS/LAPACK配置显著提升性能，而基于Bioconductor的流程在准确性方面保持稳健。提供的基准测试为大规模单细胞数据集的高效可靠分析提供了实用指导。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11274&amp;v=1&amp;s=0ee509ae8bc4d96d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11274&amp;v=2&amp;s=87c06876bf5f583d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11274&amp;v=3&amp;s=c1af07e7d970cd0d" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11274&amp;v=4&amp;s=f5fdfe404e9f0ae8" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=wangying14%40genomics.cn&amp;p=11274&amp;v=5&amp;s=b8abcb7c2aade9a6" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日推荐的15篇论文主要集中于单细胞组学与空间组学两大核心方向，其中单细胞RNA测序、scATAC-seq及多组学整合应用最为突出，同时涵盖空间转录组技术基准比较与跨平台分析方法。AI方法贯穿多个研究，包括单细胞基础模型、嵌入模型及GPU加速计算框架，显示人工智能正深度融入单细胞数据分析流程。技术趋势方面，多组学整合成为显著特征，多篇论文同时采用scRNA-seq与空间转录组、表观遗传或微生物组数据；此外，跨物种比较、患者意识分析等注重数据稳健性的方法学设计受到重视。对研究者而言，这批文献提供了单细胞与空间组学的前沿技术路线、计算工具优化方案，以及肿瘤免疫、神经损伤、自身免疫等疾病的分子机制新见解，有助于实验设计优化、分析方法选择和跨学科研究拓展。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=wangying14%40genomics.cn&amp;d=2026-10-19&amp;s=18b0f8979054a9c4">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=wangying14%40genomics.cn&amp;d=2026-10-19&amp;s=18b0f8979054a9c4">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

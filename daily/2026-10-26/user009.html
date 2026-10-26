@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-10-26</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-10-26</h1>
+    <p class="hello">niupeiyuan，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">过去 3 天全库新增 866 篇 · 命中您的关键词 103 篇 · 本次推送 15 篇（必读 0 · 重要 3 · 参考 12）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">基因组演化与多样性</h2>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-important">Important</span> · 61 分</div>
+      <div class="card-title"><span class="badge cat-module">系统发育基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42907564/">Drift, selection and recombination bias drive the evolution of a non-ribosomal peptide.</a></div>
+      <div class="card-title-zh">漂移、选择及重组偏倚驱动一种非核糖体肽的进化</div>
+      <div class="news">由于非核糖体肽的重组事件会干扰系统发育与演化动力学的解析，研究者采用重组感知系统发育学等方法追溯GameXPeptides的演化，发现其多样性受自然选择塑造，但同时受到遗传漂变和重组偏倚的显著限制，揭示了微生物天然产物演化的复杂驱动力。</div>
+      <div class="meta">Nature ecology &amp; evolution · 2026-10-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Kaiser Sebastian, Shahmohammadi Niayesh, Goel Trinetri S M, Buchanan Charles J, Garg Sriram G, Vidaurre-Barahona Daniela, Qian Zhengyi, Lefèvre Claire, Schindler Daniel, Kim Yonggyun, Bode Helge B, Hochberg Georg K A</div>
+<div class="meta">DOI: 10.1038/s41559-026-03214-y</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42907564/">https://pubmed.ncbi.nlm.nih.gov/42907564/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>非核糖体肽的进化动力学与抗菌肽发现相关，但缺乏AI设计方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>非核糖体肽（Non-ribosomal peptides）在微生物生态学和医学中具有重要作用，例如作为毒素和抗生素（如青霉素）。与普通蛋白质类似，非核糖体肽也会经历由其合成酶 rampant 重组驱动的进化变化。然而，由于重组会干扰系统发育分析以及自然选择和遗传漂变的统计检验，非核糖体肽多样化的进化动态和原因尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究以昆虫病原细菌用于杀死昆虫猎物的非核糖体肽 GameXPeptides 为研究对象，采用重组感知系统发育学、祖先序列重建以及历史重组模式的统计分析来追溯 GameXPeptides 的进化历程。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该研究发现了数十种新的 GameXPeptides，并揭示了引人注目的结构趋同模式。研究提供了统计学和实验证据，表明这种多样性受到选择的塑造，同时 GameXPeptides 也经历了显著的遗传漂变和偏倚的重组速率，这些因素限制了可及肽变体的空间。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本研究阐明了适应性和非适应性进化力量作用于自然界中一些最多功能化学武器上的复杂相互作用，为理解非核糖体肽的进化机制提供了重要见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12309&amp;v=1&amp;s=0363083424bf3725" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12309&amp;v=2&amp;s=a64ca90087318cd1" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12309&amp;v=3&amp;s=5828c5603ef9b19d" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12309&amp;v=4&amp;s=4d5197359e6cc6b1" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12309&amp;v=5&amp;s=4e8fe4c203afb730" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.10.22.760874">Towards forecasting antimicrobial resistance evolution: concordance of in vitro and in vivo studies</a></div>
+      <div class="card-title-zh">迈向抗菌耐药性进化的预测：体外与体内研究的一致性</div>
+      <div class="news">为验证实验数据能否预测临床耐药性演化，作者系统比较了体外实验与体内分离株的耐药演化数据，发现环丙沙星选择下的铜绿假单胞菌和大肠杆菌在基因突变和氨基酸替换上高度一致，且MIC值差异与突变来源无关，支持体外实验可用于预测临床耐药性演化风险。</div>
+      <div class="meta">bioRxiv · 2026-10-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Herzog M., Murphy R., Rolff J.</div>
+<div class="meta">DOI: 10.64898/2026.10.22.760874</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.10.22.760874">https://www.biorxiv.org/content/10.64898/2026.10.22.760874</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>系统比较体外体内耐药性演化，涉及MIC测定与实验进化，可为抗菌肽活性评价和优化提供方法学参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>抗菌耐药性是全球重大健康威胁，目前应对措施主要包括新药研发、审慎用药和快速诊断。近年来，通过实验预测耐药性进化以预先防止耐药性的理念受到关注，但实验数据能在多大程度上反映患者菌株中的耐药情况尚不明确。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者对1977年至2024年间发表于PubMed的ESKAPE病原体及大肠杆菌（ESKAPEE）实验性耐药进化文献进行了系统综述与分析，通过最低抑菌浓度（MIC）变化编目耐药进化幅度；并重点比较了环丙沙星（CIP）选择压力下铜绿假单胞菌（P. aeruginosa）和大肠杆菌（E. coli）的体外与体内基因突变、氨基酸替换及相关MIC数据。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>大肠杆菌的体外与体内分离株在所选基因突变和特定氨基酸变化方面显示出高度一致性，铜绿假单胞菌也有类似结果；进化后的MIC值因 respective 基因突变和突变总数而有显著差异，但与菌株来源（体外或体内）无关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明体外实验性耐药进化可以预测体内抗菌耐药性的出现，支持利用实验数据预测耐药性发生风险，从而为抗菌药物管理提供依据；但尚需进一步研究这些发现在其他细菌-抗菌药物组合中的普适性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12440&amp;v=1&amp;s=e17b85608960eb78" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12440&amp;v=2&amp;s=ca8d45232738f090" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12440&amp;v=3&amp;s=597f4a71605fac71" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12440&amp;v=4&amp;s=d90cb6c7d9fa90ef" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12440&amp;v=5&amp;s=a30adcad444ecc22" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 42 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42907565/">Soil viruses as key regulators of the microbial carbon pump in deep soils.</a></div>
+      <div class="card-title-zh">土壤病毒作为深层土壤微生物碳泵关键调控者的角色</div>
+      <div class="news">由于深层土壤碳持久性的病毒调控机制不明，作者通过0–700 cm土壤剖面调查与全球地下宏基因组整合，发现病毒通过辅助代谢基因促进宿主碳 scavenging、并通过内溶素促进残体碳积累，从而增强深层土壤微生物碳泵。</div>
+      <div class="meta">Nature ecology &amp; evolution · 2026-10-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Wu Xing-Jie, Han Wan-Xue, Liang Chao, Chen Ji, Nicol Graeme, Rillig Matthias C, Zhu Dong, Liu Bin-Bin, Wang Feng-Hua, Xiao Ke-Qing, Zhu Yong-Guan</div>
+<div class="meta">DOI: 10.1038/s41559-026-03207-x</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42907565/">https://pubmed.ncbi.nlm.nih.gov/42907565/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及宏基因组学与微生物组，但聚焦土壤病毒碳泵机制，与抗菌肽发现及设计目标关联有限。</div>
+<div class="abstract"><span class="abs-label">背景</span>深层土壤储存着超过一半的陆地有机碳，但病毒调控地下环境中碳持久性的机制仍不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究通过四种农业生态系统的土壤剖面调查（0-700 cm）以及全球地下宏基因组数据整合分析，建立了深层土壤病毒资源数据库。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>深层土壤病毒资源数据库包含50,949个病毒操作分类单元和3,902个辅助代谢基因（AMGs）。病毒丰富度随深度显著增加，并因碳可利用性下降而向溶原性转变。深层土壤病毒组携带参与聚合物降解和细胞内裂解的AMGs和溶菌酶。病毒内溶素显著促进残体碳积累，进而促进矿物结合态有机碳的增加。对全球138个土壤剖面的综合分析进一步揭示病毒丰度对土壤有机碳具有正向效应。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究建立了病毒通过AMGs促进宿主碳 scavenging、通过内溶素活性促进残体形成，从而增强深层土壤微生物碳泵的理论框架。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12448&amp;v=1&amp;s=5f0c6b2acf1c803a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12448&amp;v=2&amp;s=07f0c280ae1f0a83" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12448&amp;v=3&amp;s=6fb78e9cc1029d28" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12448&amp;v=4&amp;s=b607dae06a24c642" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12448&amp;v=5&amp;s=a93f029c84d7dc40" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">动物适应与生理</h2>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 34 分</div>
+      <div class="card-title"><span class="badge cat-module">极端环境适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42918855/">Steroid hormones produced by coral-associated Endozoicomonas influence coral immune response during thermal stress.</a></div>
+      <div class="card-title-zh">珊瑚共生菌Endozoicomonas产生的类固醇激素影响热胁迫下珊瑚的免疫应答</div>
+      <div class="news">为揭示珊瑚热应激下的免疫调节机制，作者利用多组学和野外温度梯度采样，发现共生菌Endozoicomonas能将胆固醇转化为睾酮和孕酮，这些类固醇激素可诱导珊瑚先天免疫反应的转录重编程，为理解微生物介导的珊瑚耐热机制提供了新视角。</div>
+      <div class="meta">Nature microbiology · 2026-10-22</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Mohamed Amin R, Ochsenkühn Michael A, Haydon Trent D, Abdelrazig Salah, Coe Lisa S Y, Mochales-Riaño Gabriel, Jo Woonkee S, Healy Alan R, Abrego David, Raina Jean-Baptiste, Burt John A, Amin Shady A</div>
+<div class="meta">DOI: 10.1038/s41564-026-02494-1</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42918855/">https://pubmed.ncbi.nlm.nih.gov/42918855/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>揭示微生物-宿主免疫互作机制，但对象为珊瑚共生菌及类固醇代谢，非抗菌肽领域。</div>
+<div class="abstract"><span class="abs-label">背景</span>珊瑚微生物组被认为在维持珊瑚生存和促进其适应环境扰动方面发挥关键作用。Endozoicomonas是一类普遍存在于珊瑚中的共生细菌，推测其能为珊瑚提供必需代谢物，但宿主与微生物之间相互作用的具体动态机制尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究采用多组学技术结合实验室验证实验，分析Endozoicomonas的代谢功能；沿自然温度梯度进行野外采样，并在实验室热胁迫条件下对珊瑚施加睾酮或孕酮处理，检测其免疫应答变化。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Endozoicomonas编码珊瑚来源睾酮的代谢基因，并能将普遍存在的胆固醇转化为睾酮和孕酮；这两种重要类固醇在热胁迫期间于珊瑚全生物体（holobiont）中积累。野外采样显示，热胁迫及白化综合征发生期间珊瑚类固醇激素总体受到抑制。在实验室热胁迫下，向珊瑚提供睾酮或孕酮可诱导其先天免疫应答的转录重编程。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现揭示了一种此前未被认识的微生物促进珊瑚适应力的潜在机制，即共生细菌通过产生类固醇激素参与宿主免疫调节，为理解珊瑚-微生物共生关系及其在气候变化中的生态意义提供了新视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12353&amp;v=1&amp;s=54cfbfad3f7f568d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12353&amp;v=2&amp;s=72134ae81816f602" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12353&amp;v=3&amp;s=d6a0aab3352286d8" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12353&amp;v=4&amp;s=a9e59ab03883733e" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12353&amp;v=5&amp;s=93893019db2370de" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-important">Important</span> · 62 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42922358/">PeptidomicsDB: a unified resource of endogenous peptidomes for peptide discovery and functional exploration across species and biological contexts.</a></div>
+      <div class="card-title-zh">PeptidomicsDB：一个跨物种和生物学背景下用于肽段发现与功能探索的内源性肽组学统一资源库</div>
+      <div class="news">针对公共肽组学数据碎片化、难以跨研究整合的瓶颈，研究者通过标准化再分析151个项目构建了PeptidomicsDB统一平台，从中鉴定出超400万条独特内源性肽段序列，其中逾40万条与已知生物活性肽具有序列相似性，为跨物种肽类发现与功能挖掘提供了可重用的数据基础。</div>
+      <div class="meta">Nucleic acids research · 2026-10-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Yang Fengyuan, Guo Yichen, Luo Peiqi, Wu Yucheng, Li Yapeng, Zhang Zishun, Ge Na, Yuan Haihan, Liu Desi, Pan Jianbo</div>
+<div class="meta">DOI: 10.1093/nar/gkag1032</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42922358/">https://pubmed.ncbi.nlm.nih.gov/42922358/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涵盖de novo肽段鉴定、跨物种肽组学数据挖掘及生物活性肽发现，直接支撑用户抗菌肽发现与功能探索研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>内源性肽（endogenous peptides）是调控多种生理过程的生物活性分子丰富来源，为功能发现提供了重要机遇。基于质谱的肽组学（peptidomics）技术可实现其系统性表征，但公共数据集分散，且常使用异质性工具和参数进行处理，限制了肽段水平的检索、跨研究探索和数据再利用。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了PeptidomicsDB数据库，基于151个公共肽组学项目的标准化重分析，涵盖3992个生物学样本，涉及全球肽组学、神经肽组学（neuropeptidomics）和免疫肽组学（immunopeptidomics）等主要分支。采用PEAKS Studio 13.0中实现的DeepNovo Peptidome流程，整合数据库搜索、同源性搜索和从头测序（de novo sequencing）进行肽段鉴定。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该研究鉴定了超过3300万条肽段记录，代表超过400万条独特肽段序列，其中超过40万条与公共数据库中 curated 的生物活性肽具有序列相似性。分析249个 curated 成对比较数据集，鉴定出78,910条差异丰度肽段记录；14个情境特异性数据集产生148,175条在特定组织、疾病或细胞类型中富集的肽段记录。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>PeptidomicsDB在肽段、前体蛋白、样本和数据集水平关联实验来源、定量证据、质谱数据和功能注释，支持肽段发现和功能探索，为跨物种和生物学背景下的肽组学研究提供了统一的资源平台。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12434&amp;v=1&amp;s=072aa3d3cb26db29" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12434&amp;v=2&amp;s=1bfe0e41710df334" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12434&amp;v=3&amp;s=84a89fa3d3c2a48a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12434&amp;v=4&amp;s=e52b6b99dc3f0794" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12434&amp;v=5&amp;s=89d5999219fc35c7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42917106/">Artificial Intelligence-Integrated Proteome-Wide Target Prioritization for Drug Discovery against Multidrug-Resistant Neisseria gonorrhoeae.</a></div>
+      <div class="card-title-zh">人工智能整合的蛋白质组全靶点优先级排序用于抗多重耐药淋病奈瑟菌的药物发现</div>
+      <div class="news">面对淋病奈瑟菌对所有抗生素类别产生耐药性的紧迫威胁，作者整合人工智能与六个生物学信息过滤器对核心蛋白质组进行系统筛选，从数千个蛋白编码序列中锁定LpxC等12-30个高置信度靶点，为加速抗耐药淋球菌药物发现提供了可验证的优先级框架。</div>
+      <div class="meta">ACS infectious diseases · 2026-10-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Kant Ravi, Mazumdar Saurabh, Mahajan Ananya, Christodoulides Myron</div>
+<div class="meta">DOI: 10.1021/acsinfecdis.6c00521</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42917106/">https://pubmed.ncbi.nlm.nih.gov/42917106/</a></div>
+<div class="meta">Keywords: Neisseria gonorrhoeae、AI drug discovery、antimicrobial resistance (AMR)、core genome analysis、essential genes、proteome-wide target fishing</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽聚焦小分子药物靶点筛选，但AI/ML评分层整合序列特征与结构预测，与protein language model辅助肽设计的思路可借鉴。</div>
+<div class="abstract"><span class="abs-label">背景</span>淋病奈瑟菌（Neisseria gonorrhoeae）每年导致约8240万例感染，正迅速逼近无法治疗的状态。该病原体已对磺胺类药物时代以来引入的每一类抗生素产生耐药性，最后一线推荐药物头孢曲松已在多个大洲出现广泛耐药谱系的高水平耐药。目前尚无获批疫苗，且40多年来没有针对该病原体的新机制抗生素问世。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究采用计算蛋白质组全靶点筛选作为快速、系统的方法，对淋病奈瑟菌核心蛋白质组应用六种生物学信息过滤器：核心基因组定义、宿主同源物排除、必需性筛选、代谢瓶颈识别、亚细胞定位和耐药性知情优先级排序。整合人工智能（AI）/机器学习（ML）评分层，利用序列特征、AlphaFold2结构、蛋白质-蛋白质相互作用网络以及约20,000株临床分离株的基因型-表型数据对候选靶点进行进一步排序。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在跨越12-69株临床菌株的数据集中，该流程将2000-12,300个蛋白质编码序列缩减至12-30个高置信度靶点。五个靶点在跨研究中显示出一致的优先级排序：LpxC、MurA、FabI、DapD和NGFG_RS03485。其中仅LpxC具有针对多重耐药淋球菌的实验性抑制剂验证，其余候选靶点仅有计算支持而缺乏生化确认。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>传统药物发现速度太慢且对耐药性认识不足，无法应对这一日益严峻的威胁。泛基因组分析、结构预测和用于化合物设计的生成式AI的进展，为新型治疗药物的开发提供了比以往更可行的途径，但弥合验证差距仍是关键瓶颈。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12422&amp;v=1&amp;s=c64eed15c8225dd0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12422&amp;v=2&amp;s=34acecf8bd225109" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12422&amp;v=3&amp;s=270be9ae65127b8a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12422&amp;v=4&amp;s=525d320a74b28475" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12422&amp;v=5&amp;s=56dff72fab7adb9a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42923537/">Protein-Protein Interface Residue Prediction by Integrating Protein Language Representations and Structural Graph Attention.</a></div>
+      <div class="card-title-zh">整合蛋白质语言表征与结构图注意力的蛋白质-蛋白质界面残基预测</div>
+      <div class="news">针对蛋白质-蛋白质相互作用界面残基预测中界面残基稀疏且受复杂空间依赖性调控的难题，研究者开发了EvoStruct-GAT多模态图注意力模型，整合ESM-2语言表示、DSSP结构描述符与距离感知图注意力，在独立测试集上实现AUROC 0.8081，且无需已知结合伴侣信息即可有效排序潜在界面残基，为靶向药物设计中的候选位点筛选提供了新工具。</div>
+      <div class="meta">ACS omega · 2026-10-07</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Hou Zhen, He Wei, Cao Weinan, Li Jiarui, Li Hongquan, Sun Shuo, Yang Hua</div>
+<div class="meta">DOI: 10.1021/acsomega.6c08819</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42923537/">https://pubmed.ncbi.nlm.nih.gov/42923537/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>整合ESM-2蛋白语言模型与图注意力预测界面残基，其多模态建模策略可为抗菌肽-靶标相互作用预测提供方法参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>准确的残基级蛋白质-蛋白质相互作用界面预测对于阐明分子识别机制和指导靶向药物设计具有重要意义。然而，界面残基相对稀疏且受复杂空间依赖性调控，使其准确识别具有挑战性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究开发了EvoStruct-GAT，一种基于PDBbind v2020.R1数据集的多模态图注意力模型。该模型将目标蛋白表示为残基级图，整合了ESM-2蛋白质语言模型表征、DSSP衍生的结构描述符和距离感知图注意力，并采用组合策略解决类别不平衡问题。为减少序列同源性导致的信息泄漏，受体和配体序列被独立聚类，构建的训练集、验证集和测试集在受体或配体聚类中均无重叠。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>以最小交叉伙伴重原子距离小于5 Å定义界面残基，模型在独立测试集上实现了0.8081的AUROC、0.4475的AUPRC和0.4562的F1分数。基于4.0 Å、4.5 Å和ΔSASA定义的替代标签产生了可比的AUROC值，表明残基排序能力在不同界面定义下具有合理稳健性。消融实验表明ESM-2表征是性能的主要贡献者，DSSP信息和残基间消息传递提供了额外价值。在共同评估方案下，EvoStruct-GAT优于简化的内部基线，并与公开可用模型表现出互补的性能特征。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>EvoStruct-GAT能够在无需已知结合伴侣信息的情况下有效排序潜在界面残基，从而支持候选位点选择、实验验证以及下游结构和功能分析。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12433&amp;v=1&amp;s=a9c64af605201308" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12433&amp;v=2&amp;s=1c6520360f1f2dc5" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12433&amp;v=3&amp;s=6b40847c3559212d" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12433&amp;v=4&amp;s=62fc66ffa7c55c62" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12433&amp;v=5&amp;s=3b9013f675ee8da9" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42918850/">CauTrigger: deciphering biological system state transitions by hierarchical causal decomposition.</a></div>
+      <div class="card-title-zh">CauTrigger：通过层级因果分解解析生物系统状态转换</div>
+      <div class="news">为破解观测数据中混杂因素导致生物系统状态转变因果架构难以识别的问题，研究者开发了整合do-演算的分层深度潜变量模型CauTrigger，通过解耦因果性与虚假潜变量递归重建调控层级，在单细胞多组学和肠道微生物组等真实数据中实现了因果触发因素识别与扰动结果预测。</div>
+      <div class="meta">Nature methods · 2026-10-22</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhang Chengming, Cai Deyu, Aihara Kazuyuki, Chen Luonan</div>
+<div class="meta">DOI: 10.1038/s41592-026-03274-9</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42918850/">https://pubmed.ncbi.nlm.nih.gov/42918850/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽非直接研究抗菌肽，但其因果推断与可解释AI方法可借鉴用于肽-微生物互作的机制解析。</div>
+<div class="abstract"><span class="abs-label">背景</span>生物系统表现出复杂的层级调控，跨多个层次的相互作用控制着状态之间的转换。然而，由于混杂因素会在观测数据中产生虚假关联，识别这些状态转换背后的因果架构仍然具有挑战性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究提出了CauTrigger，一种层级深度潜变量模型，该模型整合do-演算（do-calculus）来识别潜在的因果触发因子，并预测跨多个调控层次的扰动结果。通过解耦因果性与虚假性的潜变量因素，CauTrigger递归地重建潜在的调控层级，从而实现对观测数据的可解释推理。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在具有多层调控结构的合成数据集和真实数据集上，CauTrigger在识别因果触发因子和预测系统级响应方面均优于现有方法。在单细胞多组学和肠道微生物组数据集上的应用表明，CauTrigger能够优先排序候选因果触发因子，并利用计算机模拟扰动（in silico perturbations）生成关于生物状态转换的可检验假设。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果确立了CauTrigger作为复杂生物系统中因果发现的通用框架，为状态导航的潜在策略提供了信息支持。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12352&amp;v=1&amp;s=feeea94f6c1f98c0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12352&amp;v=2&amp;s=6060a1891ea3f793" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12352&amp;v=3&amp;s=3de3d5e210aa3a76" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12352&amp;v=4&amp;s=270fbc403cc3b55d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12352&amp;v=5&amp;s=1ab56b90e9b272a3" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 37 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.01.11.698878">Metabolic blueprints of monocultures enable prediction and design of synthetic microbial consortia</a></div>
+      <div class="card-title-zh">单菌代谢蓝图实现合成微生物群落的预测与设计</div>
+      <div class="news">为验证简化模型能否预测复杂代谢环境中的合成微生物群落组成，研究者利用15种根际细菌单培养的外代谢物数据参数化消费者-资源模型，发现成对共培养不足以捕捉更大群落中的种间非线性相互作用，并据此设计出高共存概率的三菌株新亚群落，为微生物群落的预测与工程化提供了机制与数据混合建模框架。</div>
+      <div class="meta">bioRxiv · 2026-10-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Bald S., Nelson R., Zhang J., de Raad M., Scott D. C., Hughes K., Osborne M., Dukovski I., Northen T., Segre D.</div>
+<div class="meta">DOI: 10.64898/2026.01.11.698878</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.01.11.698878">https://www.biorxiv.org/content/10.64898/2026.01.11.698878</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>微生物群落代谢建模与宏基因组学相关，但偏离抗菌肽核心方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>合成微生物生态学旨在理解复杂的微生物动态并设计具有特定性质的群落，通常基于单个生物体的数学模型。然而，简化的模型是否包含足够的细节来预测合成群落的组成，尤其是在代谢复杂的环境中，尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用15种根际细菌单菌培养的外代谢物纵向数据，对消费者-资源模型进行参数化，并用其预测两两共培养体系及更高阶群落。研究还通过模型中人工关闭交叉喂养（cross-feeding）相互作用，以及留一和留二实验，评估了种间相互作用的重要性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>模型能够预测两两共培养及高阶群落的组成；交叉喂养相互作用对生态系统结构具有重要影响；两两共培养不一定能捕捉更大群落中的种间相互作用，揭示了相互作用的非线性特征；该模型可用于识别具有高共存可能性的三菌株新亚群落。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究结果揭示了未来工作中需要解决的实验和理论挑战，并确立了混合机制与数据驱动的代谢模型作为预测和工程化微生物群落的有前景的框架。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12442&amp;v=1&amp;s=e0b3fed917f5ed68" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12442&amp;v=2&amp;s=105cdfd6e7852087" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12442&amp;v=3&amp;s=2bdcbc19fbdd4870" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12442&amp;v=4&amp;s=db738870b5d86e81" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12442&amp;v=5&amp;s=1a7774b6104570f9" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 32 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42923083/">Comparative analysis and optimization of multi-model artificial intelligence for microscopic detection of fungal structures in superficial fungal infections.</a></div>
+      <div class="card-title-zh">多模型人工智能在浅表真菌感染真菌结构显微检测中的比较分析与优化</div>
+      <div class="news">针对传统浅表真菌感染诊断耗时且主观性强的问题，研究者系统比较并优化了六种深度学习模型，发现YOLOv11经IoU阈值与Cmax策略优化后在200×显微镜下菌丝检测F1分数达97.84%，并成功部署为在线辅助诊断平台，为真菌感染实时AI辅助诊断提供了标准化工具。</div>
+      <div class="meta">Frontiers in cellular and infection microbiology · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Liu Mei, He Wenjing, Ni Linan, Li Lulu, Tang Yuling, Tan Jingwen, Yang Lianjuan</div>
+<div class="meta">DOI: 10.3389/fcimb.2026.1892808</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42923083/">https://pubmed.ncbi.nlm.nih.gov/42923083/</a></div>
+<div class="meta">Keywords: YOLOv11、artificial intelligence、deep learning、fungal infection、multi-model detection</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽涉及AI模型优化，但应用于真菌显微检测而非抗菌肽的序列生成与活性预测。</div>
+<div class="abstract"><span class="abs-label">背景</span>浅表真菌感染对全球公共卫生构成日益严重的威胁。传统诊断技术（包括显微镜检查和培养）耗时且主观性强，常限制诊断准确性。人工智能驱动的诊断工具有望提高显微真菌检测的效率和标准化水平。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究系统比较了六种深度学习模型，包括YOLO系列、卷积神经网络（CNN）系列和检测Transformer（DETR）。构建了三个评估数据集：数据集1和2（分别源自4000张菌丝图像和4500张孢子图像）用于图像级检测评估；数据集3（1730例患者的1870份标本）用于样本级性能评估。以病历为参考标准，通过混淆矩阵分析评估YOLO系列和DETR模型，并对最优模型进行优化后部署至在线辅助诊断平台。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>YOLOv11在所有评估架构中表现最优。400×放大倍数下的检测效果普遍优于200×。YOLOv11菌丝检测F1分数从200×的90.42%提升至400×的92.06%。所有模型对孢子的检测准确率均高于菌丝。患者层面混淆矩阵分析证实了YOLOv11的优越性。经优化交并比（IoU）阈值0.25和最大置信度（Cmax）策略后，200×菌丝F1分数升至97.84%，阳性预测值（PPV）达98.27%。亚组分析显示不同疾病间性能稳健，头癣（tinea capitis）F1分数最高（98.53%）。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>优化后的YOLOv11模型可作为浅表真菌感染真菌结构显微检测的快速、标准化辅助工具。整合至在线辅助诊断平台证明了实时AI辅助真菌检测的可行性，为临床决策提供了标准化支持工具。该研究支持人工智能作为临床和实验室专业知识的潜在补充，有待在前瞻性和多中心研究中进一步验证，并凸显了其简化真菌感染诊断流程的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12429&amp;v=1&amp;s=a0175064dfa6beae" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12429&amp;v=2&amp;s=d1f65900d40be44d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12429&amp;v=3&amp;s=cd2261a5dbbed250" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12429&amp;v=4&amp;s=fe19f3845f235aa2" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12429&amp;v=5&amp;s=e7f06c826cd20d01" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 63 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42919968/">FibriLysins disrupt Staphylococcus aureus biofilms and abscess communities.</a></div>
+      <div class="card-title-zh">FibriLysins（纤维蛋白溶解素）破坏金黄色葡萄球菌生物膜及脓肿群落</div>
+      <div class="news">为应对耐甲氧西林金黄色葡萄球菌等抗生素耐药性挑战，研究者开发了将葡萄球菌激酶与内溶素融合的工程化酶FibriLysins，其先导变体FL-028在小鼠骨骨折感染模型中抗生物膜和抗脓肿活性优于万古霉素，且不影响骨愈合，为难治性葡萄球菌感染提供了安全有效的治疗新策略。</div>
+      <div class="meta">Nature microbiology · 2026-10-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">De Maesschalck Vincent, Chittò Marco, Siverino Claudia, Gens Lena, Zeiter Stephan, Hangartner Alisa, Harzé Sandrine, Vanhoffelen Eliane, Van Laere Camille, Kerremans Alison, Voet Marleen, Boon Maarten, Van Win Tine, Vande Velde Greetje, Wagemans Jeroen, Metsemakers Willem-Jan, Richards Robert Geoffrey, Moriarty Thomas Fintan, Lavigne Rob</div>
+<div class="meta">DOI: 10.1038/s41564-026-02513-1</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42919968/">https://pubmed.ncbi.nlm.nih.gov/42919968/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>工程化内溶素抗葡萄球菌生物膜，与用户关注的抗菌肽/蛋白设计、抗菌活性优化及细菌靶标高度契合。</div>
+<div class="abstract"><span class="abs-label">背景</span>抗生素耐药性日益严峻，特别是耐甲氧西林金黄色葡萄球菌（methicillin-resistant Staphylococcus aureus, MRSA）等病原体的出现，亟需新型抗菌策略。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者将葡萄球菌激酶（staphylokinase）与内溶素（endolysin）融合，构建了一类工程化酶——FibriLysins，并筛选表征了多种葡萄球菌激酶，建立了包含27种FibriLysins的文库。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>先导变体FL-028对临床常见金黄色葡萄球菌分离株具有显著抗菌活性；体外实验中，FL-028使葡萄球菌脓肿群落（SACs）细菌数量降低3.4 log，使生物膜降低2.3 log；体内实验中，FL-028在小鼠骨折相关感染模型中疗效优于万古霉素1个log，并能清除组织中的SAC。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>FL-028对骨愈合无不良影响，这些临床前研究结果凸显了FibriLysins作为治疗难治性葡萄球菌感染的一种强效且安全的治疗策略的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12449&amp;v=1&amp;s=ab6b5fb6b432279d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12449&amp;v=2&amp;s=ada837c297f1a47e" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12449&amp;v=3&amp;s=195bdd84ef6d0461" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12449&amp;v=4&amp;s=410c44768d1044e5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12449&amp;v=5&amp;s=9598795d13f57773" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42927125/">Evaluation of pyocin activity and pyocin-related gene distribution in multidrug- and extensively drug-resistant Pseudomonas aeruginosa isolates from Thailand.</a></div>
+      <div class="card-title-zh">泰国多重耐药和广泛耐药铜绿假单胞菌分离株中脓菌素活性及脓菌素相关基因分布的评价</div>
+      <div class="news">针对多重耐药和广泛耐药铜绿假单胞菌临床管理难题，研究者评估了纯化S型绿脓菌素的抗菌活性并结合基因组分析，发现绿脓菌素AP41、SX1和SX2对该类病原体具有强效杀菌和抗生物膜活性，其中SX1和SX2因转运基因crtA广泛保守且缺乏相应免疫基因而有望保持广谱活性，为开发替代抗菌疗法提供了新候选。</div>
+      <div class="meta">PeerJ · 2026-10-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Laosena Phatcharin, Suppaiboolkij Punthira, Nualnisachol Pornpavee, Walker Daniel, Premsuriya Jiraphan</div>
+<div class="meta">DOI: 10.7717/peerj.21850</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42927125/">https://pubmed.ncbi.nlm.nih.gov/42927125/</a></div>
+<div class="meta">Keywords: Antimicrobial resistance、Bacteriocins、Biofilm、Protein antibiotics、Pseudomonas aeruginosa、Pyocins</div>
+<div class="reason"><span class="abs-label">推荐理由</span>pyocins属于细菌素类抗菌肽，涉及抗菌谱与活性评价，与用户关注的bacteriocin及抗菌肽优化直接相关。</div>
+<div class="abstract"><span class="abs-label">背景</span>铜绿假单胞菌（Pseudomonas aeruginosa）仍是全球医疗保健相关感染的主要原因，多重耐药（MDR）和广泛耐药（XDR）菌株的出现和传播使临床管理日益困难。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究评估了纯化S型脓菌素（AP41、SX1、SX2、G、S5和M1）对2021-2022年间从泰国各地收集的29株MDR或XDR临床铜绿假单胞菌分离株的抗菌和抗生物膜活性，并结合表型数据与比较基因组分析；同时整合了来自NCBI病原体检测数据库的泰国临床铜绿假单胞菌基因组与本研究分离株基因组（n=105）进行全基因组分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>覆盖斑点试验筛选发现AP41、SX1和SX2具有最广的活性谱，对包括碳青霉烯类和黏菌素耐药株在内的MDR和XDR分离株均表现出强效杀菌活性；AP41和SX1在微克浓度范围内即具有高效抗菌活性。生物膜清除实验中，AP41、SX1和SX2呈剂量依赖性地降低已建立生物膜的代谢活性。全基因组分析显示脓菌素转运蛋白基因广泛保守，而编码脓菌素及其同源免疫决定因子的基因库则呈现显著异质性和强谱系关联性；SX1和SX2摄取相关转运基因crtA在基因组数据集中高度保守，且未鉴定到针对SX1或SX2的同源免疫基因。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明脓菌素对MDR和XDR铜绿假单胞菌具有强效的抗菌和抗生物膜活性，特别是SX1和SX2在广泛分离株中保持活性，凸显了其作为替代抗菌疗法候选药物的潜力。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12436&amp;v=1&amp;s=a7c7fa5126bd29a3" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12436&amp;v=2&amp;s=9f23f08360c75cee" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12436&amp;v=3&amp;s=370ddbed895e9386" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12436&amp;v=4&amp;s=200dfe09ee67ba27" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12436&amp;v=5&amp;s=3cbc9557094f6374" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 33 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42927114/">Quorum sensing inhibitor-antibiotic conjugate suppresses virulence and eradicates intracellular Staphylococcus aureus.</a></div>
+      <div class="card-title-zh">群体感应抑制因子-抗生素偶联物抑制毒力并清除胞内金黄色葡萄球菌</div>
+      <div class="news">针对金黄色葡萄球菌通过群体感应逃逸抗生素并形成胞内慢性感染的问题，研究者设计了一种可在宿主细胞内激活的群体感应抑制剂-抗生素偶联物，发现其能同步抑制agr毒力系统并清除胞内细菌，为抗感染治疗提供了&quot;减毒+杀菌&quot;的双功能新策略。</div>
+      <div class="meta">Pharmaceutical science advances · 2026-09-28</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ma Meiling, Luo Shihao, Wang Junshu, Nie Zhuang, An Shaonan, Wang Jianyu, He Xiangxiang, Da Fei, Yao Lin</div>
+<div class="meta">DOI: 10.1016/j.pscia.2026.100155</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42927114/">https://pubmed.ncbi.nlm.nih.gov/42927114/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦传统化学偶联策略，未涉及肽类AI生成或语言模型方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>金黄色葡萄球菌（Staphylococcus aureus）利用主要由附属基因调节子（agr）群体感应（QS）系统调控的多种毒力因子来增强感染严重程度。尤其具有挑战性的是，胞内金黄色葡萄球菌能够逃避抗生素治疗和宿主免疫清除，常导致慢性或复发性感染，使体内病原体清除变得复杂。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者合理设计了一种群体感应抑制因子-抗生素偶联物（QSI-A），将合成自诱导肽（AIP）类似物（强效的agr QS抑制剂）与利福霉素类似物抗生素通过组织蛋白酶可切割连接子连接，以支持在宿主细胞蛋白水解微环境中的胞内激活。研究采用qRT-PCR、溶血试验和LC-MS等方法进行验证，并通过机制研究探索其进入感染宿主细胞及胞内加工产生活性的过程。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>QSI-A显著抑制了关键agr组分（agrA和RNAIII）及主要毒力基因（如psmα、hla、pvl）的表达，同时大幅减少δ-毒素产生，并显著抑制溶血和细胞溶解活性。机制研究表明，QSI-A通过直接摄取或与细菌共内化进入感染宿主细胞，经胞内加工产生活性，有效杀伤胞内金黄色葡萄球菌。在小鼠菌血症模型中，QSI-A治疗显著降低了细菌负荷。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究确立了QSI-A作为一种双重机制抗感染策略，可同时沉默毒力表达并靶向胞内菌库。此外，这种QSI-抗生素偶联物平台具有广泛的适用性，可用于治疗其他依赖QS调控毒力的病原体。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12441&amp;v=1&amp;s=d35bd648eed2b1d3" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12441&amp;v=2&amp;s=a5b2bd4fe1783103" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12441&amp;v=3&amp;s=5381a2f5e4f36c81" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12441&amp;v=4&amp;s=718c1559898fa2db" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12441&amp;v=5&amp;s=472e7bc26b16bb02" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 32 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42923729/">Biocontrol potential of hive-associated Bacillus species against American Foulbrood disease in honeybees (Apis mellifera L.).</a></div>
+      <div class="card-title-zh">蜂群相关芽孢杆菌属（Bacillus）物种对蜜蜂（Apis mellifera L.）美洲幼虫腐臭病的生物防治潜力</div>
+      <div class="news">为应对美洲幼虫腐臭病抗生素治疗导致的抗药性与药物残留问题，作者从病巢中筛选出地衣芽孢杆菌等蜂巢相关芽孢杆菌，发现其30-50 kDa蛋白组分可提升感染幼虫存活率，且对成年工蜂的存活影响与现有抗生素相当、不破坏肠道微生物组，为蜜蜂病害生物防治提供了安全候选策略。</div>
+      <div class="meta">Frontiers in insect science · 2026-10-08</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Shrestha Anuja, Eline Yva, Sundstrom Kenzie, Van Leuven James T</div>
+<div class="meta">DOI: 10.3389/finsc.2026.1870750</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42923729/">https://pubmed.ncbi.nlm.nih.gov/42923729/</a></div>
+<div class="meta">Keywords: Apis mellifera、Bacillus、Paenibacillus larvae、bee larvae、bee pathogen、biocontrol、gut microbiome</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及芽孢杆菌抗菌蛋白的分离鉴定，但缺乏蛋白质语言模型等AI驱动的肽设计方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>蜜蜂（Apis mellifera L.）幼虫易受产芽孢革兰氏阳性菌Paenibacillus larvae的感染，引发美洲幼虫腐臭病（American Foulbrood, AFB），这是一种毁灭性的蜜蜂幼虫病害。现有抗生素治疗因病原体耐药性上升及蜂产品中药残积累而效果不佳，促使人们寻求生物及其他天然防治策略。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究人员对采自AFB感染巢脾的细菌进行测序并筛选其拮抗活性；将活性菌株、其裂解物及裂解物来源的蛋白组分用于测试在P. larvae挑战期间提高幼虫存活率的能力。为评估对成年蜂的影响，将新出房工蜂笼养并饲喂B. licheniformis裂解物（ASx），与未处理对照组及饲喂土霉素类AFB治疗药物Terra-Pro的蜂群比较其存活率和肠道微生物组。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>多种芽孢杆菌属物种——包括B. zhangzhouensis、B. subtilis、B. amyloliquefaciens、B. licheniformis和B. mojavensis——对一种或多种P. larvae菌株具有抑制作用。B. licheniformis裂解物（ASx）及其30-50 kDa蛋白组分提高了P. larvae挑战期间的幼虫存活率。在笼养成年蜂中，裂解物饲喂组的存活率与未处理对照组存在差异，但与Terra-Pro饲喂组相当，且其肠道微生物组与未处理对照组保持相似。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>蜂群相关芽孢杆菌属物种——特别是B. licheniformis来源的蛋白——是AFB管理的有前景的候选方案，能够在提高幼虫存活率的同时，不对成年蜂造成比现有抗生素治疗更大的伤害。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12235&amp;v=1&amp;s=7fca3e252e53a663" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12235&amp;v=2&amp;s=36014fc86b3f7e47" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12235&amp;v=3&amp;s=24256274c424efe1" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12235&amp;v=4&amp;s=2777be3e51ddd295" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12235&amp;v=5&amp;s=ded38feba80c7cb6" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 31 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42919965/">The human microbiome and chronic disease: ten strategic priorities for research and public health.</a></div>
+      <div class="news">针对人类微生物组与慢性病研究缺乏系统性战略方向的现状，作者通过制定十项战略优先事项，明确了该领域未来研究与公共卫生实践的核心路径，为学科发展提供了关键指引。</div>
+      <div class="meta">Nature medicine · 2026-10-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Blaser Martin J, Bushman Frederic D, Dominguez-Bello Maria Gloria, Elinav Eran, Khare Sangeeta, Knight Rob, Kwon Jennie H, Mazmanian Sarkis K, Osman Majdi, Segata Nicola, Spector Tim, Wargo Jennifer A, Hourigan Suchitra K</div>
+<div class="meta">DOI: 10.1038/s41591-026-04730-x</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42919965/">https://pubmed.ncbi.nlm.nih.gov/42919965/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>微生物组与慢性病属宏观方向，缺乏抗菌肽、蛋白质语言模型等具体技术关联。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12447&amp;v=1&amp;s=8680ee76a25e4e97" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12447&amp;v=2&amp;s=013e1935d68e23b9" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12447&amp;v=3&amp;s=32d78be71217edc1" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12447&amp;v=4&amp;s=dcd7dd46a41338ba" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=12447&amp;v=5&amp;s=65ad08751cf67bb4" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日15篇论文主要集中于三个方向：一是抗微生物耐药性与新型抗菌策略，涵盖工程化酶FibriLysins、绿脓菌素、群体感应抑制剂偶联物等针对耐药菌的生物治疗手段；二是多组学与数据资源整合，包括PeptidomicsDB肽组学平台构建、深层土壤病毒组与碳循环机制、珊瑚微生物组免疫调节等生态与宿主-微生物互作研究；三是人工智能与计算方法，涉及蛋白质组靶点筛选、蛋白质-蛋白质界面预测、因果推断模型CauTrigger及真菌感染AI诊断等。
+
+技术趋势方面，AI与机器学习工具在药物发现、图像诊断和因果分析中的应用显著增多，同时多模态数据整合（如语言模型与结构信息融合、机制模型与数据驱动模型结合）成为突出特点。
+
+对研究者而言，今日文献提供了耐药菌治疗的新靶点与候选分子、跨物种肽类发现的数据基础设施，以及AI辅助靶点筛选和诊断的方法学参考，有助于在抗菌药物研发、微生物生态机制及计算生物学方法等方向获得前沿信息与技术启发。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=niupeiyuan%40genomics.cn&amp;d=2026-10-26&amp;s=86985aa3cc3b3625">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=niupeiyuan%40genomics.cn&amp;d=2026-10-26&amp;s=86985aa3cc3b3625">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-11-10</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-11-10</h1>
+    <p class="hello">轩亚冰，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">昨日全库新增 702 篇 · 命中您的关键词 176 篇 · 本次推送 15 篇（必读 0 · 重要 1 · 参考 14）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-module">三维时空图谱</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.10.29.762926">THiRST: Computer Vision Empowered Three-dimensional High-Resolution Spatial Transcriptomics Analytics</a></div>
+      <div class="card-title-zh">THiRST：计算机视觉赋能的三维高分辨率空间转录组学分析</div>
+      <div class="news">为解决高分辨率空间转录组学局限于二维切片、难以分析三维连续结构的问题，研究者开发THiRST计算框架，通过粗到细的形态学引导配准与跨切片空间匹配，从连续切片重建多分辨率三维空间转录组，发现54.1%的差异基因仅在三维分析中检出，并实现了Visium V2与高清空间转录组数据的跨平台整合，推动了三维对象级空间转录组分析的发展。</div>
+      <div class="meta">bioRxiv · 2026-11-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhu J., Wang Y., Lu Z., Qu C., Zhu Y., Yang Y., Zhao S., Yang H., Huo Y., Deng R.</div>
+<div class="meta">DOI: 10.64898/2026.10.29.762926</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.10.29.762926">https://www.biorxiv.org/content/10.64898/2026.10.29.762926</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>THiRST实现3D空间转录组重建，可整合Visium数据，对昆虫社会组织的三维空间分析有潜在应用价值。</div>
+<div class="abstract"><span class="abs-label">背景</span>高分辨率空间转录组学（spatial transcriptomics, ST）能够在组织架构中保留基因表达信息，但目前仍局限于单个二维（2D）切片，难以对连续的三维（3D）结构及跨切片一致性进行分析。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究开发了THiRST计算框架，通过由粗到细的形态学引导配准、ST单元空间匹配、分割结构跨切片关联，以及Visium V2与高分辨率ST数据整合，从连续切片重建多分辨率三维空间转录组表征。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在肾脏连续切片中，斑块级优化将相邻偏移处匹配单元聚类一致性比例分别从63.8%和65.6%提升至70.7%和70.0%，并改善了表达一致性；重建的对应关系实现了三维肾小球及对象级表达分析，54.1%的差异基因仅在三维分析中被检出；跨平台整合进一步将V2与高分辨率测量对齐到共享表达空间。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>THiRST证明了从连续二维切片进行对象级三维空间转录组分析的可行性，并强调了精确局部配准的重要性。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14701&amp;v=1&amp;s=c8f1f5e1fc27453d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14701&amp;v=2&amp;s=2ff51e2691406f0b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14701&amp;v=3&amp;s=d32ca38f09a61b22" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14701&amp;v=4&amp;s=bb22ad57449e5dbc" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14701&amp;v=5&amp;s=e30999de56bafb88" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 50 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.07.765042">PRISM: probabilistic cell-type resolution with integrated spatial modelling for simultaneous ambient RNA decontamination and doublet correction in spatial transcriptomics</a></div>
+      <div class="card-title-zh">PRISM：基于整合空间建模的概率性细胞类型解析——同步实现空间转录组学中的环境RNA去污染与双细胞校正</div>
+      <div class="news">针对空间转录组学中环境RNA污染与细胞分割双细胞伪影共存但缺乏联合建模的问题，作者开发了基于期望最大化框架的PRISM方法，实现了概率化细胞类型分配、双细胞检测与环境RNA污染估计的同步整合，在模拟数据中达到完美污染分数恢复与100%单细胞准确率，并在Visium HD小鼠小脑数据中消除了小胶质细胞的虚假髓鞘信号、使少突胶质细胞髓鞘纯度翻倍。</div>
+      <div class="meta">bioRxiv · 2026-11-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Cupaioli F., Merelli I.</div>
+<div class="meta">DOI: 10.64898/2026.11.07.765042</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.07.765042">https://www.biorxiv.org/content/10.64898/2026.11.07.765042</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>PRISM同时校正空间转录组的环境RNA污染和双细胞问题，Visium HD兼容性强，可提升昆虫脑组织空间数据质量。</div>
+<div class="abstract"><span class="abs-label">背景</span>空间转录组学计数矩阵受到环境RNA污染（ambient RNA contamination）和细胞分割双细胞（cell-segmentation doublets）两种伪影的共同干扰，但目前缺乏对二者的联合建模。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究开发了PRISM，一种期望最大化（Expectation-Maximization）框架，能够同时实现：(i) 为每个细胞分配概率性细胞类型身份；(ii) 通过双组分混合模型的对数似然比检验检测双细胞；(iii) 基于空间解析的环境表达谱估计每个细胞的污染比例。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在40,800个模拟细胞的计算基准测试中，PRISM在所有污染水平（0.05至0.50）和UMI深度（500至5,000）下均达到Pearson r=1.000的恢复精度，双细胞假阳性为零，单细胞准确率达100%。应用于Visium HD小鼠小脑数据集（4个样本、125,289个细胞、17种参考类型）的异染性脑白质营养不良（MLD）模型时，PRISM鉴定出中位污染比例为0.60，标记67.4%的双细胞（主要由密集排列的小脑颗粒层驱动），将微胶质细胞的虚假髓鞘信号从0.82%降至0.00%，并使少突胶质细胞的髓鞘纯度翻倍（从2.8%提升至5.6%）。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>PRISM可在普通CPU上15分钟内完成运行，为每个检测基因返回去污染后的整数计数矩阵，为空间转录组学数据的质量控制提供了高效、准确的整合解决方案。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14702&amp;v=1&amp;s=10c051fe786f70df" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14702&amp;v=2&amp;s=35e1a34fa892e6ce" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14702&amp;v=3&amp;s=77385d72774828ba" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14702&amp;v=4&amp;s=cde3c70bef34b2dc" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14702&amp;v=5&amp;s=bd463dda929b2bfd" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 42 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42999092/">Single-cell profiling of physically interacting immune cells using image-guided sorting.</a></div>
+      <div class="card-title-zh">基于图像引导分选技术对物理相互作用免疫细胞进行单细胞分析</div>
+      <div class="news">为解决单细胞转录组学中难以区分真实细胞物理接触与人为假象的问题，研究者整合光谱成像细胞分选与物理细胞解卷积技术，发现结核病患者循环T细胞-单核细胞间的物理接触伴随单向RNA转移、代谢活性增强及T细胞毒性上调，而偶然双联体呈现中间转录状态，为解析免疫互作机制提供高保真技术框架。</div>
+      <div class="meta">bioRxiv : the preprint server for biology · 2026-10-16</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Kang Ningxin, Kim Cheryl, Scriba Thomas J, Peters Bjoern, Burel Julie G</div>
+<div class="meta">DOI: 10.64898/2026.10.09.758094</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42999092/">https://pubmed.ncbi.nlm.nih.gov/42999092/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>细胞互作解析方法虽具启发性，但聚焦人类免疫疾病，与昆虫社会行为研究距离较远。</div>
+<div class="abstract"><span class="abs-label">背景</span>单细胞转录组学分析细胞-细胞复合物可为体内免疫相互作用提供关键见解，但区分真实的物理接触与人为假象仍具挑战性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者将光谱成像细胞分选技术与物理细胞解卷积方法相结合，将结核病患者循环中的T细胞-单核细胞双联体分选为物理相互作用（接触）和非相互作用（偶然）群体，并对单个细胞伴侣进行单细胞测序。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>物理接触与区别于单细胞群体的稳健特征相关，包括单向的单核细胞至T细胞的RNA转移、增强的代谢活性和T细胞毒性，以及抗原特异性富集的趋势。这些特征跨越所有T细胞和单核细胞亚群，反映了T细胞-单核细胞相互作用的全局性程序。偶然双联体显示出介于单细胞和接触状态之间的中间转录谱，提示存在最近解离或正在形成的物理配对。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该框架提供了高保真度的细胞相互作用解卷积，揭示了调控人类疾病中T细胞-单核细胞通讯的特征。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14450&amp;v=1&amp;s=bbb4f8cb2234b4c4" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14450&amp;v=2&amp;s=3c5aef182f61bb70" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14450&amp;v=3&amp;s=8991a8ce7111188a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14450&amp;v=4&amp;s=3046c84a20b6a31c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14450&amp;v=5&amp;s=ce5c3e7ef242cfad" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.05.764748">A single-cell transcriptomic atlas of the pigtail macaque lung</a></div>
+      <div class="card-title-zh">猪尾猕猴肺部的单细胞转录组图谱</div>
+      <div class="news">为填补猪尾猕猴肺部细胞多样性参考图谱的空白，研究者利用10x Genomics单细胞RNA测序技术构建了包含61,323个细胞、37种细胞类型的单细胞转录组图谱，发现其肺部细胞群体在谱系水平上与人类高度相似，为呼吸系统疾病模型研究提供了关键参考基准。</div>
+      <div class="meta">bioRxiv · 2026-11-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Kim T., Cornelius J. A., Sindhu V., Duell T., Sun S., Chima S. C., Huang H., Cervantes O., Kapur R. P., Zhao H., Del Rosario B. M., Bhutani N., Fettig E., Waldorf M., Bajaj D., Li A., Vo A. E., Gretch A., Manuel G., Munson J., Christodoulou A., Berg M. R., English C., Baldessari A., Adams Waldorf K. M.</div>
+<div class="meta">DOI: 10.64898/2026.11.05.764748</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.05.764748">https://www.biorxiv.org/content/10.64898/2026.11.05.764748</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>非人灵长类肺细胞图谱构建方法可为社会昆虫组织特异性细胞图谱提供技术参考。</div>
+<div class="abstract"><span class="abs-label">背景</span>肺部在呼吸系统疾病期间会发生显著的生理和免疫变化，以满足宿主增加的代谢和氧气需求。非人灵长类（NHPs）是研究肺部生物学的宝贵模型，因其在解剖学、生理学和免疫学上与人类高度相似。尽管NHPs在肺部研究中应用广泛，但猪尾猕猴（Macaca nemestrina）肺部的细胞多样性和分子特征尚不完全明确。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>取5只成年雌性猪尾猕猴的肺实质组织，解离为单细胞后采用10x Genomics 3&#x27;单细胞RNA测序（scRNA-Seq）进行 profiling。去除环境RNA并进行质量控制后，使用scVI和scANVI进行数据整合。通过无监督聚类和亚聚类进行细胞类型标注，并借助经典标志基因进行人工注释。随后利用scArches参考映射与Level 4人类肺部细胞图谱（HLCA）进行谱系和细胞类型比较，并使用Seurat标签转移与恒河猴免疫参考图谱（RIRA）进行比较。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该图谱包含61,323个细胞，涵盖上皮、间充质、内皮、淋巴和髓系群体中的37种细胞类型。注释的群体包括主要和稀有肺部细胞类型，如肺泡I型和II型细胞、棒状细胞和多纤毛细胞、气细胞毛细血管和淋巴管内皮细胞、终末前细支气管分泌细胞、CD4+和CD8+ T细胞，以及多种固有样淋巴细胞群体（γδ T细胞、MAIT样细胞、固有样CD8+ T细胞和3型固有淋巴样细胞）。与人类肺部细胞图谱Level 4注释具有高度一致性，包括AT1和AT2细胞（96%和93%）、B细胞（94-97%）、CD4+ T细胞（99-100%）、经典和非经典单核细胞（84%和85%）、肺泡巨噬细胞（80%）和肥大细胞（96%）。免疫群体以相似保真度映射至RIRA（肺泡巨噬细胞和B细胞达99%）。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该图谱为猪尾猕猴肺部上皮、内皮、基质和免疫细胞状态提供了独特的参考。研究发现猪尾猕猴肺部的单细胞群体在谱系水平上与人类肺部高度相似。这一参考将有助于在高度转化性的人类肺部模型中开展发病机制、疫苗和药物疗效的研究。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14715&amp;v=1&amp;s=f6a1b7a81fa33de5" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14715&amp;v=2&amp;s=0b43df1622dc9174" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14715&amp;v=3&amp;s=0b44aff3751556b1" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14715&amp;v=4&amp;s=78afcd38d1d13476" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14715&amp;v=5&amp;s=8465aeebf63ef713" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 35 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.06.749697">phyB photobodies display molecular memory, regulating light signaling transcriptional states through phase separation.</a></div>
+      <div class="card-title-zh">phyB光体表现出分子记忆，通过相分离调控光信号转录状态</div>
+      <div class="news">为阐明phyB光小体形成的生物学意义，作者利用活细胞成像、FRAP和单核空间转录组学等方法，发现phyB光小体通过相分离具备分子记忆功能，可调控细胞类型特异性的光响应转录状态，为理解植物光信号记忆机制提供了新视角。</div>
+      <div class="meta">bioRxiv · 2026-11-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Igiebor F., Wuerthner L., Stamm F., Haque S., Havlicek O., Schmidt J., Cetiner M., Zubcic I., Heliel O., Saunders L. M., Graf I. R., van Gelderen K.</div>
+<div class="meta">DOI: 10.64898/2026.09.06.749697</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.06.749697">https://www.biorxiv.org/content/10.64898/2026.09.06.749697</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽涉及单核转录组与空间转录组技术，但研究对象为植物光信号，与用户昆虫社会进化及激素调控方向差异较大。</div>
+<div class="abstract"><span class="abs-label">背景</span>光敏色素B（Phytochrome B, phyB）是植物中关键的红光和远红光感受器，调控植物发育及对环境光和温度的响应。在细胞核内，phyB形成由多种转录调控因子和转录因子组成的相分离凝聚体，即光体（photobodies）。近年来研究表明，凝聚体可能作为分子记忆，但光体形成的生物学意义尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了phyB光体的活细胞成像系统，利用荧光漂白恢复（FRAP）技术分析光体动态；通过整-mount共聚焦成像和单核转录组学（sci-Seq单核空间转录组学）在不同光照扰动系列中比较不同细胞类型间光体的稳定性差异。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现phyB光体不遵循经典液-液相分离动力学，而是存在大小、强度和最小数量的限制。FRAP显示不同细胞类型间光体具有不同的流动性和扩散性，在黑暗或高红光条件下比低红光条件下更稳定。研究鉴定出一个与光体相关的转录簇，该核群调控光合作用、昼夜节律和RNA加工；phyB光体可能通过调控TZP表达来促进自身稳定性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了phyB凝聚体如何提供细胞类型特异性的光响应，并在变化的环境条件下表现出信号记忆，为理解植物如何通过相分离机制整合光信号与转录调控提供了新见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14704&amp;v=1&amp;s=91f14a58622def79" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14704&amp;v=2&amp;s=e17795d0e674fa9f" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14704&amp;v=3&amp;s=593aa52c685447e8" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14704&amp;v=4&amp;s=62529d3b2b54e0ec" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14704&amp;v=5&amp;s=9400a3feba150715" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">动物适应与生理</h2>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 43 分</div>
+      <div class="card-title"><span class="badge cat-module">极端环境适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42998575/">Heatwave-induced demographic variation across populations is decoupled from thermal tolerance in a widespread ant.</a></div>
+      <div class="card-title-zh">热浪诱导的种群间人口学变异与耐热性解耦：一种广布蚂蚁的研究</div>
+      <div class="news">为揭示极端高温对社会性昆虫早期种群动态的影响，作者对三个欧洲种群的黑花园蚁进行短期热浪实验，发现亚致死高温虽加速colony生长却会损害工蚁热耐受性，且存在种群依赖的发育敏感性变异，为评估昆虫气候脆弱性提供了整合人口学与生理学的跨种群视角。</div>
+      <div class="meta">Journal of thermal biology · 2026-11-02</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Tyczynski Tania, Libbrecht Romain, Villalta Irene</div>
+<div class="meta">DOI: 10.1016/j.jtherbio.2026.104614</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42998575/">https://pubmed.ncbi.nlm.nih.gov/42998575/</a></div>
+<div class="meta">Keywords: Critical thermal maximum、Developmental plasticity、Heatwave、Lasius niger、Latitudinal gradient、Thermal reaction norm</div>
+<div class="reason"><span class="abs-label">推荐理由</span>探讨热胁迫对蚂蚁种群动态的影响，涉及环境适应与生理权衡，但缺乏用户关注的激素调控与组学技术深度。</div>
+<div class="abstract"><span class="abs-label">背景</span>极端高温事件在气候变化背景下日益频繁，但其对社会性昆虫种群动态的影响，特别是在 colony 发育早期阶段，仍知之甚少。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者将来自三个欧洲种群的黑花园蚁（Lasius niger）colony 暴露于短期热浪条件（30°C持续4天），以评估急性热胁迫如何影响 colony 人口学特征、功能性状及耐热性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>热暴露加速了产卵和幼虫发育，其中分布最北的种群反应最为强烈，表明发育 timing 存在种群依赖的可塑性。然而，幼虫期经历高温事件会降低新出化工蚁的耐热性，且与体型无关，揭示了加速生长与生理表现之间的权衡。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，亚致死高温事件可同时促进 colony 生长并损害工蚁热表现，且存在在温和条件下隐含的、种群依赖的发育敏感性差异。研究结果强调，在评估昆虫对极端气候的脆弱性时，需整合跨种群和跨生活史阶段的人口学与生理学响应。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14427&amp;v=1&amp;s=bea3bc7c433eab3b" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14427&amp;v=2&amp;s=2a366cb6143a0837" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14427&amp;v=3&amp;s=8cdf78eb55bd18bc" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14427&amp;v=4&amp;s=cd980981f9341fdb" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14427&amp;v=5&amp;s=46082c7e177367d5" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 35 分</div>
+      <div class="card-title"><span class="badge cat-module">极端环境适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42996216/">Functional analyses of Apis cerana cerana DnaJC28: a new biomarker for environmental stress.</a></div>
+      <div class="card-title-zh">东方蜜蜂DnaJC28的功能分析：一种新型环境胁迫生物标志物</div>
+      <div class="news">为阐明蜜蜂应对环境胁迫的分子机制，研究人员对中华蜜蜂DnaJC28进行功能分析，发现该蛋白通过抗氧化信号通路缓解氧化损伤，可作为监测蜜蜂环境胁迫的新型生物标志物。</div>
+      <div class="meta">Frontiers in physiology · 2026-10-23</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Li Guilin, Zou Xinyi, Yin Shaojuan, Sun Yue, Wen Qianqian</div>
+<div class="meta">DOI: 10.3389/fphys.2026.1945469</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42996216/">https://pubmed.ncbi.nlm.nih.gov/42996216/</a></div>
+<div class="meta">Keywords: DnaJC28、antioxidant、honeybees、mechanism、stresses</div>
+<div class="reason"><span class="abs-label">推荐理由</span>鉴定中华蜜蜂应激响应基因AccDnaJC28的功能，虽涉及用户关注物种，但偏重传统分子生物学而非单细胞组学或AI方法。</div>
+<div class="abstract"><span class="abs-label">背景</span>传粉蜜蜂对维持生态系统和农业系统的健康至关重要，但蜜蜂健康常受到多种环境胁迫的影响。因此，鉴定参与胁迫响应的关键基因并探究蜜蜂应对环境胁迫的分子机制具有重要意义。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究对东方蜜蜂（Apis cerana cerana）DnaJC28（AccDnaJC28）进行了功能分析，通过基因沉默和过表达技术，结合热胁迫处理，探究其在胁迫响应中的作用。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>AccDnaJC28是一种典型的DnaJ蛋白，属于热激蛋白亚家族，含有J结构域并定位于细胞质中。其mRNA水平在胸部高于其他组织，在1日龄工蜂中高于其他发育阶段。多种环境胁迫可诱导AccDnaJC28表达。沉默AccDnaJC28降低了东方蜜蜂的耐热性，而其过表达则提高了果蝇S2细胞在热胁迫下的存活率。AccDnaJC28敲低降低了某些抗氧化酶的活性及相关抗氧化基因的表达，而某些抗氧化基因的上调表达可能部分补偿了AccDnaJC28敲低造成的功能缺陷。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明AccDnaJC28在东方蜜蜂应对环境胁迫中发挥关键作用，通过抗氧化信号通路减轻氧化损伤，可作为新型生物标志物。这些结果有助于理解蜜蜂应对环境胁迫的基础防御机制。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14431&amp;v=1&amp;s=9f6f296150f35498" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14431&amp;v=2&amp;s=e437324933dd5570" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14431&amp;v=3&amp;s=8e2e4eaaeded4ee2" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14431&amp;v=4&amp;s=e57def1ac971c629" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14431&amp;v=5&amp;s=0ecb01a138fbf40e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-reference">Reference</span> · 57 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.06.764816">scHiR learns joint cellular representations from paired single-cell transcriptome and 3D genome data</a></div>
+      <div class="card-title-zh">scHiR：从配对的单细胞转录组与三维基因组数据中学习联合细胞表征</div>
+      <div class="news">为克服单细胞转录组与三维基因组数据异构整合难题，研究者开发基于超球面变分自编码器的scHiR框架，实现联合细胞表征学习，在提升聚类精度、解析精细亚群、保留发育轨迹及降噪重建方面表现优异，为配表观基因组学数据整合分析提供有效工具。</div>
+      <div class="meta">bioRxiv · 2026-11-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhao Y., Jia P., Hill M. C., Tang L., Fang Z., Zheng R., Li M.</div>
+<div class="meta">DOI: 10.64898/2026.11.06.764816</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.06.764816">https://www.biorxiv.org/content/10.64898/2026.11.06.764816</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>scHiR整合scRNA-seq与scHi-C数据，可迁移应用于社会昆虫单细胞多组学联合分析。</div>
+<div class="abstract"><span class="abs-label">背景</span>同步测序的scRNA-seq和scHi-C技术能够在单个细胞内同时获取基因表达和三维基因组组织的匹配测量数据，为细胞状态提供互补的见解。然而，由于这些数据模态在结构和特性上存在异质性，整合分析仍具挑战性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究开发了scHiR框架，该框架基于超球面变分自编码器（S-VAE），用于从配对的基因表达谱和染色质接触图中学习共嵌入表征。该框架包含模态特异性解码器，可实现输入信号的重构与恢复。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>scHiR在HiRES、GAGE-seq和LiMCA生成的六个配对数据集上进行了评估。该工具捕获了细胞类型特异性信息，聚类性能优于代表性单组学方法；能够解析精细亚群并揭示不一致和独特的细胞谱型；在发育生物学数据集中保留了轨迹相关结构并改善了伪时间排序；生成的重构转录组和染色质接触谱具有降低的噪声、增强的细胞类型相关信号，并改善了缺失染色质接触的恢复。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>scHiR为从配对的scRNA-seq和scHi-C数据中学习联合细胞表征提供了一种有效方法，有助于细胞聚类、精细细胞状态表征和发育轨迹推断等下游分析。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14711&amp;v=1&amp;s=0aeb2b5a65274946" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14711&amp;v=2&amp;s=69e5f13b50cbb8f0" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14711&amp;v=3&amp;s=ea9c687bccbbe06a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14711&amp;v=4&amp;s=e359a52dbfa47726" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14711&amp;v=5&amp;s=f5c807b5dcce49f0" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42995229/">Robust fine-mapping in the presence of linkage disequilibrium mismatch.</a></div>
+      <div class="card-title-zh">存在连锁不平衡错配时的稳健精细定位</div>
+      <div class="news">针对外部LD参考面板与GWAS人群不匹配导致精细定位准确性下降的问题，研究者开发了概率图模型RSparsePro及高效变分推断算法，在模拟和真实数据中均实现了更高的功效、覆盖度、功能富集度与跨研究复制率，为复杂疾病因果变异识别提供了更稳健的统计工具。</div>
+      <div class="meta">Nature genetics · 2026-11-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhang Wenmin, Lu Tianyuan, Sladek Robert, Dupuis Josée, Lettre Guillaume</div>
+<div class="meta">DOI: 10.1038/s41588-026-02780-y</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42995229/">https://pubmed.ncbi.nlm.nih.gov/42995229/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>GWAS精细定位方法可借鉴用于社会昆虫复杂性状的遗传解析，但LD不匹配问题非用户核心关注点。</div>
+<div class="abstract"><span class="abs-label">背景</span>基于全基因组关联研究（GWAS）汇总统计和连锁不平衡（LD）信息的精细定位方法被广泛用于识别潜在因果变异，但外部LD参考面板与GWAS人群之间的LD错配较为常见，会降低精细定位的准确性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究开发了一种概率图模型Robust SparsePro（RSparsePro），并配备高效的变分推断算法，以在存在LD错配的情况下进行稳健的精细定位。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在不同程度LD错配的模拟研究中，RSparsePro识别的可信集相比现有方法具有持续更高的效能和覆盖率；在顺式蛋白数量性状位点（cis-pQTL）和复杂性状风险位点的精细定位中，RSparsePro识别的可信集在潜在功能影响变异富集度、跨研究和跨LD参考面板重复率方面均表现更优。RSparsePro还在药物靶点基因中识别出生物学相关变异，并提示了低密度脂蛋白胆固醇的潜在调控机制。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>RSparsePro为存在LD错配情况下的精细定位提供了可靠的计算工具，有助于更准确地识别因果变异、药物靶点及调控机制，对复杂性状的遗传学研究具有重要应用价值。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14735&amp;v=1&amp;s=7ea86c90afb2866d" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14735&amp;v=2&amp;s=493f602dbfade323" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14735&amp;v=3&amp;s=98bcb73a947a3f19" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14735&amp;v=4&amp;s=c1812e1c9278180c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14735&amp;v=5&amp;s=110ea58daa424e86" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43001936/">Antimicrobial Peptide Databases and Prediction Tools: Toward a Standard Evaluation Framework.</a></div>
+      <div class="card-title-zh">抗菌肽数据库与预测工具：迈向标准化评估框架</div>
+      <div class="news">针对抗菌肽预测工具因数据集构建不一致和评价协议不统一而难以可靠比较的问题，作者系统评估了现有数据库与计算方法，发现数据泄漏和性能报告不规范导致性能估计虚高，并提出标准化参考评价框架以提升抗菌肽计算发现的可重复性与可比性。</div>
+      <div class="meta">Journal of chemical information and modeling · 2026-11-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Cisterna-García Alejandro, González-López Álvaro M, Vozi Aspasia, Esteban María A, Egli Adrian, Jutzeler Catherine, Palma Jose, Sánchez-Ferrer Álvaro, Botía Juan A</div>
+<div class="meta">DOI: 10.1021/acs.jcim.6c02141</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43001936/">https://pubmed.ncbi.nlm.nih.gov/43001936/</a></div>
+<div class="meta">Keywords: AMP databases、AMP prediction、antibacterial peptides、antimicrobial peptides、antimicrobial resistance、benchmarking、data leakage、deep learning、machine learning、reproducible evaluation</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及机器学习预测工具评估框架，但聚焦抗菌肽预测，与用户昆虫激素调控及细胞图谱研究距离较远。</div>
+<div class="abstract"><span class="abs-label">背景</span>抗菌素耐药性（AMR）对动物和人类健康影响深远，开发新型有效抗生素以应对AMR危机迫在眉睫。抗菌肽（AMPs）因其对抗AMR的潜力而备受关注，同时公共数据库中肽序列数据的增加也催生了大量机器学习和深度学习预测工具。然而，现有研究往往依赖异质性数据集和不一致的评估方案，可能导致数据泄露和性能估计虚高。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究聚焦于抗菌肽中的抗细菌肽（ABPs），首先概述了与抗菌活性相关的AMP数据库，比较其内容、冗余度和实验元数据；随后批判性评估了现有ABP预测计算工具，分析数据集构建、序列偏好性、数据泄露和性能报告不一致等关键局限性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究揭示了现有ABP预测工具在数据集构建、序列偏向、数据泄露和性能报告方面存在的关键问题，并基于这些局限性提出了一个参考评估框架，以改善ABP预测的可比性、可重复性和实用性。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为AMP数据库建设和未来工具开发提供了针对性建议，支持更稳健的ABP计算发现进程，推动建立公平、可重复且具有生物学意义的AMP预测工具评估标准。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14729&amp;v=1&amp;s=6029feb73f9fda42" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14729&amp;v=2&amp;s=a9f04f73b86ed0fa" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14729&amp;v=3&amp;s=2097b00883c4d5d1" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14729&amp;v=4&amp;s=099cf70fa597409c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14729&amp;v=5&amp;s=db5412b05d532d39" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 39 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.06.764812">π-SPECFormer: A Mass Spectrometry-based Foundation Model for Decoding the Dark Proteome</a></div>
+      <div class="card-title-zh">π-SPECFormer：一种基于质谱的基础模型，用于解码暗蛋白质组</div>
+      <div class="news">针对现有深度学习方法依赖肽段-谱图匹配监督训练、难以利用未注释质谱数据的问题，作者开发了基于两阶段框架预训练的π-SPECFormer基础模型，在肺腺癌分析中鉴定出9个高置信度突变肽段（其中6个不存在于参考数据库），实现了对&quot;暗蛋白质组&quot;分子复杂性的无偏解码。</div>
+      <div class="meta">bioRxiv · 2026-11-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ling T., Liu T., Xu F., Zhang Y., Xia J., Huang X., Chen S., Xie L., Xu R., Yang T., Li K., Wang G., Liang Z., Zhu J., Li S. Z., He F., Wang Y., Chang C.</div>
+<div class="meta">DOI: 10.64898/2026.11.06.764812</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.06.764812">https://www.biorxiv.org/content/10.64898/2026.11.06.764812</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>质谱基础模型思路与蛋白质语言模型相关，但暗蛋白质组解码方向与用户昆虫激素及单细胞研究契合度有限。</div>
+<div class="abstract"><span class="abs-label">背景</span>在基于质谱的蛋白质组学中，大量获得的质谱图仍未被鉴定，隐藏着被称为&quot;暗蛋白质组&quot;（dark proteome）的巨大生物学变异库，其中可能包含序列突变、非经典肽段和翻译后修饰。现有的深度学习方法主要依赖肽段-谱图匹配（PSMs）的监督训练，限制了其从更大规模的未注释谱图中学习的能力。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者引入了π-SPECFormer，一种基于质谱的基础模型，通过结合自监督学习和PSMs引导表征学习的两阶段框架，在2.91亿张质谱图上进行预训练。该模型可迁移应用于从头肽段测序（de novo peptide sequencing）、谱图聚类和修饰检测等任务。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>π-SPECFormer在各项任务中持续优于特定任务的基线模型。将其应用于103例肺腺癌患者的蛋白质组学数据时，该模型鉴定出9个高置信度的突变肽段，其中6个在参考数据库中不存在。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>π-SPECFormer实现了对经典蛋白质组边界之外分子复杂性的无偏解码，为挖掘暗蛋白质组中隐藏的生物学信息提供了强大的计算工具。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14710&amp;v=1&amp;s=5ef89c0c18e6a075" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14710&amp;v=2&amp;s=472938bf0724d25b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14710&amp;v=3&amp;s=048d1283d93d882b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14710&amp;v=4&amp;s=3c6e8e0148473a43" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14710&amp;v=5&amp;s=d050ad943a3b7696" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 34 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42995213/">These AI agents design your perfect robot-powered lab - and run it for you.</a></div>
+      <div class="news">为提升自动化实验效率，研究团队开发基于多智能体协作的AI系统，实现机器人实验室的自主设计与无人值守运行，推动智能科研基础设施发展。</div>
+      <div class="meta">Nature · 2026-11-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Glickman Kaia</div>
+<div class="meta">DOI: 10.1038/d41586-026-03587-x</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42995213/">https://pubmed.ncbi.nlm.nih.gov/42995213/</a></div>
+<div class="meta">Keywords: Lab life、Machine learning、Technology</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及AI自动化实验室，但未涉及用户关注的基因组学、单细胞技术或社会昆虫研究内容。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14463&amp;v=1&amp;s=c3dca1062d86d4e3" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14463&amp;v=2&amp;s=353203b609302287" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14463&amp;v=3&amp;s=24ac4eb1b197082b" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14463&amp;v=4&amp;s=33c330d462b6bd63" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14463&amp;v=5&amp;s=9d3f855322a5521f" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 33 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/42995231/">A gait foundation model for prediction of multisystem health phenotypes from 3D skeletal motion.</a></div>
+      <div class="card-title-zh">步态基础模型：基于三维骨骼运动预测多系统健康表型</div>
+      <div class="news">为解决传统步态分析仅被视为特定病理症状、难以捕捉运动精细细节的问题，作者开发基于单深度相机三维骨骼运动的基础模型，将人体运动转化为学习嵌入，发现步态可作为独立的多系统生物信号，显著预测18个身体系统中的1,887个健康表型，推动运动生物标志物在临床评估中的规模化应用。</div>
+      <div class="meta">Nature medicine · 2026-11-06</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Gabet Adam, Kohn Sarah, Lutsker Guy, Gelman Shira, Godneva Anastasia, Sasson Gil, Zulti Arad, Krongauz David, Shaulitch Rotem, Rotem Assaf, Doron Ohad, Brodsky Yuval, Weinberger Adina, Segal Eran</div>
+<div class="meta">DOI: 10.1038/s41591-026-04724-9</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/42995231/">https://pubmed.ncbi.nlm.nih.gov/42995231/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>该研究聚焦人类步态与多系统健康表型预测，属于临床医学与运动生物力学领域，与用户关注的昆虫社会行为、激素调控及单细胞组学等研究方向无直接关联。</div>
+<div class="abstract"><span class="abs-label">背景</span>步态正日益被视为一种生命体征，但现有方法多将其作为特定病理的症状而非系统性生物标志物。传统步态分析依赖工程特征（如步频、步幅等计算测量指标），可能无法捕捉人体运动的精细细节。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究团队开发了一种基于三维骨骼运动的步态基础模型，通过单台深度相机记录3,328名深度表型成年受试者在5项运动任务中的数据。该模型将运动转化为学习嵌入（learned embeddings），即描述所有身体关节如何随时间协同运动的数值集合，用于预测涵盖18个身体系统的健康表型。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>学习嵌入在预测年龄（Pearson&#x27;s r=0.69）、体重指数（r=0.91）和内脏脂肪组织面积（r=0.83）方面优于工程特征，并显著预测了3,210个测试表型中的1,887个。相较于仅使用年龄、体重指数、内脏脂肪组织和身高的基线模型，步态嵌入在男性18个系统及女性17个系统中均改善了预测效果，同时也改善了临床诊断和用药情况的预测。解剖学消融分析显示，腿部动态主导代谢和衰弱预测，而躯干动态编码睡眠和生活方式表型。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现确立了步态作为一种独立的多系统生物信号，推动将步态分析作为可扩展、被动式生命体征整合到常规临床评估中。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14459&amp;v=1&amp;s=a83cf509df1674c7" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14459&amp;v=2&amp;s=714e8eaf1351ce58" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14459&amp;v=3&amp;s=0341770e0c176a3f" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14459&amp;v=4&amp;s=895e825705b8647d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14459&amp;v=5&amp;s=2f349ada70954838" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-important">Important</span> · 71 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43002670/">A replaceable soma enables negative senescence in harvester ants.</a></div>
+      <div class="card-title-zh">可替换的躯体使收获蚁实现负衰老</div>
+      <div class="news">为揭示社会性昆虫负衰老的进化机制，作者对3285个收获蚁群开展34年纵向追踪，发现蚁群死亡率随年龄下降而繁殖率上升，且群体生长与繁殖呈协同而非权衡关系，环境不可预测性进一步延长了繁殖寿命，为理解衰老的进化提供了新视角。</div>
+      <div class="meta">Proceedings of the National Academy of Sciences of the United States of America · 2026-11-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Cole Blaine J, Wiernasz Diane C</div>
+<div class="meta">DOI: 10.1073/pnas.2612817123</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43002670/">https://pubmed.ncbi.nlm.nih.gov/43002670/</a></div>
+<div class="meta">Keywords: aging、indeterminate growth、social insects、sociality、superorganism</div>
+<div class="reason"><span class="abs-label">推荐理由</span>揭示蚁群负衰老现象，为理解社会性昆虫的繁殖寿命与衰老进化提供新视角，与用户关注的社会进化与繁殖分工高度相关。</div>
+<div class="abstract"><span class="abs-label">背景</span>大多数脊椎动物和昆虫都会经历衰老：随着年龄增长，其死亡率上升而繁殖力下降。理论模型指出，无限生长（indeterminate growth）以及生长与繁殖之间不存在权衡是负衰老（negative senescence）进化的关键特征。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者对西部收获蚁（Pogonomyrmex occidentalis）进行了长达34年的研究，追踪了3,285个已知年龄的蚁群。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现该物种呈现负衰老模式：死亡率随年龄增长而降低，繁殖力则随年龄增长而提高。蚁群在整个生命周期中持续生长，导致较老的蚁群平均规模更大。研究未发现 colony growth 与 reproduction 之间存在权衡，两者呈正相关。在种群水平上，某一年较高的繁殖力并不会导致次年新蚁群数量的增加。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>环境不可预测性使繁殖与补充（recruitment）脱钩，并选择延长繁殖寿命，这一特征与衰老的变化相平行。该研究有助于识别蚁群与其他生物在避免衰老方面的功能同源性机制，以及高度真社会性物种特有的特征。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14696&amp;v=1&amp;s=6d30767204a729d9" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14696&amp;v=2&amp;s=3cdd5aefcf81cb99" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14696&amp;v=3&amp;s=ba752ace39dd5e04" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14696&amp;v=4&amp;s=8bb9aa7858204ef7" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14696&amp;v=5&amp;s=f1b8bd6f222194a6" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43001770/">Virus-specific impacts on honey bee flight performance are mediated by the octopamine pathway.</a></div>
+      <div class="card-title-zh">章鱼胺通路介导病毒对蜜蜂飞行性能的特异性影响</div>
+      <div class="news">为揭示不同病毒影响蜜蜂飞行性能的差异机制，研究团队通过药理学干预结合转录组分析，发现囊幼病毒通过激活章鱼胺通路增强蜜蜂飞行能力，而残翅病毒则削弱该通路导致飞行障碍，为理解病毒-宿主互作的神经内分泌机制提供了新视角。</div>
+      <div class="meta">eLife · 2026-11-09</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Kaku Naomi G, Flenniken Michelle L</div>
+<div class="meta">DOI: 10.7554/eLife.111072</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43001770/">https://pubmed.ncbi.nlm.nih.gov/43001770/</a></div>
+<div class="meta">Keywords: Apis mellifera、deformed wing virus、flight、honey bee、infectious disease、microbiology、octopamine、sacbrood virus</div>
+<div class="reason"><span class="abs-label">推荐理由</span>揭示章鱼胺通路介导病毒对蜜蜂飞行性能的特异性调控，为神经内分泌与免疫互作研究提供新机制，契合用户激素信号与蜜蜂研究兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>蜜蜂蜂群每年高损失率与环境及生物胁迫因素相关，其中包括病毒感染。昆虫的章鱼胺（octopamine, OA）通路调控&quot;战斗或逃跑&quot;反应，调节能量动员、体温和飞行。已知囊状幼虫病毒（sacbrood virus, SBV）感染可诱导OA受体表达并增强蜜蜂飞行性能，而残翅病毒（deformed wing virus, DWV）感染则会降低飞行性能，但病毒如何与该通路相互作用尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者对蜜蜂分别感染SBV或DWV，并施加OA、OA受体拮抗剂依匹斯汀（epinastine, EP）或两者联合处理，评估其飞行能力和基因表达情况；同时通过转录组分析探究OA反应、病毒感染与飞行之间的关系。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>药理学操作显示，OA补充可挽救DWV感染蜜蜂的飞行缺陷，但会降低SBV感染蜜蜂的飞行性能，而阻断OA受体则会改变这些效应。转录组分析表明，SBV感染以及DWV感染联合OA处理均可激活蜜蜂代谢通路；SBV感染蜜蜂具有更高的OA合成相关基因表达水平，除非经OA处理。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究为病毒对蜜蜂飞行性能的特异性影响提供了机制性见解，可能对觅食效率、蜂群健康及病毒传播具有重要影响。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14699&amp;v=1&amp;s=ac75301a7bcea069" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14699&amp;v=2&amp;s=d19eab13619671c7" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14699&amp;v=3&amp;s=08b41fcf98188281" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14699&amp;v=4&amp;s=efb04dc684185790" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=xuanyabing%40genomics.cn&amp;p=14699&amp;v=5&amp;s=a641592cdf347b89" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日15篇论文主要集中于单细胞与空间组学、AI计算方法及感染与免疫三大方向。单细胞与空间组学占据显著比重，涵盖scHiR对单细胞转录组与三维基因组的整合、THiRST对三维空间转录组的重建、PRISM对空间转录组数据的质量控制，以及单细胞物理互作分析和猪尾猕猴肺部单细胞图谱构建；AI计算方法方面，包括基于超球面变分自编码器的联合表征学习、概率图模型精细定位、质谱基础模型及步态基础模型等；感染与免疫则涉及蜜蜂病毒-宿主互作及结核病患者免疫细胞互作机制。
+
+技术趋势上，多模态数据整合与AI驱动的基础模型开发尤为突出。多篇研究致力于整合异构数据（如转录组与表观基因组、二维切片与三维结构），同时基于预训练或自监督学习的基础模型在质谱解码、步态分析等领域展现出跨任务迁移能力。此外，空间组学从二维向三维的延伸、以及针对数据质量问题的概率化建模方法也值得关注。
+
+对研究者而言，今日文献提供了丰富的技术工具参考：空间转录组研究者可关注THiRST的三维重建与PRISM的污染校正；单细胞多模态整合可借鉴scHiR的框架；从事疾病遗传学研究者则可参考RSparsePro处理LD不匹配的稳健精细定位策略。同时，蜜蜂病毒研究与蚂蚁衰老模型为生态与进化生物学研究者提供了新的机制视角。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=xuanyabing%40genomics.cn&amp;d=2026-11-10&amp;s=d3d67c560b02ddb1">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=xuanyabing%40genomics.cn&amp;d=2026-11-10&amp;s=d3d67c560b02ddb1">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

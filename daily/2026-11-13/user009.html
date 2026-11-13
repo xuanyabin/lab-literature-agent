@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-11-13</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-11-13</h1>
+    <p class="hello">niupeiyuan，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">昨日全库新增 743 篇 · 命中您的关键词 86 篇 · 本次推送 15 篇（必读 0 · 重要 0 · 参考 15）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">基因组演化与多样性</h2>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 32 分</div>
+      <div class="card-title"><span class="badge cat-module">比较基因组学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.10.764470">Sense-to-sense changes in bacterial genetic codes: Experimental validation by cell-free translation and native-host proteomics</a></div>
+      <div class="card-title-zh">细菌遗传密码的义码-义码转换：无细胞翻译与原宿主蛋白质组学的实验验证</div>
+      <div class="news">为验证细菌中预测的同义密码子重分配是否真实存在，作者利用大肠杆菌无细胞蛋白合成系统结合蛋白质组学，在Anaerococcus prevotii中证实CGG密码子编码色氨酸而非精氨酸，建立了发现天然tRNA扩展翻译编码能力的实验框架。</div>
+      <div class="meta">bioRxiv · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Kim P. H., McSweeney M. A., Hong J. T., Steczynska J., Chan H. N., Jewett M. H., Light Y. K., Williams K. P., Schoeniger J. S.</div>
+<div class="meta">DOI: 10.64898/2026.11.10.764470</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.10.764470">https://www.biorxiv.org/content/10.64898/2026.11.10.764470</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>细菌遗传密码重分配实验验证，虽涉及细菌但属翻译机制领域，与用户AI驱动肽类发现核心方向关联有限。</div>
+<div class="abstract"><span class="abs-label">背景</span>自完整遗传密码发表六十年来，自然界已发现多种经典密码子表的变体，包括终止密码子和义码-义码（sense-to-sense）重分配，但细菌中经实验验证的仅有终止密码子重分配。近期，Codetta的计算分析预测了包含义码-义码变化的细菌遗传密码。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究采用大肠杆菌（Escherichia coli）无细胞蛋白质合成（CFPS）系统，测试预测可将精氨酸（Arg）密码子重分配为色氨酸（Trp）的tRNA；同时利用萤火虫荧光素酶和NanoLuc报告基因进行验证，并通过完整蛋白质质谱和深度数据非依赖性采集（DIA）蛋白质组学分析Anaerococcus prevotii。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>候选CGG解码tRNA在含有经典tRNAArg(CCG)的CFPS提取物中以剂量依赖性方式恢复sfGFP Y66R报告基因的青色荧光；缺乏候选tRNA的反应接近背景水平。荧光素酶报告基因中也观察到重分配，色氨酸掺入恢复了活性和溶解度。完整蛋白质质谱显示与Arg-to-Trp替换一致的分子量。Anaerococcus prevotii的DIA蛋白质组学发现6条含Trp的肽段由天然CGG密码子编码，未检测到CGG编码的Arg肽段。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些结果为预测的细菌义码-义码遗传密码提供了直接的功能支持，并建立了一个无细胞框架，用于发现扩展翻译编码能力的天然tRNA。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15614&amp;v=1&amp;s=70264923227fde91" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15614&amp;v=2&amp;s=b8af2b68113498dc" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15614&amp;v=3&amp;s=1592641920641a34" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15614&amp;v=4&amp;s=401facc887b2e52f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15614&amp;v=5&amp;s=da84c34308f3f62a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">计算生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-reference">Reference</span> · 54 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.09.765412">Coarse-tuning to improve a protein foundation model for a domain of proteins: the example of outer membrane beta barrels</a></div>
+      <div class="card-title-zh">粗调以提升蛋白质基础模型在特定蛋白域中的性能：以外膜β桶蛋白为例</div>
+      <div class="news">针对蛋白质基础模型在特定结构域性能不足的问题，研究者提出&quot;粗调&quot;机制，利用中等规模无标签领域数据集对模型进行特化更新，发现仅需少于10万条序列即可使粗调模型在多种迁移学习任务中优于原始基础模型，为计算生物学领域提供了高效特化蛋白质基础模型的新途径。</div>
+      <div class="meta">bioRxiv · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Yanai G., Gan T., Slusky J. S. G., Osadchy M., Kolodny R.</div>
+<div class="meta">DOI: 10.64898/2026.11.09.765412</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.09.765412">https://www.biorxiv.org/content/10.64898/2026.11.09.765412</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>提出蛋白质基础模型的&#x27;粗调&#x27;特化策略，可直接迁移至抗菌肽/细菌素专用语言模型的构建与优化。</div>
+<div class="abstract"><span class="abs-label">背景</span>蛋白质基础模型在计算分子生物学领域展现出巨大潜力，现有先进模型通过自监督训练在大型多样化蛋白质序列语料库上进行训练，随后用于迁移学习。然而，针对特定蛋白质域的优化仍有待探索。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者提出了一种名为&#x27;粗调&#x27;（coarse-tuning）的新聚焦机制，使用定义明确但未标注的数据集进一步更新模型，以增强其在特定域的性能。该研究以外膜β桶蛋白（Outer Membrane Beta Barrels, OMBBs）为范例，这些蛋白质存在于独特的外膜生物物理环境中。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>粗调模型在应用于多种迁移学习任务时优于原始基础模型。此外，研究还对粗调模型生成的嵌入进行了分析，并与原始基础模型的嵌入进行了比较，包括通过学习注意力矩阵进行接触图预测的探究。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，中等规模的数据集（少于100,000条蛋白质序列）足以有效将基础模型专门化到特定域，从而增强其在域特异性应用中的实用性，为蛋白质基础模型的领域特化提供了一种高效策略。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15433&amp;v=1&amp;s=49ff58931997fecd" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15433&amp;v=2&amp;s=59cb6d68b79c9eb2" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15433&amp;v=3&amp;s=d717d63f96666f97" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15433&amp;v=4&amp;s=719bf022e2e9984a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15433&amp;v=5&amp;s=5d29efb8f3ea4962" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.06.09.731073">DeePEn - A Depth sensitive benchmark for Protein Engineering</a></div>
+      <div class="card-title-zh">DeePEn——面向蛋白质工程的深度敏感型基准测试</div>
+      <div class="news">针对蛋白质工程缺乏评估模型远离野生型泛化能力的基准问题，研究者构建DeePEn深度敏感基准平台，利用深度突变扫描数据集量化模型在不同编辑距离下的性能衰减，发现所有模型性能均随突变距离增加而下降且单一指标无法满足多样化需求，为蛋白质变体效应预测提供了多指标评估框架。</div>
+      <div class="meta">bioRxiv · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Schmirler R., Brenner M., Franz S., Heinzinger M., Rost B.</div>
+<div class="meta">DOI: 10.64898/2026.06.09.731073</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.06.09.731073">https://www.biorxiv.org/content/10.64898/2026.06.09.731073</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>DeePEn为蛋白质语言模型提供了多突变距离基准测试框架，可指导抗菌肽工程中的模型评估与选择。</div>
+<div class="abstract"><span class="abs-label">背景</span>蛋白质建模技术和高通量筛选技术的最新进展显著提升了蛋白质工程的可及性，但进一步的发展受到缺乏稳健基准测试的阻碍，这些基准测试需要能反映真实世界蛋白质工程中的实际挑战。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了DeePEn（面向蛋白质工程的深度敏感型基准测试），通过从野生型出发按突变距离递增的方式评估模型对保留变体的泛化能力；距离定义为同时发生的点突变（即单氨基酸变体，SAVs）数量。该基准利用来自深度突变扫描（DMS）数据集的实验标记变体，对包括通用及生物物理信息引导的蛋白质语言模型（pLMs）和非Transformer神经网络在内的近期预测模型进行了回顾性评估。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>所有模型的性能均随突变距离增加而下降，且没有任何单一指标能够充分捕捉蛋白质工程的多样化需求。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>DeePEn提供了一个现成可用的多指标基准测试资源，专注于远离野生型的变体效应预测，有助于克服现有基准测试的不足，推动蛋白质工程领域的模型评估与发展。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15604&amp;v=1&amp;s=c5102d5dfea7fe13" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15604&amp;v=2&amp;s=a9689a1e37ea8f49" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15604&amp;v=3&amp;s=38e286a956300b13" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15604&amp;v=4&amp;s=000974b644a7a484" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15604&amp;v=5&amp;s=957a702f8b626d4e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.03.11.709163">GradeBins: quality control of bins from synthetic and real metagenomes</a></div>
+      <div class="card-title-zh">GradeBins：合成与真实宏基因组分箱的质量控制</div>
+      <div class="news">针对宏基因组分箱质量评估缺乏准确快速方法的瓶颈，研究者开发了GradeBins工具，发现其在20 kb长片段的完整性估计上误差低于CheckM1/CheckM2且运行时间最短，但短片段完整性估计存在高估，为原核生物基因组分箱的质量控制提供了更高效的评估方案。</div>
+      <div class="meta">bioRxiv · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Bushnell B., Bowers R. M., Villada J. C.</div>
+<div class="meta">DOI: 10.64898/2026.03.11.709163</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.03.11.709163">https://www.biorxiv.org/content/10.64898/2026.03.11.709163</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>宏基因组分箱质量评估工具，与用户metagenomic mining方法直接相关，可提升AMP挖掘数据质量。</div>
+<div class="abstract"><span class="abs-label">背景</span>从宏基因组中重建的基因组是研究微生物多样性和功能的重要基础，但其解读依赖于DNA回收率以及是否混入外源序列。现有方法在基准测试中可准确评估质量，但在常规分析中仍需对质量进行估计。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究开发了GradeBins工具，用于评估单个分箱（bins，即分配至同一候选基因组的contigs）并对组装得到的完整分箱集进行汇总。研究利用6,374个模拟分箱、20 kb和2 kb的参考基因组片段构建的对照分箱，以及实际测序宏基因组数据，将GradeBins与CheckM1、CheckM2和GUNC等工具进行了系统比较。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>在6,374个模拟分箱中，GradeBins的测量结果与独立计算结果一致。对于20 kb片段构建的对照分箱，GradeBins的完整性（completeness）误差低于CheckM1和CheckM2，且在分箱选择中具有最高的F1分数（精确率和召回率的调和平均数）；但对于2 kb片段，GradeBins高估了不完整分箱的完整性，误差从3.1升至17.6个百分点。不同工具对污染（contamination）的定义存在差异，导致污染估计结果不同。在实际测序宏基因组中，评估工具的选择会影响通过质量阈值的分箱。GradeBins在所有比较中运行时间最短。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>GradeBins为原核生物分箱及分箱集提供了快速的质量评估方案，其对长contigs的完整性估计最为准确，适用于宏基因组分箱的常规质量控制和筛选工作。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15615&amp;v=1&amp;s=cb9bf29b03d17ba5" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15615&amp;v=2&amp;s=6cbb1ad5c7365416" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15615&amp;v=3&amp;s=3b3e1dfe44f562c6" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15615&amp;v=4&amp;s=4f0345c8860fb758" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15615&amp;v=5&amp;s=22b9cd8eff107acb" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-reference">Reference</span> · 44 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.10.765762">Multimodal protein representations across human brain cell types</a></div>
+      <div class="card-title-zh">跨人脑细胞类型的多模态蛋白质表征</div>
+      <div class="news">针对人脑组织稀缺导致脑细胞类型数据不足、现有模型难以整合蛋白质序列与细胞网络信息的问题，研究者开发SEMPER多模态表示学习模型，将蛋白质语言模型与442种成人脑细胞类型的蛋白质相互作用网络对齐，发现该模型能预测细胞类型特异性蛋白质复合物及多巴胺能神经元存活关键基因，并在零样本检索中更高比例恢复多种神经退行性疾病的临床药物靶点。</div>
+      <div class="meta">bioRxiv · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Dong A., Li M. M., Ding K., Nazeen S., Noori A., Huang Y., Gao S., Ritter D., Afroz J., Henderson A. B. H., Studer L., Luo Y., Khurana V., Parmigiani G., Zitnik M.</div>
+<div class="meta">DOI: 10.64898/2026.11.10.765762</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.10.765762">https://www.biorxiv.org/content/10.64898/2026.11.10.765762</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>SEMPER融合蛋白质语言模型与细胞类型网络，其多模态表征策略可为肽-菌互作及细胞特异性抗菌肽设计提供方法借鉴。</div>
+<div class="abstract"><span class="abs-label">背景</span>中枢神经系统（CNS）由多种细胞类型组成，其分子环境决定了所表达蛋白质的功能。由于人脑组织难以获取，脑细胞类型在单细胞模型训练数据集中占比很小，现有蛋白质语言模型和基于相互作用组或单细胞的模型虽能分别捕获蛋白质序列和细胞网络中的互补信息，但难以充分刻画中枢神经系统中的这些复杂信息。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了名为SEMPER的多模态表征学习模型，该模型将蛋白质语言模型的表征与来自442种成年人脑细胞类型的蛋白质-蛋白质相互作用网络进行对齐，从而为每个蛋白质在其基因表达的每种细胞类型中赋予序列信息驱动的表征。为进一步提升靶点识别效果，研究者还将SEMPER与能够基于蛋白质功能注释进行推理的大型语言模型相结合。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>SEMPER表征能够预测细胞类型特异性的蛋白质复合物，并预测对多巴胺能神经元存活至关重要的基因（基于全基因组CRISPR筛选结果）。在零样本检索中，SEMPER对帕金森病、阿尔茨海默病、多发性硬化、亨廷顿病和肌萎缩侧索硬化症的临床在研药物靶点的回收率高于细胞类型特异性模型。与大型语言模型联合使用后，靶点回收率进一步提升，SEMPER提供了实验衍生的细胞环境信息，补充了大型语言模型基于文献的推理。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>SEMPER通过整合蛋白质序列信息与细胞类型特异性的相互作用网络，为研究人脑蛋白质在特定细胞环境中的功能提供了可扩展的计算框架，有助于揭示神经系统疾病的细胞类型特异性机制并辅助药物靶点发现。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15550&amp;v=1&amp;s=caa07e7ca20218d9" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15550&amp;v=2&amp;s=1ea7e09738a9368a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15550&amp;v=3&amp;s=9579d66f8e009ebd" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15550&amp;v=4&amp;s=4a5528f79b5f8511" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15550&amp;v=5&amp;s=185e5a7676233baa" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-reference">Reference</span> · 40 分</div>
+      <div class="card-title"><span class="badge cat-module">生物信息学方法</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43019535/">Reconstructing substitution histories on phylogenies, with accuracy, precision, and coverage.</a></div>
+      <div class="card-title-zh">在系统发育树上重建替换历史：准确性、精确性与覆盖度</div>
+      <div class="news">为解决祖先序列和替换历史在系统发育推断中被平均化而难以利用的问题，作者开发了兼容单基因座与物种溯祖分析的BeastMap软件包，发现时间树上的替换历史重建比非超度量树更准确精确，且基于四核苷酸的密码子分区模型能以更低计算成本有效近似同义与非同义替换历史，为分子进化速率和模式研究提供了新工具。</div>
+      <div class="meta">Systematic biology · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Douglas Jordan, Bromham Lindell</div>
+<div class="meta">DOI: 10.1093/sysbio/syag081</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43019535/">https://pubmed.ncbi.nlm.nih.gov/43019535/</a></div>
+<div class="meta">Keywords: BeastMap、aminoacyl-tRNA synthetases、ancestral sequence reconstruction、beast 2、indels、influenza、mammals、molecular evolution、multispecies coalescent、phylodynamics、phylogenetics、starbeast3、stochastic mapping、synonymous substitutions</div>
+<div class="reason"><span class="abs-label">推荐理由</span>祖先序列重建方法学进展，对肽序列进化分析有潜在价值，但与用户核心方法关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>祖先序列和替换历史通常在系统发育推断中被平均化处理，因此不会报告给用户。然而，它们可以通过祖先序列重建（ancestral sequence reconstruction, ASR）和随机字符映射（stochastic character mapping）来恢复。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发并验证了一个新的ASR和随机映射软件包BeastMap，该工具包兼容单基因座和多物种溯祖分析，支持贝叶斯系统发育框架下的多种时钟模型、位点模型、树模型和数据类型（包括插入和缺失）。研究比较了时间树与非超度量替换树在重建已知替换历史时的表现，并评估了基于四种核苷酸字符的密码子分区模型（含位点速率异质性）对同义和非同义替换历史的近似效果。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，与缺乏时间方向性的无约束非超度量替换树（最大似然法和贝叶斯法）相比，已知替换历史（模拟和经验的）在时间树上能被更准确、更精确地恢复。基于四种核苷酸字符、具有位点速率异质性的密码子分区模型能有效近似同义和非同义替换历史，且运行时间远少于需要61种字符的计算密集型密码子模型；同时该方法能提供低偏差的dN/dS估计，且对GC含量、密码子使用偏好和核苷酸可交换性的非平稳性具有稳健性。三个案例研究表明：体型较小的哺乳动物比较大体型近缘物种具有更快的同义替换速率；氨酰-tRNA合成酶中的氨基酸替换与3Di结构变化相关；在新西兰一次重大H3N2暴发中，甲型流感病毒更频繁地传播到邻近地区而非远距离地区。基于随机映射计数估计的这些趋势比基于参数速率和距离的结果更为明显。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究展示了重建替换历史如何增强对分子进化速度和模式的信息获取。开发的BeastMap开源软件包具有用户友好的图形界面，为系统发育学研究提供了功能强大的工具，特别适用于分子进化机制研究和病原体传播动态分析。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15479&amp;v=1&amp;s=ef4e10534e2dbc58" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15479&amp;v=2&amp;s=cfc5ee74a8045ba7" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15479&amp;v=3&amp;s=243f3c68759c02f1" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15479&amp;v=4&amp;s=51d152d2d37146af" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15479&amp;v=5&amp;s=c9c0642270b56b9a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 38 分</div>
+      <div class="card-title"><span class="badge cat-module">AI 生物学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43019425/">AI research deepens mystery of cellular &#x27;vaults&#x27;.</a></div>
+      <div class="card-title-zh">人工智能研究加深了细胞&#x27;穹窿体&#x27;（vault）的谜团</div>
+      <div class="news">为破解细胞穹窿体的起源与功能之谜，研究者借助Claude AI分析细菌和病毒中的相关结构，发现这些奇特结构可能由细菌和病毒制造，提示其具有古老起源，推动了对细胞生物学中这一神秘结构的认识。</div>
+      <div class="meta">Science (New York, N.Y.) · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Travis John</div>
+<div class="meta">DOI: 10.1126/science.aeo0639</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43019425/">https://pubmed.ncbi.nlm.nih.gov/43019425/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>AI辅助解析细胞穹窿体起源，体现AI在生物学中的应用，但未涉及抗菌肽或蛋白质语言模型设计。</div>
+<div class="abstract"><span class="abs-label">背景</span>细胞中存在一种被称为&#x27;穹窿体&#x27;（vault）的奇特结构，其起源和功能长期以来一直不明。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究人员借助人工智能工具Claude开展研究。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究表明细菌和病毒很可能是这些奇特结构的制造者，暗示其可能具有古老起源。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该发现为理解穹窿体的进化起源提供了新线索，揭示了其可能源于远古时期的微生物世界。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15460&amp;v=1&amp;s=541eb53cd4a53ea8" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15460&amp;v=2&amp;s=933fc5369c7ed0f6" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15460&amp;v=3&amp;s=33e959a5399ab34e" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15460&amp;v=4&amp;s=d7d5321cb5938b4f" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15460&amp;v=5&amp;s=fa6fd3432347c3fb" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 32 分</div>
+      <div class="card-title"><span class="badge cat-module">基础模型</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.10.765792">RNAtomy: A Structure-Aware RNA Foundation Model for Transferable Structural and Functional Representations</a></div>
+      <div class="card-title-zh">RNAtomy：一种结构感知的RNA基础模型，用于可迁移的结构与功能表征</div>
+      <div class="news">针对现有RNA基础模型忽视三维构象信息的局限，RNAtomy通过联合重建几何与构象描述符的混合Mamba-Transformer架构，在更少预训练数据条件下实现了更优的结构预测与功能表征迁移性能。</div>
+      <div class="meta">bioRxiv · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Shirali A., Garg I., Vasilyev A., Soni P., Govindasamy P., Mathee K., Chapagain P., Narasimhan G.</div>
+<div class="meta">DOI: 10.64898/2026.11.10.765792</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.10.765792">https://www.biorxiv.org/content/10.64898/2026.11.10.765792</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>RNAtomy的结构感知架构设计思路可为肽类分子表示学习提供借鉴，但RNA领域与用户直接关联有限。</div>
+<div class="abstract"><span class="abs-label">背景</span>RNA在基因表达、催化、调控和分子识别中发挥着关键且多样的作用，其功能多样性源于核苷酸序列、结构组织与细胞环境之间的相互作用。然而，大多数RNA基础模型主要基于序列或二级结构信息进行预训练，对三维几何和构象特征的系统性整合仍相对不足。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了RNAtomy，一种自监督RNA基础模型，通过三个核心组件学习RNA的结构解剖学特征：1）联合掩码重建成对几何关系与残基层描述符，以连接空间组织与局部构象；2）混合Mamba-Transformer架构，其中Mamba块高效传播全局上下文，而移位窗口注意力机制弥补Mamba缺乏显式内容依赖型token交互的不足；3）轴感知特征线性调制，将核苷酸级构象映射到成对几何的行轴与列轴。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>RNAtomy在七个涉及核苷酸、核苷酸对及RNA层面结构与功能预测的多样化任务中进行了评估。该模型在结构任务上表现尤为突出，在接触预测和长程碱基对预测中优于已建立的RNA基础模型和任务特异性方法；其表征也能有效迁移至相互作用相关任务。在功能任务中，RNAtomy在翻译相关预测和调控元件识别方面表现优异。值得注意的是，尽管预训练数据集规模远小于基线模型，RNAtomy仍取得了这些结果。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究表明，通过具有表达力的架构学习丰富的结构信息，能够支持RNA表征在生物学上不同的结构和功能应用之间的可迁移性，为RNA结构与功能研究提供了新的基础模型范式。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15434&amp;v=1&amp;s=7564043b03d12f74" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15434&amp;v=2&amp;s=dbe915ceb9200636" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15434&amp;v=3&amp;s=ad4d3f9ab265cb58" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15434&amp;v=4&amp;s=57d0b83d9b17cd37" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15434&amp;v=5&amp;s=bd1e30fecd3db90a" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 36 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43015460/">A plant RNA-binding protein senses 2&#x27;,3&#x27;-cNMP produced by insect effectors.</a></div>
+      <div class="card-title-zh">一种植物RNA结合蛋白感知昆虫效应子产生的2&#x27;,3&#x27;-cNMP</div>
+      <div class="news">针对植物如何识别昆虫效应子信号的科学问题，研究人员鉴定出一种可特异性感知2&#x27;,3&#x27;-cNMP的植物RNA结合蛋白，揭示了植物启动抗虫免疫的新机制，为植物-昆虫互作研究提供了重要分子基础。</div>
+      <div class="meta">Nature · 2026-11-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Guo Xiao-Xiang, Huang Jia-Fa, Zhao Jing-Tong, Gan Yi-Jie, Liu Xiaoxiao, Chen Longxian, Song Tao, Wu Wen-Kai, Li Yu-Fei, Lin Jia-Ling, Bao Jing-Jing, Nie Gui-Bin, Tang Yin, Chen Mei, Xu Jing-Jing, Dun Jun-Ling, Wang Ling-Jian, Huang Jin-Quan, Mao Ying-Bo, Yang Xiaofei, Ding Yiliang, Wang Ertao, Wan Li, Chen Xiao-Ya</div>
+<div class="meta">DOI: 10.1038/s41586-026-11259-z</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43015460/">https://pubmed.ncbi.nlm.nih.gov/43015460/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>植物免疫中RNA结合蛋白感知核苷酸信号，虽涉及宿主防御但物种与方法学偏离用户画像。</div>
+<div class="abstract"><span class="abs-label">背景</span>RNA来源的2&#x27;,3&#x27;-环磷酸末端核苷酸在原核生物和真核生物中作为免疫信号分子发挥作用，但植物如何感知它们尚不清楚。刺吸式昆虫将包括RNase在内的消化酶注入宿主植物以获取营养。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究鉴定了水稻中的富含甘氨酸的RNA结合蛋白NIB1，分析了其对绿蝽唾液T2核糖核酸酶在取食过程中产生的2&#x27;,3&#x27;-环核苷酸单磷酸（2&#x27;,3&#x27;-cAMP和2&#x27;,3&#x27;-cGMP）以及腺苷酰-(3&#x27;→5&#x27;)-鸟苷2&#x27;,3&#x27;-环磷酸（ApG&gt;p）的感知机制；并通过外源施加这些分子检测其诱导免疫反应的能力。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>NIB1能够感知RNase产物，结合这些产物促进含有NIB1的核凝聚体形成，该凝聚体招募核心免疫调控因子EDS1（Enhanced Disease Susceptibility 1）并激活防御反应。外源施加2&#x27;,3&#x27;-cAMP、2&#x27;,3&#x27;-cGMP或ApG&gt;p可诱导NIB1和EDS1介导的免疫应答。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了植物中一个保守的免疫途径：富含甘氨酸的RNA结合蛋白感知核酸酶产生的第二信使以启动防御，并指出植物TIR（Toll/白细胞介素-1受体）蛋白的核酸酶活性与EDS1信号传导之间可能存在关联。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15226&amp;v=1&amp;s=bfebc1f5b8e5905c" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15226&amp;v=2&amp;s=01d76fa77c015aef" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15226&amp;v=3&amp;s=95164337a997b555" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15226&amp;v=4&amp;s=a6b5058993a5c22d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15226&amp;v=5&amp;s=d9e88a882dff986b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 34 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://doi.org/10.1126/science.aef3150">A trapped catalytic product acts as molecular glue for innate immune signalosome assembly</a></div>
+      <div class="card-title-zh">被捕获的催化产物作为分子胶水促进先天免疫信号体组装</div>
+      <div class="news">为解决动物先天免疫受体中TIR结构域是否仅作为支架招募接头蛋白这一科学问题，作者利用生化与结构生物学方法，发现TLR4的TIR结构域具有变构激活的NAD+水解酶活性，其产物ADP-核糖被捕获作为&quot;分子胶水&quot;稳定与TIRAP的复合催化口袋，从而揭示&quot;产生-捕获&quot;机制整合酶活性与接头功能驱动信号体组装的新模式，推动先天免疫信号转导领域研究。</div>
+      <div class="meta">Science · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Liu Qi, Bai Zhongjian, Liu Tianyi, Jia Fangshuai, Ji Yi, Chen Canxi, Gong Yao, Duan Liuyuan, Zhou Jiahui, Guo Qian, Zhu Ling, Kang Huarui, Wang Haiyong, Shen Zhewen, Huang Xiaoxiang, Shen Jiayi, Shao Wenguang, Chang Junbiao, Chai Jijie, Zhang Yixiao, Han Zhifu, Zhang Chenlu, Hu Zehan</div>
+<div class="meta">DOI: 10.1126/science.aef3150</div>
+<div class="meta"><a href="https://doi.org/10.1126/science.aef3150">https://doi.org/10.1126/science.aef3150</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>TIR结构域的催化机制虽新颖，但与抗菌肽、蛋白语言模型等用户核心研究方向无关。</div>
+<div class="abstract"><span class="abs-label">背景</span>先天免疫系统对宿主防御至关重要，其中Toll/白介素-1受体（TIR）结构域是进化上保守的核心模块。TIR结构域在原核生物抗噬菌体系统和植物先天免疫系统中具有催化活性，但动物先天免疫受体（如Toll样受体，TLR）中的TIR结构域被认为仅作为支架招募接头蛋白。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究人员发现TLR4的TIR结构域具有变构激活的烟酰胺腺嘌呤二核苷酸（NAD⁺）水解酶（NADase）活性，并以单周转方式催化反应；进而探究其产物与含TIR结构域的接头蛋白（TIRAP）的相互作用机制。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>TLR4 TIR结构域的NADase催化产物——腺苷二磷酸核糖（ADPR）未被释放，而是作为“分子胶水”被捕获，稳定了TLR4 TIR与接头蛋白TIRAP形成的复合催化口袋，从而成核促进信号体组装。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了一种“产生并捕获”（produce-and-trap）的新信号传导模式，将酶催化活性与接头蛋白功能整合，为理解动物先天免疫受体下游信号传导机制提供了新视角。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15625&amp;v=1&amp;s=bd8dcaed5a23129a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15625&amp;v=2&amp;s=46cfff30e7a7fdac" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15625&amp;v=3&amp;s=4201b09c339b3cfd" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15625&amp;v=4&amp;s=7874f3d1e36c331b" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15625&amp;v=5&amp;s=7f8ac56b5133c96e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 33 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43018675/">Immunologically optimized Zmp1 peptides reveal a translational serological biomarker platform for tuberculosis diagnosis across disease manifestations.</a></div>
+      <div class="card-title-zh">免疫学优化的Zmp1肽段揭示了一种跨疾病表现的结核病诊断转化血清学生物标志物平台</div>
+      <div class="news">针对结核病尤其是肺外结核诊断困难、现有检测手段灵敏度受限的问题，研究者基于重叠B细胞和CD4⁺T细胞表位可促进抗体反应的原理，利用免疫信息学方法鉴定出两个免疫优势Zmp1肽段区域并开发肽基血清学检测，发现免疫优化的Mtb-Zp-CT肽段具有优异诊断性能（AUC=0.93，特异性&gt;93%），为结核病微创诊断提供了有前景的生物标志物平台。</div>
+      <div class="meta">European journal of clinical microbiology &amp; infectious diseases : official publication of the European Society of Clinical Microbiology · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zade Omkar Shriram, Yandrapally Sriram, Choudari Keerthana, Gaikwad Akshay Vaijinath, Panda Rajanikant, Neela Venkata Sanjeev Kumar, Prudhula Devalraju Kamakshi, Eedara V V Ramprasad, Ansari Mohammad Soheb, Chandrashekhar Chitra, Sriram Divya, Mohareer Krishnaveni, Valluri Vijaya Lakshmi, Somvanshi Pramod Rajaram, Banerjee Sharmistha</div>
+<div class="meta">DOI: 10.1007/s10096-026-05716-w</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43018675/">https://pubmed.ncbi.nlm.nih.gov/43018675/</a></div>
+<div class="meta">Keywords: Bootstrap analysis、Extrapulmonary TB、ROC、Serological biomarkers、Tuberculosis、Zmp1</div>
+<div class="reason"><span class="abs-label">推荐理由</span>免疫优化肽诊断平台，展示肽设计与优化策略，但侧重临床诊断而非抗菌肽发现。</div>
+<div class="abstract"><span class="abs-label">背景</span>结核病（TB）诊断仍具挑战性，尤其是肺外结核（EPTB），其面临侵入性采样、细菌负荷低以及外周标本中核酸类检测灵敏度有限等问题，阻碍了及时检测。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>基于含重叠B细胞和CD4⁺T细胞表位的抗原区域可通过关联识别和同源T细胞辅助促进强抗体应答的原理，研究者利用免疫信息学流程鉴定了两个富含重叠B/T细胞表位的Zmp1免疫显性肽段区域（Mtb-Zp-NT和Mtb-Zp-CT），并开发了基于肽段的血清学ELISA检测方法。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>盲法初步研究（N=137）显示该检测可明确区分活动性TB与TB康复者；扩大验证队列（N=875，从约6,086人中筛选）中，受试者工作特征分析表明肽段检测优于Mtb-FL-Zmp1，其中Mtb-Zp-CT准确性最高（AUC=0.93），特异性&gt;93%，灵敏度约76%。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究确立了免疫学优化的Zmp1肽段作为有前景的TB（包括EPTB）血清学生物标志物，其高特异性支持其作为辅助诊断工具（尤其用于EPTB）及未来多抗原组合检测组分的潜力，并展示了机制指导的表位选择如何促进病原体特异性免疫特征向微创诊断平台的转化。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15618&amp;v=1&amp;s=8e249683f51ac5e3" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15618&amp;v=2&amp;s=147e7bd810c80b92" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15618&amp;v=3&amp;s=5080493b4f3f695a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15618&amp;v=4&amp;s=b816e63bc125ed59" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15618&amp;v=5&amp;s=3472d39d04d71943" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 32 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.11.765834">CD19 CAR T cell therapy reshapes the host microbiota immune axis in autoimmune diseases</a></div>
+      <div class="card-title-zh">CD19 CAR T细胞治疗重塑自身免疫病中的宿主微生物群-免疫轴</div>
+      <div class="news">为明确CD19 CAR T细胞疗法对宿主微生物群的影响，作者对20例自身免疫病患者进行纵向肠道宏基因组与微生物群特异性体液免疫分析，发现该疗法通过降低粪便IgA和血清抗共生菌抗体重塑微生物群定向体液免疫，且治疗前宿主-微生物相互作用可预测后续复发，为理解CAR T细胞治疗的免疫-微生态互作机制提供新视角。</div>
+      <div class="meta">bioRxiv · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zaiss M. M., Maeda Y., Yi-Yuan L., Redanz S., Petrov V., Gimaev I., Fehringer M., Pereira M. S., Robeck S., Chu J., Hagen M., Wirsching A., Rothe T., Prinzensteiner M., Bozec A., Mueller F., Mackensen A., Vogl T., Schett G., Brito I. L., Kriegel M. A.</div>
+<div class="meta">DOI: 10.64898/2026.11.11.765834</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.11.765834">https://www.biorxiv.org/content/10.64898/2026.11.11.765834</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>CAR-T治疗重塑微生物群免疫轴的研究涉及宏基因组学与微生物组分析，但临床免疫方向偏离用户肽设计核心。</div>
+<div class="abstract"><span class="abs-label">背景</span>CD19靶向CAR T细胞治疗可在自身免疫病中诱导深度B细胞耗竭和临床缓解，但其是否重塑宿主微生物群互作尚不清楚。本研究旨在探究CAR T细胞治疗对肠道微生物组及微生物群特异性体液免疫的影响。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究对20例接受CAR T细胞治疗的系统性红斑狼疮、系统性硬化症或特发性炎性肌病患者及23例健康对照进行纵向分析，采用鸟枪法宏基因组学、IgA/IgG结合微生物群分析和PhIP Seq技术，检测肠道微生物组组成和微生物群特异性体液免疫。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>CAR T细胞治疗重塑了微生物群定向的体液免疫，表现为粪便IgA和血清抗共生菌IgA/IgG降低，同时微生物群反应性抗体库发生选择性重塑。肠道微生物组成亦发生选择性改变，包括青春双歧杆菌（Bifidobacterium adolescentis）的耗竭，但疾病相关致病共生菌并未均匀减少。整合宿主-微生物组分析发现免疫蛋白酶体和B细胞/浆细胞通路相关的预测蛋白-蛋白相互作用发生改变，且CAR T细胞治疗前的相互作用与后续复发显著相关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究揭示了CAR T细胞治疗通过重塑微生物群-免疫轴影响自身免疫病的新机制，发现治疗前宿主-微生物组相互作用可预测复发风险，基线粪便IgA水平与B细胞重建延迟相关，为理解黏膜体液免疫与CAR T细胞治疗后免疫恢复的关系提供了新见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15606&amp;v=1&amp;s=ecb5dd16b72f7415" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15606&amp;v=2&amp;s=2d5f55bbf2d7aa9f" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15606&amp;v=3&amp;s=88091c87fa525b38" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15606&amp;v=4&amp;s=0973d83abb9cf493" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15606&amp;v=5&amp;s=3a73c5a47bee4c5e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 32 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43015465/">Suppression of epithelial proliferation and tumorigenesis by IgA.</a></div>
+      <div class="card-title-zh">IgA对上皮增殖和肿瘤发生的抑制作用</div>
+      <div class="news">为揭示IgA缺乏增加结直肠癌易感性的机制，作者利用遗传和环境可控的IgA缺陷小鼠模型及靶向CRISPR筛选，发现IgA通过结合上皮表面蛋白DMBT1直接抑制结肠上皮细胞增殖，且该功能依赖于抗体结构而非结合特异性，为黏膜稳态维持提供了新见解。</div>
+      <div class="meta">Nature · 2026-11-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Donaldson Gregory P, Lima Dos Reis Gabriella, Saad Marwa, Wichmann Christopher, Mamede Izabela, Chen Guo, Harrer Caroline E, DelGaudio Nicole L, Zhang Dayu, Aydin Begüm, Castro Tiago B R, Grivennikov Sergei I, Reis Bernardo S, Liu Elise G, Eisenbarth Stephanie C, Birsoy Kivanç, Tavazoie Sohail F, Stadtmueller Beth M, Victora Gabriel D, Mucida Daniel</div>
+<div class="meta">DOI: 10.1038/s41586-026-11264-2</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43015465/">https://pubmed.ncbi.nlm.nih.gov/43015465/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>聚焦IgA与肠道微生物互作及肿瘤抑制，虽涉及微生物组但偏离抗菌肽与AI设计核心方向。</div>
+<div class="abstract"><span class="abs-label">背景</span>免疫球蛋白A（IgA）是哺乳动物产生最丰富的抗体亚型，在黏膜稳态中具有专门作用。IgA缺乏症在人类中常见，但因其复杂病因和合并症而难以研究。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究人员利用遗传和环境控制的小鼠模型，构建了多种IgA缺陷模型，并通过细胞和分子分析、口服IgA治疗、免疫共沉淀质谱分析以及靶向CRISPR筛选等方法，探究IgA对结直肠癌的影响及其分子机制。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>IgA缺陷导致小鼠对多种内源性结直肠癌模型的易感性增加；缺乏IgA时，结肠上皮细胞诱导抗菌因子并加速细胞周期以响应微生物群。口服IgA足以降低稳态增殖并保护小鼠免受肿瘤侵害，但该功能依赖于抗体结构而非结合特异性。IgA通过直接抑制上皮生长发挥作用，DMBT1被鉴定为IgA结合的上皮表面蛋白，是IgA介导的增殖抑制所必需的。在IgA敲除小鼠中，删除DMBT1的跨膜和胞内信号部分足以逆转上皮细胞增殖增加和肿瘤易感性增加。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究确立了IgA在调节生理上皮细胞对微生物群的反应以维持黏膜健康方面的稳态功能，揭示了IgA-DMBT1信号轴在调控吸收性结肠细胞前体正常周期中的重要作用，为理解IgA缺乏相关疾病及开发结直肠癌防治策略提供了新思路。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15539&amp;v=1&amp;s=2d16c71c0e6696a7" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15539&amp;v=2&amp;s=0fe2acf9d2dd3682" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15539&amp;v=3&amp;s=4e5e058274cffa4a" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15539&amp;v=4&amp;s=96ae7137d0021b0c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15539&amp;v=5&amp;s=b45fb14d5083c654" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 31 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43019062/">Comamonas aquatica diet inhibits TIR-1/SARM1-induced axon degeneration by providing vitamin B12.</a></div>
+      <div class="card-title-zh">水生丛毛单胞菌（Comamonas aquatica）饮食通过提供维生素B12抑制TIR-1/SARM1诱导的轴突退化</div>
+      <div class="news">为揭示神经保护细菌及其作用机制，作者利用秀丽隐杆线虫单菌饮食系统，发现Comamonas aquatica通过提供维生素B12激活肠道甲硫氨酸合酶以降低同型半胱氨酸水平，从而抑制TIR-1/SARM1诱导的轴突退化，为理解微生物组-肠-脑轴在神经退行性疾病中的作用提供了分子层面的新见解。</div>
+      <div class="meta">Cell reports · 2026-11-12</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">O&#x27;Connor Lauren C, Kang Woo Kyu, Vo Paula, Spinelli Jessica B, Alkema Mark J, Byrne Alexandra B</div>
+<div class="meta">DOI: 10.1016/j.celrep.2026.118092</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43019062/">https://pubmed.ncbi.nlm.nih.gov/43019062/</a></div>
+<div class="meta">Keywords: CP: microbiology、CP: neuroscience、Caenorhabditis elegans、Comamonas aquatica、METR-1/MTR、TIR-1/SARM1、gut-brain axis、homocysteine、microbiome、neurodegeneration、uni-bacterial diets、vitamin B12</div>
+<div class="reason"><span class="abs-label">推荐理由</span>揭示细菌代谢物神经保护机制，虽涉及微生物-宿主互作，但未触及抗菌肽或生成式AI设计。</div>
+<div class="abstract"><span class="abs-label">背景</span>越来越多的证据表明微生物组对神经退行性疾病的发生和发展具有关键影响，然而具有神经保护作用的细菌种类及其在宿主内发挥作用的分子机制仍 largely unknown。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用秀丽隐杆线虫（Caenorhabditis elegans）结构明确的神经系统及其摄食单菌饮食的能力，研究单一菌种细菌的代谢物和神经保护分子如何抑制运动神经元退化。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现Comamonas aquatica能显著保护由轴突退化关键调控因子TIR-1/SARM1过表达诱导的退化。遗传分析和代谢组学揭示，该菌通过提供充足的维生素B12激活肠道中的METR-1/MTR甲硫氨酸合酶，从而降低TIR-1表达动物体内有毒水平的同型半胱氨酸。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究定义了Comamonas aquatica与神经退化之间的分子通路，显著增进了对肠-脑相互作用的理解；鉴于同型半胱氨酸在神经退行性疾病中的重要作用，该研究揭示了此类细菌如何保护机体免受疾病侵害。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15561&amp;v=1&amp;s=bf1397eb7c4d82a6" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15561&amp;v=2&amp;s=1d7bd5f6c2c641b2" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15561&amp;v=3&amp;s=f0b556633c918375" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15561&amp;v=4&amp;s=d6c82e4e8be98144" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15561&amp;v=5&amp;s=09444bc162c5af54" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 31 分</div>
+      <div class="card-title"><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43014285/">Neural organoid models of human brain evolution.</a></div>
+      <div class="card-title-zh">神经类器官模型在人类大脑演化研究中的应用</div>
+      <div class="news">针对人类大脑演化分子机制不明的难题，作者系统阐述了神经类器官模型在遗传、细胞和发育尺度上揭示人脑演化规律的方法学价值，同时指出类器官生成与多模态测量等技术挑战，为跨物种比较神经生物学研究提供了重要框架。</div>
+      <div class="meta">Neuron · 2026-11-11</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Day Cicely F, Pollen Alex A, Lancaster Madeline A</div>
+<div class="meta">DOI: 10.1016/j.neuron.2026.10.020</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43014285/">https://pubmed.ncbi.nlm.nih.gov/43014285/</a></div>
+<div class="meta">Keywords: brain organoids、comparative neurodevelopment、cortical expansion、developmental timing、evo-devo、gene regulation、human brain evolution、neural progenitors、primate genomics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>神经类器官与大脑演化研究，与用户关注的抗菌肽、细菌及蛋白质设计领域无直接交集。</div>
+<div class="abstract"><span class="abs-label">背景</span>人类大脑在结构和功能上与现存的近亲——其他类人猿存在差异，这些差异被认为赋予了我们许多人类特有的性状，如卓越的学习和创造能力，但其背后的分子机制大多未知。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>该综述介绍了神经类器官（neural organoids）这一体外大脑发育模型，如何在演化相关的发育背景下功能性地研究人类大脑演化的问题。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>神经类器官研究在遗传、细胞和发育尺度上提供了新的见解，同时目前在类器官生成、长期培养以及建立多模态表型测量方面仍存在挑战。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>预期将类器官模型的应用扩展至整个哺乳纲（Mammalia），有助于更好地界定物种特异性和谱系特异性状，并增进我们对复杂性状如何在发育和演化时间尺度上出现和演化的理解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15465&amp;v=1&amp;s=79fd4dd335a752bc" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15465&amp;v=2&amp;s=35759681a2183329" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15465&amp;v=3&amp;s=8c472f9439d050be" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15465&amp;v=4&amp;s=1ceae2340060c919" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=niupeiyuan%40genomics.cn&amp;p=15465&amp;v=5&amp;s=d291136647fed6e5" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日15篇论文主要集中于蛋白质科学与人工智能交叉、免疫调控机制、微生物组学及分子进化四大方向。蛋白质相关研究占比突出，涵盖蛋白质基础模型特化、工程化改造、多模态表示及RNA结构预测，均深度融合AI方法；免疫方向聚焦IgA黏膜免疫、TIR信号体组装及结核诊断标志物；微生物组学涉及宏基因组分箱质量评估、肠-脑轴神经保护及CAR-T治疗中的菌群-免疫互作。技术趋势方面，AI辅助分析工具显著增多，包括蛋白质语言模型粗调、多模态对齐、结构感知RNA基础模型及AI引导的穹窿体起源研究，同时免疫信息学驱动的表位预测与细胞-free翻译系统验证遗传密码重分配等计算-实验整合策略涌现。对研究者而言，本日文献提供了蛋白质AI模型领域特化与评估的方法学参考，免疫与微生物互作的机制新见解，以及分子进化研究工具，有助于把握AI赋能生命科学研究的前沿动态与跨学科整合路径。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=niupeiyuan%40genomics.cn&amp;d=2026-11-13&amp;s=731a1d67379dc5b3">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=niupeiyuan%40genomics.cn&amp;d=2026-11-13&amp;s=731a1d67379dc5b3">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>

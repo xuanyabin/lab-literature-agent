@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Literature Intelligence Report · 2026-11-23</title>
+<style>
+  body { margin: 0; padding: 0; background: #f4f5f7; font-family: -apple-system, "PingFang SC", "Helvetica Neue", Arial, sans-serif; color: #24292f; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px 40px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 17px; margin: 28px 0 4px; padding-left: 10px; border-left: 4px solid #1f6feb; }
+  .section-sub { color: #57606a; font-size: 12px; margin: 0 0 10px 14px; }
+  .hello { color: #57606a; font-size: 14px; margin: 0 0 8px; }
+  .overview { background: #ffffff; border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 12px; }
+  details.card-details { margin-top: 10px; border-top: 1px dashed #d0d7de; }
+  summary.detail-toggle { cursor: pointer; color: #1f6feb; font-size: 13px; font-weight: 600; padding: 8px 0 2px; display: list-item; list-style-position: inside; }
+  .title-link { color: #0969da; text-decoration: none; font-weight: 600; }
+  .news { margin-top: 6px; line-height: 1.7; }
+  .meta { color: #57606a; font-size: 12px; margin-top: 6px; word-break: break-all; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 600; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: 1px; }
+  .cat-must { background: #ffebe9; color: #cf222e; border: 1px solid #ff818266; }
+  .cat-important { background: #fff8c5; color: #9a6700; border: 1px solid #d4a72c66; }
+  .cat-reference { background: #ddf4ff; color: #0969da; border: 1px solid #54aeff66; }
+  .cat-ignore { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  .cat-module { background: #fbefff; color: #8250df; border: 1px solid #d8b9ff66; }
+  .cat-type { background: #f6f8fa; color: #57606a; border: 1px solid #d0d7de; }
+  h2.module-head { font-size: 14px; color: #57606a; border-left-color: #8250df; margin: 22px 0 10px; }
+  .card { background: #ffffff; border-radius: 8px; padding: 14px 16px; margin-bottom: 12px; }
+  .card-head { font-size: 13px; font-weight: 600; color: #57606a; margin-bottom: 6px; }
+  .card-title { font-size: 15px; font-weight: 600; line-height: 1.5; }
+  .card-title-zh { font-size: 14px; color: #3b434d; line-height: 1.5; margin-top: 2px; }
+  .abstract { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; }
+  .reason { font-size: 13px; color: #3b434d; line-height: 1.7; margin-top: 10px; }
+  .abs-label { display: inline-block; font-size: 11px; font-weight: 600; color: #57606a; background: #f6f8fa; border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .summary-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-box { background: #ffffff; border-radius: 8px; padding: 14px 16px; font-size: 14px; line-height: 1.8; }
+  .feedback-btn { display: inline-block; margin-top: 10px; background: #1f6feb; color: #ffffff; font-weight: 600; font-size: 14px; border-radius: 6px; padding: 8px 18px; text-decoration: none; }
+  .stars { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #d0d7de; font-size: 13px; }
+  .stars a.star { display: inline-block; margin: 0 2px; text-decoration: none; font-size: 16px; }
+  .star-btn { display: inline-block; margin: 0 2px; padding: 2px 4px; font-size: 16px; line-height: 1.2;
+              background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+  .star-btn:hover { background: #f6f8fa; border-color: #d0d7de; }
+  .star-btn.selected { background: #fff8c5; border-color: #d4a72c; }
+  .stars-hint { color: #8c959f; font-size: 11px; margin-left: 6px; }
+  .stars-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .stars-status.ok { color: #1a7f37; font-weight: 600; }
+  .stars-status.err { color: #cf222e; font-weight: 600; }
+  .kw-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; }
+  .kw-input:focus { outline: none; border-color: #1f6feb; }
+  .kw-submit { border: none; cursor: pointer; }
+  .kw-submit:disabled { background: #8c959f; cursor: default; }
+  .kw-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .kw-status.ok { color: #1a7f37; font-weight: 600; }
+  .kw-status.err { color: #cf222e; font-weight: 600; }
+  .sp-input { width: 100%; max-width: 420px; box-sizing: border-box; font-size: 14px;
+              padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px;
+              font-family: inherit; resize: vertical; }
+  .sp-input:focus { outline: none; border-color: #1f6feb; }
+  .sp-submit { border: none; cursor: pointer; }
+  .sp-submit:disabled { background: #8c959f; cursor: default; }
+  .sp-status { font-size: 12px; margin-left: 8px; color: #57606a; }
+  .sp-status.ok { color: #1a7f37; font-weight: 600; }
+  .sp-status.err { color: #cf222e; font-weight: 600; }
+  .footer { color: #8c959f; font-size: 12px; text-align: center; margin-top: 32px; }
+  a { color: #0969da; }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Daily Literature Intelligence Report · 2026-11-23</h1>
+    <p class="hello">linguanhong，你好。今日为你筛选出 15 篇论文：点击卡片"详情"展开作者、摘要与推荐理由；卡片底部可直接进行重要性反馈（点击即记录，无需跳转）。</p>
+<div class="overview">过去 3 天全库新增 813 篇 · 命中您的关键词 248 篇 · 本次推送 15 篇（必读 3 · 重要 2 · 参考 10）</div>
+
+    <h2>今日论文（15 篇）</h2>
+    <p class="section-sub">按推荐排序 · 详情默认折叠，点击展开</p>
+    <h2 class="module-head">细胞与空间生物学</h2>
+    <div class="card">
+      <div class="card-head">Rank 1 <span class="badge cat-must">Must Read</span> · 83 分</div>
+      <div class="card-title"><span class="badge cat-module">三维时空图谱</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43058204/">Space-map: 3D single-cell atlas reconstruction from serial sections.</a></div>
+      <div class="card-title-zh">Space-map：基于连续切片的3D单细胞图谱重建</div>
+      <div class="news">为解决从连续切片组装高分辨率三维组织图谱的挑战，研究者开发Space-map方法，结合多尺度特征匹配与大变形微分同胚度量映射实现全局自动对齐，在结肠息肉和健康肠道中揭示细胞类型异质性并精确保留隐窝、腺体等微观解剖结构，较现有方法精度更高且速度提升达十倍。</div>
+      <div class="meta">Nature methods · 2026-11-19</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Han Rongduo, Ruan Cihan, Zhao Bingqing, Tan Yuqi, Monte Emma, Wei Bei, Bi Joanna, Karathanos Thomas V, Laquindanum Rozelle, Charville Gregory W, Lin Yiing, Ling Nam, Ford James M, Nolan Garry P, Wang Meng, Zhu Chenchen, Snyder Michael P</div>
+<div class="meta">DOI: 10.1038/s41592-026-03310-8</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43058204/">https://pubmed.ncbi.nlm.nih.gov/43058204/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>Space-map实现3D空间组学重建，其多尺度特征匹配与配准技术可迁移至视网膜等神经组织的单细胞空间图谱构建。</div>
+<div class="abstract"><span class="abs-label">背景</span>高分辨率三维（3D）组织图谱有望将细胞架构与组织功能联系起来，但从包含数百万细胞的连续切片中组装这些图谱仍具挑战性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者开发了Space-map方法，结合多尺度特征匹配与大变形微分同胚度量映射（large deformation diffeomorphic metric mapping），实现连续切片的全局自动对齐，同时保留局部微观解剖结构。研究团队利用空间转录组学（Xenium；约270万个细胞)和空间蛋白质组学（CODEX；约480万个细胞）数据集，从连续切片构建结肠息肉和健康肠道组织的3D模型。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>这些3D模型揭示了息肉中的细胞类型异质性，以及健康肠道中保留的隐窝和腺体结构及黏膜-腔连续性。在自有数据集和公开数据集上的基准测试表明，Space-map比现有方法实现了显著更高的配准精度和高达十倍的速度提升。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>Space-map作为一种稳健的单细胞分辨率3D人体组织图谱构建框架，为将细胞空间组织与功能联系起来提供了重要工具。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16986&amp;v=1&amp;s=afe6fa115e69e9ee" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16986&amp;v=2&amp;s=ce0c29d9e0c34f6a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16986&amp;v=3&amp;s=10c7592a7ba701b9" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16986&amp;v=4&amp;s=3da0d624b3a9ffb8" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16986&amp;v=5&amp;s=faa4ae39fa2725bf" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 2 <span class="badge cat-must">Must Read</span> · 80 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">方法学</span><a class="title-link" href="https://www.biorxiv.org/content/10.1101/2024.11.22.624797">Mapping whole-tissue spatial multi-omics at single-cell resolution with STEP</a></div>
+      <div class="card-title-zh">STEP：以单细胞分辨率实现全组织空间多组学图谱绘制</div>
+      <div class="news">针对现有空间多组学方法难以在单细胞分辨率下实现全切片跨组学映射的局限，研究者开发了整合概率推断与深度学习的STEP计算框架，成功实现从有限基因面板映射全转录组与蛋白谱，并基于多模态数据重建3D多组学脑图谱，为空间生物学研究提供了经济高效的新工具。</div>
+      <div class="meta">bioRxiv · 2026-11-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Hu Z., Zhu Z., Cai L., Zhan Y., Yan X., Wang Z., Chen J., Sun B., Jiang S., Du S., Wang H., Li X., Wang F., Wang G., Zou Q., Du Y., Yuan Z., Zhang Y.</div>
+<div class="meta">DOI: 10.1101/2024.11.22.624797</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.1101/2024.11.22.624797">https://www.biorxiv.org/content/10.1101/2024.11.22.624797</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>STEP框架整合空间转录组、单细胞及多组学数据，直接匹配用户常用的空间测序、跨模态整合方法需求。</div>
+<div class="abstract"><span class="abs-label">背景</span>空间组学技术已经彻底改变了我们在组织背景下绘制转录组、蛋白质组或代谢组图谱的能力。然而，现有的空间多组学方法侧重于从测量谱中进行聚类或区域识别，尚缺乏一个能够在单细胞分辨率下对切片上已测量和未测量区域进行跨组学层面全切片图谱绘制的一般性框架。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>本研究引入STEP，一种将概率推断与深度学习相结合的计算框架，用于灵活整合组织学、空间分辨转录组学（SRT）、单细胞及/或多组学数据。该框架实现了Xenium、CITE-seq和成像质谱流式技术的三模态整合，以及SRT、组织学、单核RNA测序和inCITE-seq的四模态整合。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究验证了STEP在多种应用中的优势：通过三模态整合，STEP能够从小基因面板映射全转录组基因表达和蛋白质谱；通过四模态整合，STEP从六个低分辨率SRT切片重建了3D多组学脑细胞图谱。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>STEP为探索空间生物学提供了一种经济高效的工具，通过整合多种互补模态数据，实现了在单细胞分辨率下对全组织空间多组学的全面图谱绘制。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16984&amp;v=1&amp;s=cca93b58f7c1c682" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16984&amp;v=2&amp;s=d3c12349c9156daa" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16984&amp;v=3&amp;s=12d12b3b7f2bfc91" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16984&amp;v=4&amp;s=c2b0b9552827cf3a" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16984&amp;v=5&amp;s=bbe5636714b5a8f5" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 3 <span class="badge cat-must">Must Read</span> · 75 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.09.22.753406">Allele-specific NR2F1 variants disrupt retinoic acid-associated retinal regionalization and uncover foveal hypoplasia in BBSOAS</a></div>
+      <div class="card-title-zh">等位基因特异性NR2F1变异破坏视黄酸相关的视网膜区域化并揭示BBSOAS中的黄斑发育不良</div>
+      <div class="news">为阐明NR2F1突变影响视网膜发育的机制，作者利用携带患者特异性突变的小鼠模型进行单细胞测序，发现NR2F1通过等位基因特异性方式调控视黄酸相关转录程序与视网膜区域化，并揭示BBSOAS患者存在黄斑发育不良。</div>
+      <div class="meta">bioRxiv · 2026-11-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Piovani P., Belliardo C., Makam R., Zambo B., Mantilleri A., Chassot A., Gogl G., Schaaf C. P., Blackshaw S., Yu-Wai-Man P., Bertacchi M., Studer M.</div>
+<div class="meta">DOI: 10.64898/2026.09.22.753406</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.09.22.753406">https://www.biorxiv.org/content/10.64898/2026.09.22.753406</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接研究NR2F1调控视黄酸信号与视网膜区域化，涉及视锥细胞模式形成与等位基因特异性效应，高度契合用户视网膜细胞类型与表型进化研究兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>核受体NR2F1的致病变异可导致Bosch-Boonstra-Schaaf视神经萎缩综合征（BBSOAS），但不同突变如何影响视网膜发育并导致视觉功能障碍仍不清楚。NR2F1被鉴定为视黄酸（RA）相关转录程序的上游调控因子，该程序参与视网膜区域化和视锥细胞模式形成。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用三种互补的Nr2f1小鼠模型（包括两种携带影响DNA结合域和配体结合域的患者特异性突变）进行单细胞RNA测序，分析NR2F1对RA通路的影响；通过分子实验检测NR2F1与CYP26A1启动子的结合及其对RAR/RXR介导的转录激活的调控；并对BBSOAS患者进行光学相干断层扫描（OCT）检查。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>Nr2f1破坏改变了RA相关基因的空间限制性表达，最显著的是将编码RA降解酶的Cyp26a1从其正常的背侧赤道区域扩展至腹侧视网膜，伴随视锥细胞背腹分布的改变。NR2F1可直接结合人CYP26A1启动子的保守调控区并抑制RAR/RXR介导的转录激活。DNA结合域变异消除了可检测的启动子结合，而配体结合域变异则显著降低结合并改变NR2F1亚细胞定位，导致等位基因特异性的转录活性差异。BBSOAS患者的OCT检查显示此前未识别的黄斑异常，包括更小更浅的黄斑凹和增加的中央视网膜厚度，符合黄斑发育不良。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究建立了NR2F1突变对核受体网络的等位基因特异性效应，该网络调控视网膜区域化过程中的空间性RA相关转录；并将黄斑发育不良确定为BBSOAS此前未被认识的特征，为理解该综合征的视觉功能障碍机制提供了新见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17114&amp;v=1&amp;s=181ec696663a00b6" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17114&amp;v=2&amp;s=bb52f37022d2946d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17114&amp;v=3&amp;s=a9fd1538bd086e0c" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17114&amp;v=4&amp;s=3adeefdc30bfd340" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17114&amp;v=5&amp;s=c52987cfe9ad02a0" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 4 <span class="badge cat-important">Important</span> · 72 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">综述</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43064831/">Computational methods for cell-cell communication via single cells.</a></div>
+      <div class="card-title-zh">基于单细胞的细胞间通讯计算方法</div>
+      <div class="news">针对细胞-细胞通讯分析方法缺乏系统整合的难题，作者系统梳理161种计算方法并构建分层分类框架，揭示人工智能与生物学整合是未来方法学发展的关键方向，为单细胞组学数据解析提供重要参考。</div>
+      <div class="meta">Nature methods · 2026-11-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Li Haochen, Zhou Xiaoxiang, Sun Xiaoqiang, Nie Qing, Gao Yibo, He Jie</div>
+<div class="meta">DOI: 10.1038/s41592-026-03287-4</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43064831/">https://pubmed.ncbi.nlm.nih.gov/43064831/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>系统综述单细胞通讯计算方法，与用户常用的scRNA-seq和空间组学分析直接相关，可辅助视网膜细胞互作研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>细胞间通讯（CCC）分析已成为解析单细胞及空间组学数据的核心手段，在高通量筛选和组织通讯景观的全面表征中发挥着不可替代的作用。近年来，计算模型与分析目标不断涌现，推动了CCC方法学的发展并带来了前所未有的生物学发现。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>作者系统性地整理了161种已发表的CCC方法，依据其功能和模型特征将其层次化地分为两大主类和九个子类，并以肿瘤学为例展示了CCC方法的应用价值。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该综述呈现了CCC方法的方法学多样性及其特征差异，并提出了未来CCC方法学发展的四个方向，重点强调人工智能与生物学的整合。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>本综述旨在描绘CCC算法需求全景，从而促进对CCC的全面、深入和可靠阐释，并推动其在生物学和疾病研究中的广泛应用。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16989&amp;v=1&amp;s=20f967bedadf168f" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16989&amp;v=2&amp;s=9694e8d7e391c437" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16989&amp;v=3&amp;s=7e4e7e1e7cf71485" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16989&amp;v=4&amp;s=5a3970f32dbdcd6e" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16989&amp;v=5&amp;s=19fd1183b32263c3" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 8 <span class="badge cat-reference">Reference</span> · 49 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43068420/">STAP2 contributes to retinal endothelial dysfunction in diabetes through CXCR4-associated signaling revealed by single-cell RNA sequencing.</a></div>
+      <div class="card-title-zh">单细胞RNA测序揭示STAP2通过CXCR4相关信号通路参与糖尿病视网膜内皮功能障碍</div>
+      <div class="news">为揭示糖尿病视网膜内皮细胞转录异质性及其分子调控机制，作者利用单细胞RNA测序重新分析db/db小鼠视网膜数据并结合功能实验，发现STAP2通过CXCR4相关信号通路介导糖尿病视网膜内皮功能障碍，为糖尿病血管损伤的 endothelial 调控机制提供新见解。</div>
+      <div class="meta">Angiogenesis · 2026-11-22</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Xiao Yu, Zhu Qian, Zhang Jiyu, Lv Kangjia, Wang Hanying, Liu Xinyi, Jiang Yan, Shi Xin, Qu Yuan, Xing Xindan, Liu Xiaoxin, Niu Tian, Liu Kun</div>
+<div class="meta">DOI: 10.1007/s10456-026-10106-z</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43068420/">https://pubmed.ncbi.nlm.nih.gov/43068420/</a></div>
+<div class="meta">Keywords: CXCR4、Diabetic retinopathy、Endothelial dysfunction、STAP2、Single-cell RNA sequencing</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽用scRNA-seq分析视网膜细胞，但聚焦内皮细胞与糖尿病血管病变，非用户关注的视网膜神经元类型或进化研究。</div>
+<div class="abstract"><span class="abs-label">背景</span>糖尿病视网膜病变（DR）是导致视力丧失的主要原因，由糖尿病诱导的视网膜内皮功能障碍所驱动，但糖尿病相关视网膜内皮细胞（ECs）的转录异质性及其分子调控机制尚不完全清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究重新分析了已发表的db/db和db/m小鼠视网膜单细胞RNA测序数据集中的视网膜内皮细胞；在db/db和链脲佐菌素（STZ）诱导的糖尿病小鼠视网膜、人类增殖性糖尿病视网膜病变（PDR）组织及人视网膜微血管内皮细胞（HRMECs）中评估STAP2表达；通过功能获得和功能缺失实验研究内皮增殖、迁移、血管生成活性、视网膜毛细血管变性和血管渗漏；利用转录组学分析鉴定下游介导因子。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定出三个转录定义的内皮细胞亚群，其中EC3在糖尿病组中占主导并表现出相对较高的信号转导衔接蛋白2（STAP2）表达；STAP2在糖尿病视网膜和高糖处理的HRMECs中表达增加；STAP2敲低抑制HRMECs的增殖、迁移和早期管腔形成，并减少体内无细胞毛细血管形成和伊文思蓝渗漏，而过表达则促进这些反应；转录组分析确定C-X-C基序趋化因子受体4（CXCR4）为候选下游介导因子，CXCR4沉默可减弱STAP2诱导的内皮反应。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究将STAP2鉴定为与糖尿病视网膜内皮功能障碍相关的新型调控因子，揭示CXCR4相关信号通路是STAP2介导内皮反应的潜在机制，为理解糖尿病血管损伤过程中的内皮调控提供了新见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16972&amp;v=1&amp;s=afb18021f6798f65" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16972&amp;v=2&amp;s=425d271a2569c6a3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16972&amp;v=3&amp;s=41db338e7cf16cd4" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16972&amp;v=4&amp;s=7339a2161a67409e" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16972&amp;v=5&amp;s=8ee4e9b11905c3e2" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 9 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43063279/">Subclonal evolution can shape the transition toward a sarcomatoid phenotype in pleural mesothelioma.</a></div>
+      <div class="card-title-zh">亚克隆演化可塑造胸膜间皮瘤向肉瘤样表型的转变</div>
+      <div class="news">为揭示胸膜间皮瘤向肉瘤样表型转变的机制，作者利用单细胞RNA测序和空间转录组学，发现肉瘤样细胞可由中间表型亲代细胞通过获得拷贝数变异演化而来，且亚克隆在空间上共定位并呈现特定形态，为肿瘤内异质性与表型演化研究提供了新视角。</div>
+      <div class="meta">Science advances · 2026-11-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Arnould Maya, Assie Jean-Baptiste, Meiller Clément, Sequeiros Ruth, Imbeaud Sandrine, Roehrig Amélie, Boano Camille, Le Corre Delphine, Mouillet-Richard Sophie, Poupel Lucie, Lavergne Julien, Hofman Véronique, Hofman Paul, Humez Sarah, Scherpereel Arnaud, Le Pimpec-Barthes Françoise, Zucman-Rossi Jessica, Blanquart Christophe, Jaurand Marie-Claude, Lantuejoul Sylvie, Hirsch Theo Z, Damotte Diane, Jean Didier</div>
+<div class="meta">DOI: 10.1126/sciadv.aee4872</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43063279/">https://pubmed.ncbi.nlm.nih.gov/43063279/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽涉及单细胞测序与表型演化，但聚焦肿瘤肉瘤化而非视网膜或神经类型进化。</div>
+<div class="abstract"><span class="abs-label">背景</span>更好地理解胸膜间皮瘤（PM）的肿瘤内异质性对于该致命癌症实施精准医疗至关重要。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者对肿瘤样本及其衍生原代细胞系采用单细胞RNA测序方法，并结合空间转录组学技术进行分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究定义了四种与较大批量队列总体生存相关的表型细胞类型：上皮样、肉瘤样、中间型和未分化型。部分肿瘤样本表现出与亚克隆演化相关的肿瘤内表型异质性，其中肉瘤样细胞可在获得拷贝数变异后从具有中间表型的亲代细胞中出现。亚克隆在细胞系中得以保留并维持其特定表型，表明高度的表型遗传性。空间转录组学揭示了表型与亚克隆演化之间的关联，显示亚克隆细胞在肿瘤组织中共定位并表现出特定形态。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究提供了PM肿瘤细胞的全面单细胞图谱，揭示了表型演化、克隆结构与肿瘤空间组织之间的关联。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17185&amp;v=1&amp;s=e02ba61dc2a39d79" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17185&amp;v=2&amp;s=2d13349472749d3d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17185&amp;v=3&amp;s=0e2ce991980a3657" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17185&amp;v=4&amp;s=5fb1fb424c8c0f83" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17185&amp;v=5&amp;s=da82e9b40945b0a7" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 10 <span class="badge cat-reference">Reference</span> · 48 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43057227/">RNA folding drives species-dependent host mRNA partitioning in Ebola virus condensates.</a></div>
+      <div class="card-title-zh">RNA折叠驱动宿主mRNA在埃博拉病毒凝聚体中的物种依赖性分配</div>
+      <div class="news">为阐明RNA病毒无膜凝聚体是否调控宿主mRNA，作者利用MERFISH亚细胞转录组学定量分析，发现RNA折叠驱动宿主mRNA在埃博拉病毒凝聚体中的物种依赖性分配，揭示果蝠通过降低ISG的3&#x27;UTR折叠逃避凝聚体隔离以实现平衡抗病毒反应，推动病毒RNA生物学与宿主互作领域研究。</div>
+      <div class="meta">Cell · 2026-11-19</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Fang Jingru, Lam Dylan C, Mah Clarence K, Watanabe Reika, Tanner Hailey M, Comi Troy, Cai Yuan, Chen Cheng-Yi, Te Velthuis Aartjan J W, Brangwynne Clifford P, Yeo Gene W, Saphire Erica Ollmann</div>
+<div class="meta">DOI: 10.1016/j.cell.2026.10.047</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43057227/">https://pubmed.ncbi.nlm.nih.gov/43057227/</a></div>
+<div class="meta">Keywords: Ebola virus、ISGs、MERFISH、RNA biology、bat antiviral immunity、biomolecular condensates、immune dysregulation、interferon-stimulated genes、phase separation、spatial transcriptomics、viral evolution、virus-host interactions</div>
+<div class="reason"><span class="abs-label">推荐理由</span>MERFISH空间转录组技术可借鉴，但研究对象为病毒凝聚体与宿主RNA，与视网膜及神经退行性疾病无关。</div>
+<div class="abstract"><span class="abs-label">背景</span>RNA病毒在宿主细胞内形成无膜凝聚体以驱动复制，但这些区室是否调控宿主RNA尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用基于多路复用错误稳健荧光原位杂交（MERFISH）的亚细胞转录组学技术，在基础和干扰素（IFN）刺激两种状态下，定量分析细胞mRNA被埃博拉病毒凝聚体招募的情况。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究发现，在基础状态下，编码区折叠程度最低的细胞RNA被选择性招募；而在IFN刺激下，具有结构化3&#x27;非翻译区（UTR）的IFN刺激基因（ISGs）则在病毒凝聚体中富集。这两种RNA结构特征在病毒基因组中保守存在，并支持其滞留于凝聚体中。对于细胞mRNA，分配进入凝聚体可延长RNA半衰期，并放大而非抑制ISG表达。不患严重RNA病毒疾病的果蝠，其ISGs的3&#x27;UTR折叠程度降低，可能逃避凝聚体隔离，从而实现平衡的抗病毒反应。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该选择性稳定作用将凝聚体功能与RNA调控相联系，作为病毒-宿主共进化与疾病发病的分子决定因素。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16987&amp;v=1&amp;s=c781b203f142ee33" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16987&amp;v=2&amp;s=b9f55a9d4fa72a9b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16987&amp;v=3&amp;s=46be01d0f8bfae77" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16987&amp;v=4&amp;s=d1827e70af34270c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16987&amp;v=5&amp;s=ca24db7dd261a6d2" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 11 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">单细胞图谱</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43067443/">Single cell RNA sequencing of the intestinal epithelium during Xenopus tropicalis metamorphosis reveals the involvement of epithelial-mesenchymal transition in the development of adult epithelial stem cells.</a></div>
+      <div class="card-title-zh">热带爪蟾（Xenopus tropicalis）肠道上皮变态发育过程中的单细胞RNA测序揭示上皮-间充质转化（EMT）参与成体上皮干细胞的发育</div>
+      <div class="news">为揭示脊椎动物成体器官特异性干细胞的形成机制，研究者利用单细胞RNA测序追踪热带爪蟾肠道变态发育过程，发现上皮-间充质转化细胞在发育高峰期几乎特异性出现，并可能由幼体肠上皮细胞转化而来、参与成体干细胞的发育形成。</div>
+      <div class="meta">General and comparative endocrinology · 2026-11-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Ayichi Divine, Thomson Paisley, Esnault Caroline, Dale Ryan, Shi Yun-Bo</div>
+<div class="meta">DOI: 10.1016/j.ygcen.2026.115048</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43067443/">https://pubmed.ncbi.nlm.nih.gov/43067443/</a></div>
+<div class="meta">Keywords: Intestinal epithelium、Intestine、Metamorphosis、Stem cells、Thyroid hormone receptor、Xenopus tropicalis、scRNA-seq</div>
+<div class="reason"><span class="abs-label">推荐理由</span>虽为脊椎动物发育的scRNA-seq研究，但聚焦肠道上皮干细胞而非视网膜或神经类型，物种也非用户关注重点。</div>
+<div class="abstract"><span class="abs-label">背景</span>甲状腺激素依赖的热带爪蟾（Xenopus tropicalis）变态发育过程中，肠道重塑涉及幼体上皮通过凋亡退化以及成体干细胞的从头形成，这为研究脊椎动物发育过程中成体器官特异性干细胞的形成提供了机会。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>对热带爪蟾肠道上皮进行单细胞RNA测序，选取56期（幼体期）和61期（变态高峰期，此时幼体上皮细胞发生凋亡且成体上皮干细胞正在形成和增殖）两个发育阶段；通过UMAP可视化进行细胞聚类分析，并对差异表达基因（DEGs）进行基因本体论（GO）分析。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>UMAP聚类分析显示两个阶段的肠上皮细胞（包括主要的上皮细胞类型——肠细胞）转录组发生变化；干细胞和一种新发现的细胞类型——上皮-间充质转化（EMT）细胞几乎仅在61期出现；与56期肠细胞相比，61期肠细胞、EMT细胞和干细胞均存在大量差异表达基因，且EMT细胞与干细胞的差异表达基因重合度高于两者分别与61期肠细胞的重合度。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>基因本体论分析提示EMT细胞可能来源于幼体上皮细胞（最可能为肠细胞），并参与成体干细胞的发育，为理解脊椎动物成体器官特异性干细胞的形成机制提供了新的见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16980&amp;v=1&amp;s=244904193c74cd21" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16980&amp;v=2&amp;s=07b63b1f93f1c3d8" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16980&amp;v=3&amp;s=51ad35205d1e239d" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16980&amp;v=4&amp;s=2097d5489d33ec3d" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16980&amp;v=5&amp;s=ba4f40d3bb7f5a9b" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 12 <span class="badge cat-reference">Reference</span> · 46 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43066834/">Spatial Transcriptomics Reveals the Macroscale Signatures of Cortical Cell Types on Anatomic Magnetic Resonance Imaging.</a></div>
+      <div class="card-title-zh">空间转录组学揭示解剖磁共振成像中皮层细胞类型的大尺度特征</div>
+      <div class="news">为厘清灰质/白质对比度的细胞生物学基础，作者整合六位捐献者的空间转录组与577名活体成人的MRI数据，发现星形胶质细胞标记基因转录与皮质对比度变异显著相关，且多变量模型显示细胞丰度可解释31%的对比度变异，为神经影像的生物学解释提供了新依据。</div>
+      <div class="meta">Neuroinformatics · 2026-11-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Chowdhury Nahian F, Jafar Tamara, Irimia Andrei</div>
+<div class="meta">DOI: 10.1007/s12021-026-09828-8</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43066834/">https://pubmed.ncbi.nlm.nih.gov/43066834/</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>利用空间转录组关联MRI与细胞类型，方法学思路可借鉴，但聚焦大脑皮层而非视网膜，且未涉及跨物种比较。</div>
+<div class="abstract"><span class="abs-label">背景</span>建立磁共振成像（MRI）信号强度与分子因素的共变关系，有助于从神经影像中获取准机制性的生物学见解。灰质/白质对比度（GWC）是T1加权MRI中广泛可用的表型，常用于研究衰老和认知，但其与细胞类型相关组织特性的关系尚缺乏研究。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者利用六名捐献者的空间分辨率尸检转录组数据，结合577名认知正常活体成年人（平均年龄56.2岁）的平均GWC数据，分析细胞类型标志基因与GWC的关联，并在两个独立队列中进行验证。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>星形胶质细胞标志基因的转录与皮层平均GWC变异显著相关；估计的星形胶质细胞相对丰度与GWC显著相关（r = 0.409, p &lt; 0.01）。GWC的基因转录相关性仅在额叶中富集少突胶质细胞标志基因。多变量线性模型显示细胞丰度可解释GWC变异的31%（R² = 0.56），其中约40%归因于神经元，~33%归因于内皮细胞，~15.7%归因于小胶质细胞。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>研究结果在两个独立队列中得到重复验证，表明报道的关联不依赖于扫描仪参数。这些发现为解释GWC及其在衰老和疾病研究中的应用提供了依据。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16973&amp;v=1&amp;s=1d15ae34ea152b06" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16973&amp;v=2&amp;s=d37fbcf9718e0aa3" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16973&amp;v=3&amp;s=a3427257afa3b1ec" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16973&amp;v=4&amp;s=84f7784355530b33" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16973&amp;v=5&amp;s=abe830aae7d3dc93" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 14 <span class="badge cat-reference">Reference</span> · 45 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.15.765028">Spatial metabolic ecosystems shape the architecture of IDH-mutant glioma</a></div>
+      <div class="card-title-zh">空间代谢微环境塑造IDH突变型胶质瘤的结构</div>
+      <div class="news">为揭示IDH突变型胶质瘤在缺乏缺氧和坏死特征下的组织构建原理，作者整合空间转录组学、代谢组学与组织学对连续切片进行多维度分析，发现12个具有独特代谢特征的空间生态位，并揭示化疗放疗后肿瘤进展与谷胱甘肽丰富、NRF2相关抗氧化生态位扩增密切相关，为理解肿瘤代谢异质性及治疗适应机制提供了新视角。</div>
+      <div class="meta">bioRxiv · 2026-11-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Moffet J. J., Kriel J., Lu T., Spiteri M., Fatunla O. E., Valkovic A. L., Pignatelli J. F., Moore Z., Kumar B., Portelli S., Riley L. A., Narayana V. K., Nijagal B., Jones J. J., Cain S. A., Roberts-Thompson S. J., Li M., Drummond K. J., McConville M. J., Ashley D. M., Whittle J. R., Freytag S., Best S. A.</div>
+<div class="meta">DOI: 10.64898/2026.11.15.765028</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.15.765028">https://www.biorxiv.org/content/10.64898/2026.11.15.765028</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>空间组学方法相关，但研究胶质瘤代谢生态位，与用户视网膜、神经视网膜细胞类型研究关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>IDH突变型胶质瘤的组织结构原理尚不清楚，特别是在缺乏定义IDH野生型胶质母细胞瘤的缺氧和坏死的情况下。肿瘤代谢和细胞异质性如何影响组织空间结构仍有待阐明。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者整合空间转录组学、代谢组学和组化分析，对配准的连续组织切片进行多维图谱构建，并结合独立的空间转录组队列和单细胞图谱（n=101个样本），以解析代谢和细胞异质性。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定出12个具有独特代谢特征的空间生态位，这些特征无法仅由细胞组成或组织学解释；发现WHO 2/3级少突胶质细胞瘤中富集的一种转录和表观遗传学中间态恶性细胞状态，以及空间分离的髓系程序；揭示放化疗后进展与谷胱甘肽丰富、NRF2相关的抗氧化微环境扩增相关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究确立了代谢特化作为胶质瘤组织结构的基本维度，为理解肿瘤异质性、进展和治疗相关适应提供了新见解。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17070&amp;v=1&amp;s=0e407da9ed3275a0" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17070&amp;v=2&amp;s=5bbb7acd8329625b" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17070&amp;v=3&amp;s=dbd0d0827ffbbab0" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17070&amp;v=4&amp;s=85a3bb26e26b8702" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17070&amp;v=5&amp;s=6f4a3e18163cc753" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 15 <span class="badge cat-reference">Reference</span> · 41 分</div>
+      <div class="card-title"><span class="badge cat-module">空间组学</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.19.767941">Spatial single cell multi-omics identifies divergent melanoma-cell states associated with metastatic outcomes in thin primary melanomas</a></div>
+      <div class="card-title-zh">空间单细胞多组学鉴定与薄型原发性黑色素瘤转移结局相关的不同黑色素瘤细胞状态</div>
+      <div class="news">针对薄型黑色素瘤转移风险难以预测的问题，作者整合同切片单细胞空间转录组与蛋白质组学技术，发现七种黑色素瘤细胞状态沿两条谱系轨迹分化，其中间充质-侵袭性细胞富集于转移性肿瘤而凝聚性痣样细胞富集于非转移性肿瘤，为早期黑色素瘤进展评估提供了空间分子标志物。</div>
+      <div class="meta">bioRxiv · 2026-11-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Antoranz A., Andhari M. D., Chui J., Dubroja N., Nazari P., Vandermeulen N., Vandereyken K., Nsengimana J., Güvenc C., Demaerel P. G., Verstegen D., Leeman A., Pozniak J., Massi D., De Giorgi V., Szumera-Cieckiewicz A., Rutkowski P., Teterycz P., Mooyaart A., Valpione S., Boecxstaens V., Voet T., Govaere O., Bosisio F.</div>
+<div class="meta">DOI: 10.64898/2026.11.19.767941</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.19.767941">https://www.biorxiv.org/content/10.64898/2026.11.19.767941</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>采用空间单细胞多组学技术，但研究对象为黑色素瘤转移，非视网膜或神经类型。</div>
+<div class="abstract"><span class="abs-label">背景</span>薄型黑色素瘤（Breslow厚度≤1 mm）通常预后良好，但部分会发生转移，这凸显了寻找疾病进展生物标志物的必要性。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者结合同切片单细胞空间转录组学和蛋白质组学技术，对薄型黑色素瘤进行分析；并通过H&amp;E推断的空间转录组学在国际多中心队列以及独立的原发性黑色素瘤 bulk 转录组数据集中进行验证。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>研究鉴定出七种黑色素瘤细胞状态，它们沿两条推断的轨迹组织，共享一个共同的主干：从原位上皮相邻状态经发育应激到黑色素细胞分化，然后分叉为两个谱系。谱系1通过IFN相关应激中间状态进展为间充质-侵袭性细胞，该细胞在转移性肿瘤中富集，与免疫热微环境、细胞外基质重塑和血管生成相关；谱系2终止于相对免疫冷微环境中保留黑色素细胞特征的凝聚性痣样细胞，在非转移性肿瘤中富集。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究将空间组织的黑色素瘤细胞程序与转移结局联系起来，为薄型黑色素瘤识别了潜在的进展生物标志物。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16969&amp;v=1&amp;s=11414a9eddb82cd9" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16969&amp;v=2&amp;s=d49dad1166cf471a" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16969&amp;v=3&amp;s=17be445e7b243a63" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16969&amp;v=4&amp;s=4530219af2b2d288" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=16969&amp;v=5&amp;s=44fae5bbc2256264" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">动物适应与生理</h2>
+    <div class="card">
+      <div class="card-head">Rank 5 <span class="badge cat-important">Important</span> · 67 分</div>
+      <div class="card-title"><span class="badge cat-module">极端环境适应</span><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43067534/">Multi-omics analysis links Lycium barbarum glycopeptide-mediated retinal protection to glycolytic remodeling and protein lactylation in retinitis pigmentosa models.</a></div>
+      <div class="card-title-zh">多组学分析揭示枸杞糖肽介导的视网膜保护作用与视网膜色素变性模型中糖酵解重塑及蛋白乳酸化的关联</div>
+      <div class="news">为阐明枸杞糖肽(LbGP)在遗传性视网膜变性中的代谢保护机制，作者整合多组学分析与体内外实验，发现LbGP通过激活糖酵解-乳酸-乳酸化轴（涉及PFKP、LDHA等关键分子）保护视网膜结构与功能，且该效应可被HK1抑制剂2-DG部分阻断，为视网膜退行性病变的干预策略提供了新靶点。</div>
+      <div class="meta">Journal of ethnopharmacology · 2026-11-21</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Guo Taimin, Zhou Zhicheng, Tang Jiannan, So Kwok-Fai, Mi Xuesong, Xu Ying</div>
+<div class="meta">DOI: 10.1016/j.jep.2026.122688</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43067534/">https://pubmed.ncbi.nlm.nih.gov/43067534/</a></div>
+<div class="meta">Keywords: Lycium barbarum glycopeptide、glycolysis、lactylation、multi-omics、retinitis pigmentosa、traditional Chinese medicine</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接研究视网膜变性中光感受器代谢重塑，结合scRNA-seq与蛋白质乳酸化，契合用户视网膜细胞类型与组学整合兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>枸杞（Lycium barbarum L.）是传统药食两用植物，长期被认为具有滋补和明目功效。枸杞糖肽（LbGP）是从枸杞多糖中纯化的糖肽组分，已显示出视网膜和神经保护潜力，但其在遗传性视网膜变性中的代谢机制尚不清楚。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究整合了PRPF31突变型和正常对照人视网膜类器官的公共单细胞RNA测序数据，以及野生型、溶剂对照rd10和LbGP处理rd10小鼠的视网膜蛋白质组学、乳酸化组学和代谢组学数据集。采用乳酸测定、ATP检测、泛赖氨酸乳酸化免疫荧光、细胞活力检测、Western blotting、视网膜结构评估和暗适应视网膜电图等方法验证发现。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>PRPF31突变型光感受器表现出糖酵解和低氧相关转录增加，同时光转导和氧化磷酸化降低。在rd10视网膜中，LbGP处理与糖酵解相关酶、疾病相关赖氨酸乳酸化及能量代谢物的改变相关。多组学整合分析鉴定出一个涉及特定糖酵解酶和Kla位点的糖酵解-乳酸-乳酸化轴。LbGP提高了血清剥夺661W细胞的活力，保留了rd10小鼠的视网膜结构和功能，并增加了661W细胞和rd10视网膜的乳酸产生。LbGP还提高了血清剥夺661W细胞中的ATP水平、泛赖氨酸乳酸化以及PFKP和LDHA的表达，该效应部分被HK1抑制剂2-DG阻断。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>糖酵解重塑和蛋白乳酸化可能是LbGP介导视网膜色素变性模型视网膜保护的候选机制，支持将LbGP作为枸杞来源的视网膜变性干预措施进行进一步药理学验证。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17062&amp;v=1&amp;s=df68e2f5f8c09fc3" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17062&amp;v=2&amp;s=82cf7c95406e6c5d" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17062&amp;v=3&amp;s=4194fc09f09ffe5e" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17062&amp;v=4&amp;s=eccf29241cfd0d6c" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17062&amp;v=5&amp;s=6c451674468a4941" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 13 <span class="badge cat-reference">Reference</span> · 45 分</div>
+      <div class="card-title"><span class="badge cat-module">睡眠/昼夜节律</span><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.19.767760">Early locus coeruleus tauopathy features potassium channel dysfunction and is attenuated by Kv7 activation</a></div>
+      <div class="card-title-zh">早期蓝斑tau病变以钾通道功能障碍为特征且可被Kv7激活所减轻</div>
+      <div class="news">为揭示早期蓝斑核tau病变导致神经元功能障碍的机制，作者利用电生理、单细胞测序及Kv7靶向药物干预，发现tau积累引起钾通道功能下调和神经元过度兴奋，Kv7激活可减轻种子传播的tau病理，为早期tau病变的干预策略提供了新靶点。</div>
+      <div class="meta">bioRxiv · 2026-11-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Zhang Y.-C., Wang Y.-G., Zhang X.-T., Chen P.-Y., Tan K., Zhou Z.-Y., Min X., Zeng W., He Z.-H., Xu H.-T., He K.-W.</div>
+<div class="meta">DOI: 10.64898/2026.11.19.767760</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.19.767760">https://www.biorxiv.org/content/10.64898/2026.11.19.767760</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及单细胞测序和神经元电生理，但聚焦蓝斑核tau病变，与用户视网膜细胞类型研究有一定距离。</div>
+<div class="abstract"><span class="abs-label">背景</span>蓝斑（LC）在阿尔茨海默病早期即出现异常tau蛋白聚集，但早期tau病变导致神经元功能障碍的机制以及修饰后续病理的潜力尚不清楚。本研究探讨了钾依赖性兴奋性调控、相关分子变化以及Kv7靶向干预。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究结合电生理学、单细胞RNA测序、免疫组织化学和睡眠-脑电图记录，在P301S tau转基因（PS19）小鼠和接受局部蓝斑接种合成人tau纤维的野生型小鼠中进行。通过药理学通道调节和糖原合成酶激酶-3（GSK-3）抑制评估电生理表型的药理学调控，并在年轻PS19小鼠单侧蓝斑纤维接种后采用慢性瑞替加滨（retigabine）治疗评估病理结局。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>年轻而非老龄PS19小鼠表现出蓝斑神经元紧张性放电和内在兴奋性升高，伴随前缠结磷酸化tau积累和阈下钾电流密度降低。单细胞分析鉴定出标志物定义的去甲肾上腺素能神经元中的候选表达变化：应激相关基因表达增加与神经丝、神经元维持和钾通道基因（包括Kcnq3和Kcnd1）表达降低同时存在。核RE-1沉默转录因子（REST）增加和Kv7.2及Kv7.3免疫反应性降低提示与通道功能障碍相关的候选转录机制。局部纤维接种在野生型小鼠中重现了生理异常，且过度兴奋性依赖于内源性tau。Kv4/Kv7联合调节减轻过度兴奋性，而GSK-3抑制降低tau磷酸化、增加阈下钾电流并降低紧张性放电。两种模型均显示暗期觉醒增加和状态依赖性脑电图功率变化。慢性Kv7开放剂瑞替加滨治疗降低了双侧蓝斑AT8阳性tau负荷，并与单侧接种后较高的酪氨酸羟化酶（TH）阳性神经元密度相关。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>早期蓝斑tau病变结合了钾通道依赖性兴奋性控制障碍与细胞应激和神经元维持降低相一致的转录变化。Kv7激活可减轻种子化tau病理，支持兴奋性调节作为早期tau病变期间的候选干预策略。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17088&amp;v=1&amp;s=59bc2687fe3f64b9" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17088&amp;v=2&amp;s=59108d5f76862691" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17088&amp;v=3&amp;s=df98d130840bf58f" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17088&amp;v=4&amp;s=7f3ee92a254265d8" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17088&amp;v=5&amp;s=6dd0189730d23f88" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <h2 class="module-head">其他</h2>
+    <div class="card">
+      <div class="card-head">Rank 6 <span class="badge cat-reference">Reference</span> · 52 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://www.biorxiv.org/content/10.64898/2026.11.18.767615">Extra-sheath transplantation of human retinal organoids (hROs): effects on visual recovery and retinal repair following optic nerve injury</a></div>
+      <div class="card-title-zh">人视网膜类器官（hROs）鞘外移植：对视神经损伤后视觉恢复及视网膜修复的影响</div>
+      <div class="news">针对创伤性视神经损伤后视网膜保护与视觉通路恢复难以兼顾的问题，研究者将人视网膜类器官移植至视神经损伤部位，发现该策略可保护视盘结构及神经节细胞层厚度，改善闪光视觉诱发电位反应和视动行为，促进损伤后多水平视觉功能保留。</div>
+      <div class="meta">bioRxiv · 2026-11-20</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Luo Y., Chen X., Kang J., Qin H., Kai Y., xu H.</div>
+<div class="meta">DOI: 10.64898/2026.11.18.767615</div>
+<div class="meta"><a href="https://www.biorxiv.org/content/10.64898/2026.11.18.767615">https://www.biorxiv.org/content/10.64898/2026.11.18.767615</a></div>
+<div class="meta">Keywords: —</div>
+<div class="reason"><span class="abs-label">推荐理由</span>直接涉及视网膜神经节细胞保护与修复，使用小鼠模型，契合用户视网膜细胞类型及视觉通路研究兴趣。</div>
+<div class="abstract"><span class="abs-label">背景</span>创伤性视神经损伤可中断视网膜神经节细胞输出并导致永久性视觉功能障碍，目前尚缺乏将视网膜保护与视觉通路活动恢复相结合的治疗策略。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>采用胚胎干细胞来源的30天人视网膜类器官（hROs），在C57小鼠视神经夹伤部位进行移植；通过免疫组织化学（RBPMS、TUJ1、IBA1染色）、微电极阵列记录、全视野视网膜电图（ERG）、闪光视觉诱发电位（FVEP）及视动反应、明暗箱行为学检测进行评估。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>移植组在术后7、14、28天保持了视盘外观和神经节细胞层厚度，第28天时与单纯夹伤组出现统计学差异；RBPMS和TUJ1免疫染色显示视网膜神经节细胞胞体及神经突丢失减轻，IBA1染色提示小胶质细胞反应改变；全视野ERG b波组间无显著差异，但闪光视觉诱发电位P2振幅在各时间点均高于单纯夹伤组，且移植组视动反应在测试的空间频率和对比度条件下均增强。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>该研究支持hROs移植于视神经损伤部位可促进视神经夹伤后多水平功能保留的模型，为开发兼具视网膜保护与视觉通路恢复的治疗策略提供了实验依据；明确的供体来源环路重建证据仍有待通过移植示踪、突触验证及预设电生理分析进一步确立。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17198&amp;v=1&amp;s=944998be9291c665" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17198&amp;v=2&amp;s=c7ed55edcc1255eb" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17198&amp;v=3&amp;s=274ad72d9e901133" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17198&amp;v=4&amp;s=3d13c657100952b5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17198&amp;v=5&amp;s=c8c3866043e71a45" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+    <div class="card">
+      <div class="card-head">Rank 7 <span class="badge cat-reference">Reference</span> · 51 分</div>
+      <div class="card-title"><span class="badge cat-type">研究</span><a class="title-link" href="https://pubmed.ncbi.nlm.nih.gov/43067349/">Disrupting a cargo receptor entrapment complex is a therapeutic node for distinct proteinopathies.</a></div>
+      <div class="card-title-zh">破坏货物受体滞留复合物是多种蛋白质病的治疗节点</div>
+      <div class="news">针对分泌途径中突变蛋白毒性积累导致多种蛋白质病的问题，研究团队鉴定出由TMED7等组成的货物受体捕获复合物，发现其通过TMED7与GRASP55结合将突变蛋白滞留于早期分泌途径，并利用基因敲除或小分子化合物BRD7635破坏该相互作用，证实这一捕获机制是遗传性视网膜疾病和肾脏疾病等多种蛋白质病的共同致病节点，为跨疾病精准治疗提供了新靶点。</div>
+      <div class="meta">Neuron · 2026-11-19</div>
+      <details class="card-details"><summary class="detail-toggle">详情 · 作者 / 摘要 / 推荐理由</summary>
+<div class="meta">Riedl Khursigara Magdalena, Goss Alissa C, Kost-Alimova Maria, Keller Keith, De Mata Christine Danielle, Muraleedharan Ranjithmenon, Collantes Edward Ryan, Brown Matthew, Grinkevich Elizabeth, Arines Felichi Mae, Lin John, Byrne Patrick, Bazua-Valenti Silvana, Morici Elizabeth, Roignot Julie, Zavras Jason, Silverman Brianna R, Ignacio John Carlos, Myung Yoochan, Kwon Seulki, Nelson Andrew, Yoo Hyery, Melanson Michelle, Racette Matthew, Padovano Valeria, Alper Seth L, Carey Dominique, Udeshi Namrata D, Carr Steven A, Dvela-Levitt Moran, Narimatsu Toshio, Sakuno Gustavo, Correa Victor San Martin Carvalho, Efstathiou Nikolaos E, Ntentakis Dimitrios P, Cao Tian, Dong Zhiqian, Nguyen Kim Thien, Menezes Carolline Rodrigues, Kurumbail Ravi, Kazmirski Steven, Xiao Le, Wu Hao, Liu David, Iqbal Sumaiya, Lander Eric S, Vavvas Demetrios G, Palczewski Krzysztof, Pablo Juan Lorenzo B, Greka Anna</div>
+<div class="meta">DOI: 10.1016/j.neuron.2026.10.023</div>
+<div class="meta"><a href="https://pubmed.ncbi.nlm.nih.gov/43067349/">https://pubmed.ncbi.nlm.nih.gov/43067349/</a></div>
+<div class="meta">Keywords: eye diseases、genetic diseases、genomic screens、kidney disease、membrane biology、organellar biology、precision medicine、proteinopathy、retinitis pigmentosa、therapeutics</div>
+<div class="reason"><span class="abs-label">推荐理由</span>涉及视网膜色素变性小鼠模型，但与细胞类型和进化研究关联较弱。</div>
+<div class="abstract"><span class="abs-label">背景</span>突变蛋白在分泌途径中的毒性积累会导致遗传性和临床表型各异的蛋白质病，包括遗传性视网膜疾病。</div>
+<div class="abstract"><span class="abs-label">研究方法</span>研究者鉴定了一个由跨膜emp24结构域蛋白TMED7、TMED2、TMED9和TMED10组成的货物受体滞留复合物，并通过体内诱导性基因敲除TMED7或小分子化合物BRD7635处理来干预该复合物功能。</div>
+<div class="abstract"><span class="abs-label">研究结果</span>该复合物通过TMED7与高尔基体蛋白GRASP55的结合，将结构和功能多样的突变蛋白滞留于早期分泌途径；破坏这一相互作用依赖性滞留机制可促进积累货物的清除。在体内，诱导性敲除TMED7或BRD7635治疗可逆转多种蛋白质病的组织病理学特征并挽救功能缺陷，包括在视网膜色素变性小鼠模型中改善视力丧失。</div>
+<div class="abstract"><span class="abs-label">研究意义</span>这些发现揭示了突变蛋白滞留的共享机制，为跨不同疾病的治疗性靶向提供了新策略。</div>
+</details>
+      <div class="stars"><span class="abs-label">重要性反馈</span><button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17200&amp;v=1&amp;s=3cb2faf03147912a" title="完全不相关">⭐1</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17200&amp;v=2&amp;s=001c17c3e3199578" title="不太相关">⭐2</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17200&amp;v=3&amp;s=351b8f326e0f5808" title="一般">⭐3</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17200&amp;v=4&amp;s=5306fb0c6122a8c5" title="比较重要">⭐4</button> <button type="button" class="star-btn" data-url="https://lab-feedback.2056939961.workers.dev/fb?u=linguanhong1%40genomics.cn&amp;p=17200&amp;v=5&amp;s=67378926d0af417e" title="非常重要">⭐5</button><span class="stars-hint">点击即完成反馈 · ⭐1 完全不相关 – ⭐5 非常重要</span><span class="stars-status"></span></div>
+    </div>
+
+    <h2>今日推荐文献价值总结</h2>
+    <p class="section-sub">趋势分析层 · 今日论文整体反映出的研究方向与技术趋势</p>
+    <div class="summary-box">今日论文主要集中于空间组学与单细胞组学的技术方法开发及其在疾病研究中的应用。Space-map和STEP分别实现了三维组织图谱重建与全切片空间多组学映射，体现了计算工具向高精度、多模态整合方向发展的趋势。同时，多篇论文将单细胞/空间组学技术应用于视网膜发育与退行性疾病、糖尿病视网膜病变、肿瘤异质性等具体生物学问题，显示出这些技术正从方法学创新向机制解析深度转化。对研究者而言，今日文献提供了空间组学分析的新工具框架，以及将多组学数据与特定疾病模型结合的研究范式参考，尤其有助于关注视觉系统疾病、肿瘤微环境及神经退行性病变的研究者把握技术前沿与潜在靶点。</div>
+
+    <h2>新增关键词</h2>
+    <p class="section-sub">有想看但没收到的方向？直接填写提交，次日检索即生效</p>
+    <div class="feedback-box">
+      <input type="text" class="kw-input" maxlength="200"
+             placeholder="如：CRISPR 递送, 单细胞测序（多个词可用逗号分隔）">
+      <button type="button" class="feedback-btn kw-submit" data-url="https://lab-feedback.2056939961.workers.dev/kw?u=linguanhong1%40genomics.cn&amp;d=2026-11-23&amp;s=042fe91cd8c62792">提交关键词</button>
+      <span class="kw-status"></span>
+    </div>
+
+    <h2>用文献优化关键词</h2>
+    <p class="section-sub">粘贴您感兴趣的文献（DOI 或 PMID，每行一个，一次最多 10 篇），系统据此提炼检索词，次日生效</p>
+    <div class="feedback-box">
+      <textarea class="sp-input" rows="4" maxlength="2000"
+                placeholder="10.1038/s41586-025-00000-x&#10;40123456"></textarea>
+      <button type="button" class="feedback-btn sp-submit" data-url="https://lab-feedback.2056939961.workers.dev/sp?u=linguanhong1%40genomics.cn&amp;d=2026-11-23&amp;s=042fe91cd8c62792">提交文献</button>
+      <span class="sp-status"></span>
+    </div>
+
+    <p class="footer">Lab Literature Intelligence System · 推荐等级由个性化评分引擎（六维加权）生成</p>
+  </div>
+<script>
+// 网页版五星反馈：fetch 调用 Worker /fb（format=json + CORS），成功原地高亮并显示
+// "已记录"，失败原地提示"请重试"，均不跳页、不丢页面状态。签名 URL 由 Python 侧
+// 生成页面时逐星预算好嵌入 data-url（见 digest_builder._page_star_row）。
+(function () {
+  document.querySelectorAll(".star-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var row = btn.closest(".stars");
+      var status = row.querySelector(".stars-status");
+      status.className = "stars-status";
+      status.textContent = "记录中…";
+      fetch(btn.dataset.url + "&format=json", { headers: { "Accept": "application/json" } })
+        .then(function (resp) {
+          return resp.json().then(function (data) {
+            if (!resp.ok || !data.ok) { throw new Error("feedback rejected"); }
+            row.querySelectorAll(".star-btn").forEach(function (b) { b.classList.remove("selected"); });
+            btn.classList.add("selected");
+            status.classList.add("ok");
+            status.textContent = "已记录";
+          });
+        })
+        .catch(function () {
+          status.classList.add("err");
+          status.textContent = "记录失败，请重试";
+        });
+    });
+  });
+})();
+// 网页版新增关键词：页内直接填写提交，fetch Worker /kw（签名 URL 由 Python 侧
+// 生成页面时预算好嵌入 data-url，关键词本体提交时追加 &k=）。成功禁用输入并显示
+// "已提交"，失败原地提示可重试，均不跳页、不丢页面状态。
+(function () {
+  var btn = document.querySelector(".kw-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".kw-input");
+  var status = box.querySelector(".kw-status");
+  function submit() {
+    var kw = input.value.trim();
+    if (!kw) {
+      status.className = "kw-status err";
+      status.textContent = "请先填写关键词";
+      return;
+    }
+    btn.disabled = true;
+    status.className = "kw-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&k=" + encodeURIComponent(kw) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("keyword rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，次日检索生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  }
+  btn.addEventListener("click", submit);
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !btn.disabled) { submit(); }
+  });
+})();
+// 网页版"用文献优化关键词"：多行粘贴 DOI（10.xxxx/... 形态）或 PMID（纯数字），
+// 每行一个、一次 ≤10 篇，前端先逐行校验，非法行原地报错不提交；合法则 fetch
+// Worker /sp（签名 URL 由 Python 侧生成页面时预算好嵌入 data-url，文献列表提交时
+// 追加 &sp=）。成功禁用输入并显示"已提交，明日生效"，失败原地提示可重试。
+(function () {
+  var btn = document.querySelector(".sp-submit");
+  if (!btn) { return; }
+  var box = btn.closest(".feedback-box");
+  var input = box.querySelector(".sp-input");
+  var status = box.querySelector(".sp-status");
+  var DOI_RE = /^10\.\d{4,9}\/\S+$/;
+  var PMID_RE = /^\d+$/;
+  btn.addEventListener("click", function () {
+    var lines = input.value.split("\n").map(function (s) { return s.trim(); })
+      .filter(function (s) { return s; });
+    if (!lines.length) {
+      status.className = "sp-status err";
+      status.textContent = "请先粘贴 DOI 或 PMID（每行一个）";
+      return;
+    }
+    if (lines.length > 10) {
+      status.className = "sp-status err";
+      status.textContent = "一次最多提交 10 篇，请删减后再试";
+      return;
+    }
+    for (var i = 0; i < lines.length; i++) {
+      if (!DOI_RE.test(lines[i]) && !PMID_RE.test(lines[i])) {
+        status.className = "sp-status err";
+        status.textContent = "第 " + (i + 1) + " 行不是合法的 DOI 或 PMID：" + lines[i];
+        return;
+      }
+    }
+    btn.disabled = true;
+    status.className = "sp-status";
+    status.textContent = "提交中…";
+    fetch(btn.dataset.url + "&sp=" + encodeURIComponent(lines.join("\n")) + "&format=json",
+          { headers: { "Accept": "application/json" } })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          if (!resp.ok || !data.ok) { throw new Error("seed papers rejected"); }
+          input.disabled = true;
+          status.classList.add("ok");
+          status.textContent = "已提交，明日生效";
+        });
+      })
+      .catch(function () {
+        btn.disabled = false;
+        status.classList.add("err");
+        status.textContent = "提交失败，请重试";
+      });
+  });
+})();
+</script>
+</body>
+</html>
